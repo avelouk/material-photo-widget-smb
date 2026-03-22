@@ -85,7 +85,9 @@
     <string name="photo_widget_source_photos">Fotos</string>
     <string name="photo_widget_source_directory">Ordner</string>
     <string name="photo_widget_source_photos_description">Wähle ein oder mehrere Fotos über den standardmäßigen Galerie-Auswahlbildschirm aus.</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Wähle einen oder mehrere Ordner zum Synchronisieren aus. Fotos werden automatisch hinzugefügt und regelmäßig aktualisiert.</string>
+    <string name="photo_widget_source_gif_description">Wähle eine GIF-Datei. Die einzelnen Frames werden extrahiert und als einzelne Fotos verwendet.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
     <string name="photo_widget_aspect_ratio_shape">Formen</string>
@@ -124,6 +126,7 @@
     <string name="photo_widget_configure_photos_excluded">Vom Widget ausgeschlossen</string>
     <string name="photo_widget_configure_pick_photo">Fotos auswählen</string>
     <string name="photo_widget_configure_pick_folder">Ordner auswählen</string>
+    <string name="photo_widget_configure_pick_gif">GIF auswählen</string>
     <string name="photo_widget_configure_change_source">Quelle ändern</string>
     <string name="photo_widget_configure_select_cycling_mode">Foto-Timer</string>
     <string name="photo_widget_configure_cycling_mode_interval">Intervall</string>

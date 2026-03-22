@@ -87,7 +87,9 @@
     <string name="photo_widget_source_photos">Фотографии</string>
     <string name="photo_widget_source_directory">Папка</string>
     <string name="photo_widget_source_photos_description">Выберите одну или несколько фотографий с помощью стандартного выбора галереи.</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Выберите одну или несколько папок для синхронизации. Фотографии добавляются автоматически и регулярно обновляются.</string>
+    <string name="photo_widget_source_gif_description">Выберите GIF-файл. Его кадры будут извлечены и использованы как отдельные фотографии.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Формат</string>
     <string name="photo_widget_aspect_ratio_shape">Фигуры</string>
@@ -126,6 +128,7 @@
     <string name="photo_widget_configure_photos_excluded">Удален из виджета</string>
     <string name="photo_widget_configure_pick_photo">Выбрать фотографии</string>
     <string name="photo_widget_configure_pick_folder">Выбрать папку</string>
+    <string name="photo_widget_configure_pick_gif">Выбрать GIF</string>
     <string name="photo_widget_configure_change_source">Изменить источник</string>
     <string name="photo_widget_configure_select_cycling_mode">Фототаймер</string>
     <string name="photo_widget_configure_cycling_mode_interval">Интервал</string>

@@ -85,7 +85,9 @@
     <string name="photo_widget_source_photos">Foto</string>
     <string name="photo_widget_source_directory">Cartella</string>
     <string name="photo_widget_source_photos_description">Scegli una o più foto utilizzando il selettore della galleria predefinito.</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Scegli una o più cartelle da sincronizzare. Le foto vengono aggiunte automaticamente e aggiornate a intervalli regolari.</string>
+    <string name="photo_widget_source_gif_description">Scegli un file GIF. I suoi fotogrammi verranno estratti e utilizzati come foto individuali.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Formato</string>
     <string name="photo_widget_aspect_ratio_shape">Forme</string>
@@ -124,6 +126,7 @@
     <string name="photo_widget_configure_photos_excluded">Escluse dal widget</string>
     <string name="photo_widget_configure_pick_photo">Scegli foto</string>
     <string name="photo_widget_configure_pick_folder">Scegli cartella</string>
+    <string name="photo_widget_configure_pick_gif">Scegli GIF</string>
     <string name="photo_widget_configure_change_source">Cambia sorgente</string>
     <string name="photo_widget_configure_select_cycling_mode">Timer foto</string>
     <string name="photo_widget_configure_cycling_mode_interval">Intervallo</string>

@@ -98,6 +98,7 @@ private fun SourcePickerContent(
                 val stringRes = when (source) {
                     PhotoWidgetSource.PHOTOS -> R.string.photo_widget_source_photos_description
                     PhotoWidgetSource.DIRECTORY -> R.string.photo_widget_source_directory_description
+                    PhotoWidgetSource.GIF -> R.string.photo_widget_source_gif_description
                 }
 
                 localResource.getString(stringRes)

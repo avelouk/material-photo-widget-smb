@@ -86,7 +86,9 @@
     <string name="photo_widget_source_photos">Fotografii</string>
     <string name="photo_widget_source_directory">Dosar</string>
     <string name="photo_widget_source_photos_description">Alege una sau mai multe fotografii folosind selectorul implicit al galeriei.</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Alege unul sau mai multe foldere pentru sincronizare. Fotografiile sunt adăugate automat și actualizate periodic.</string>
+    <string name="photo_widget_source_gif_description">Alege un fișier GIF. Cadrele sale vor fi extrase și utilizate ca fotografii individuale.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
     <string name="photo_widget_aspect_ratio_shape">Forme</string>
@@ -125,6 +127,7 @@
     <string name="photo_widget_configure_photos_excluded">Exclus din widget</string>
     <string name="photo_widget_configure_pick_photo">Alege fotografiile</string>
     <string name="photo_widget_configure_pick_folder">Alege dosarul</string>
+    <string name="photo_widget_configure_pick_gif">Alege GIF</string>
     <string name="photo_widget_configure_change_source">Schimbă sursa</string>
     <string name="photo_widget_configure_select_cycling_mode">Temporizator poză</string>
     <string name="photo_widget_configure_cycling_mode_interval">Interval</string>

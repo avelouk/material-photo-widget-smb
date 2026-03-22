@@ -168,6 +168,7 @@ aboutLibraries {
 
 licensee {
     allow("Apache-2.0")
+    allow("MIT")
 }
 
 dependencies {
@@ -206,6 +207,7 @@ dependencies {
 
     implementation(libs.image.cropper)
     implementation(libs.coil)
+    implementation(libs.gif.drawable)
     implementation(libs.reorderable)
     implementation(libs.colorpicker.compose)
     implementation(libs.zoomable)

@@ -88,6 +88,11 @@ fun PhotoWidgetConfigureContentTab(
         onResult = viewModel::dirPicked,
     )
 
+    val gifPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = viewModel::gifPicked,
+    )
+
     PhotoWidgetConfigureContentTab(
         photoWidget = state.photoWidget,
         onChangeSourceClick = sourceSheetState::showBottomSheet,
@@ -95,6 +100,7 @@ fun PhotoWidgetConfigureContentTab(
         onImportClick = importFromWidgetSheetState::showBottomSheet,
         onPhotoPickerClick = { photoPickerLauncher.launch(input = "image/*") },
         onDirPickerClick = { dirPickerLauncher.launch(input = null) },
+        onGifPickerClick = { gifPickerLauncher.launch(input = "image/gif") },
         onPhotoClick = viewModel::previewPhoto,
         onReorderFinish = viewModel::reorderPhotos,
         onRemovedPhotoClick = { photo ->
@@ -133,6 +139,7 @@ fun PhotoWidgetConfigureContentTab(
     onImportClick: () -> Unit,
     onPhotoPickerClick: () -> Unit,
     onDirPickerClick: () -> Unit,
+    onGifPickerClick: () -> Unit,
     onPhotoClick: (LocalPhoto) -> Unit,
     onReorderFinish: (List<LocalPhoto>) -> Unit,
     onRemovedPhotoClick: (LocalPhoto) -> Unit,
@@ -147,6 +154,7 @@ fun PhotoWidgetConfigureContentTab(
         canSort = photoWidget.canSort,
         onPhotoPickerClick = onPhotoPickerClick,
         onDirPickerClick = onDirPickerClick,
+        onGifPickerClick = onGifPickerClick,
         onPhotoClick = onPhotoClick,
         onReorderFinish = onReorderFinish,
         removedPhotos = photoWidget.removedPhotos,
@@ -167,6 +175,7 @@ private fun PhotoPicker(
     canSort: Boolean,
     onPhotoPickerClick: () -> Unit,
     onDirPickerClick: () -> Unit,
+    onGifPickerClick: () -> Unit,
     onPhotoClick: (LocalPhoto) -> Unit,
     onReorderFinish: (List<LocalPhoto>) -> Unit,
     removedPhotos: List<LocalPhoto>,
@@ -265,6 +274,7 @@ private fun PhotoPicker(
                         when (source) {
                             PhotoWidgetSource.PHOTOS -> onPhotoPickerClick()
                             PhotoWidgetSource.DIRECTORY -> onDirPickerClick()
+                            PhotoWidgetSource.GIF -> onGifPickerClick()
                         }
                     },
                     shapes = ButtonDefaults.shapes(),
@@ -279,6 +289,7 @@ private fun PhotoPicker(
                             id = when (source) {
                                 PhotoWidgetSource.PHOTOS -> R.string.photo_widget_configure_pick_photo
                                 PhotoWidgetSource.DIRECTORY -> R.string.photo_widget_configure_pick_folder
+                                PhotoWidgetSource.GIF -> R.string.photo_widget_configure_pick_gif
                             },
                         ),
                         textAlign = TextAlign.Center,
@@ -344,7 +355,9 @@ private fun PhotoPicker(
         ) {
             RemovedPhotosPicker(
                 title = when (source) {
-                    PhotoWidgetSource.PHOTOS -> stringResource(
+                    PhotoWidgetSource.PHOTOS,
+                    PhotoWidgetSource.GIF,
+                    -> stringResource(
                         R.string.photo_widget_configure_photos_pending_deletion,
                     )
 
@@ -439,6 +452,7 @@ private fun PhotoWidgetConfigureContentTabPreview() {
             onImportClick = {},
             onPhotoPickerClick = {},
             onDirPickerClick = {},
+            onGifPickerClick = {},
             onPhotoClick = {},
             onReorderFinish = {},
             onRemovedPhotoClick = {},
@@ -461,6 +475,7 @@ private fun PhotoWidgetConfigureContentTabDirectoryPreview() {
             onImportClick = {},
             onPhotoPickerClick = {},
             onDirPickerClick = {},
+            onGifPickerClick = {},
             onPhotoClick = {},
             onReorderFinish = {},
             onRemovedPhotoClick = {},

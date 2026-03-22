@@ -85,7 +85,9 @@
     <string name="photo_widget_source_photos">Photos</string>
     <string name="photo_widget_source_directory">Dossier</string>
     <string name="photo_widget_source_photos_description">Choisissez une ou plusieurs photos à l\'aide du sélecteur de galerie par défaut.</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Choisissez un ou plusieurs dossiers à synchroniser. Les photos sont ajoutées automatiquement et mises à jour à intervalles réguliers.</string>
+    <string name="photo_widget_source_gif_description">Choisissez un fichier GIF. Ses images seront extraites et utilisées comme photos individuelles.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
     <string name="photo_widget_aspect_ratio_shape">Formes</string>
@@ -124,6 +126,7 @@
     <string name="photo_widget_configure_photos_excluded">Supprimé du widget</string>
     <string name="photo_widget_configure_pick_photo">Choisir des photos</string>
     <string name="photo_widget_configure_pick_folder">Choisir un dossier</string>
+    <string name="photo_widget_configure_pick_gif">Choisir un GIF</string>
     <string name="photo_widget_configure_change_source">Changer la source</string>
     <string name="photo_widget_configure_select_cycling_mode">Minuteur photo</string>
     <string name="photo_widget_configure_cycling_mode_interval">Intervalle</string>

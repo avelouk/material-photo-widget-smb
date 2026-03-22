@@ -14,7 +14,9 @@ class RemoveCurrentPhotoUseCase @Inject constructor(
         if (photoWidgetStorage.getWidgetPhotoCountEstimate(appWidgetId = appWidgetId) <= 1) return false
 
         when (photoWidgetStorage.getWidgetSource(appWidgetId = appWidgetId)) {
-            PhotoWidgetSource.PHOTOS -> {
+            PhotoWidgetSource.PHOTOS,
+            PhotoWidgetSource.GIF,
+            -> {
                 photoWidgetStorage.appendPhotosForDeletion(
                     appWidgetId = appWidgetId,
                     photoIds = listOf(currentPhotoId),

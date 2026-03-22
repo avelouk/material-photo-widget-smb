@@ -85,7 +85,9 @@
     <string name="photo_widget_source_photos">Fotoğraflar</string>
     <string name="photo_widget_source_directory">Klasör</string>
     <string name="photo_widget_source_photos_description">Varsayılan galeri seçiciyi kullanarak bir veya daha fazla fotoğraf seçin.</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Senkronize etmek için bir veya daha fazla klasör seçin. Fotoğraflar otomatik olarak eklenir ve düzenli aralıklarla yenilenir.</string>
+    <string name="photo_widget_source_gif_description">Bir GIF dosyası seçin. Kareleri çıkarılacak ve ayrı fotoğraflar olarak kullanılacaktır.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Biçim</string>
     <string name="photo_widget_aspect_ratio_shape">Şekiller</string>
@@ -124,6 +126,7 @@
     <string name="photo_widget_configure_photos_excluded">Widget\'tan silindi</string>
     <string name="photo_widget_configure_pick_photo">Fotoğraf seç</string>
     <string name="photo_widget_configure_pick_folder">Klasörü seç</string>
+    <string name="photo_widget_configure_pick_gif">GIF seç</string>
     <string name="photo_widget_configure_change_source">Kaynağı değiştir</string>
     <string name="photo_widget_configure_select_cycling_mode">Fotoğraf Zamanlayıcı</string>
     <string name="photo_widget_configure_cycling_mode_interval">Aralık</string>

@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import pl.droidsonroids.gif.GifDrawable
 import timber.log.Timber
 
 class PhotoWidgetInternalFileStorage @Inject constructor(
@@ -95,6 +96,57 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
                     null
                 }
             }.getOrNull()
+        }
+    }
+
+    suspend fun newWidgetPhotosFromGif(directoryName: String, source: Uri): List<LocalPhoto> {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                Timber.d("New widget photos from GIF: $source (directoryName=$directoryName)")
+
+                val widgetDir = getWidgetDir(directoryName = directoryName)
+                val originalPhotosDir: File = File("$widgetDir/original").apply { mkdirs() }
+
+                val gifDrawable: GifDrawable = contentResolver.openInputStream(source)
+                    ?.use { input -> GifDrawable(input.readBytes()) }
+                    ?: return@withContext emptyList()
+
+                val frameCount = gifDrawable.numberOfFrames
+                Timber.d("GIF has $frameCount frames")
+
+                val photos = mutableListOf<LocalPhoto>()
+
+                for (i in 0 until frameCount) {
+                    val frameBitmap = gifDrawable.seekToFrameAndGet(i)
+                    val newPhotoName = "${UUID.randomUUID()}.png"
+
+                    val originalPhoto = File("$originalPhotosDir/$newPhotoName")
+                    val croppedPhoto = File("$widgetDir/$newPhotoName")
+
+                    listOf(originalPhoto, croppedPhoto).forEach { file ->
+                        file.runWithFileOutputStream { fos ->
+                            frameBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                        }
+                    }
+
+                    if (originalPhoto.exists() && croppedPhoto.exists()) {
+                        photos.add(
+                            LocalPhoto(
+                                photoId = newPhotoName,
+                                croppedPhotoPath = croppedPhoto.path,
+                                originalPhotoPath = originalPhoto.path,
+                            ),
+                        )
+                    }
+                }
+
+                gifDrawable.recycle()
+
+                return@withContext photos
+            }.getOrElse { throwable ->
+                Timber.e(throwable, "Failed to extract GIF frames")
+                emptyList()
+            }
         }
     }
 

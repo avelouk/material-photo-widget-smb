@@ -275,6 +275,34 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
         }
     }
 
+    fun gifPicked(source: Uri?) {
+        if (source == null) return
+
+        viewModelScope.launch {
+            state.first { !it.isProcessing }
+
+            _state.update { current -> current.copy(isProcessing = true) }
+
+            val newPhotos = photoWidgetStorage.newWidgetPhotosFromGif(
+                appWidgetId = appWidgetId,
+                source = source,
+            )
+
+            val message = if (newPhotos.isEmpty()) {
+                PhotoWidgetConfigureState.Message.ImportFailed
+            } else {
+                null
+            }
+
+            _state.getAndUpdate { current ->
+                current.copy(
+                    isProcessing = false,
+                    cropQueue = emptyList(),
+                ) + newPhotos + message
+            }
+        }
+    }
+
     fun dirPicked(source: Uri?) {
         if (source == null) return
 

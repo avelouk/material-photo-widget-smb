@@ -24,7 +24,9 @@ class DuplicatePhotoWidgetUseCase @Inject constructor(
         )
 
         when (appWidget.source) {
-            PhotoWidgetSource.PHOTOS -> {
+            PhotoWidgetSource.PHOTOS,
+            PhotoWidgetSource.GIF,
+            -> {
                 photoWidgetStorage.duplicateWidgetDir(
                     originalAppWidgetId = originalAppWidgetId,
                     newAppWidgetId = newAppWidgetId,

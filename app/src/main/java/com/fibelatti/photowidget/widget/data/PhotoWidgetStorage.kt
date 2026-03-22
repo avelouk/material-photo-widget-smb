@@ -120,6 +120,11 @@ class PhotoWidgetStorage @Inject constructor(
         return internalFileStorage.newWidgetPhoto(directoryName = directoryName, source = source)
     }
 
+    suspend fun newWidgetPhotosFromGif(appWidgetId: Int, source: Uri): List<LocalPhoto> {
+        val directoryName = getOrCreateDirectoryName(appWidgetId)
+        return internalFileStorage.newWidgetPhotosFromGif(directoryName = directoryName, source = source)
+    }
+
     suspend fun getNewDirPhotos(dirUri: Uri, sorting: DirectorySorting): List<LocalPhoto>? {
         if (dirUri.toString().endsWith("DCIM%2FCamera", ignoreCase = true)) {
             return null
@@ -338,7 +343,9 @@ class PhotoWidgetStorage @Inject constructor(
 
     suspend fun getExcludedPhotoIds(appWidgetId: Int): Set<String> {
         return when (getWidgetSource(appWidgetId = appWidgetId)) {
-            PhotoWidgetSource.PHOTOS -> {
+            PhotoWidgetSource.PHOTOS,
+            PhotoWidgetSource.GIF,
+            -> {
                 pendingDeletionPhotosDao.getPendingDeletionPhotos(widgetId = appWidgetId)
                     .map { it.photoId }
                     .toSet()

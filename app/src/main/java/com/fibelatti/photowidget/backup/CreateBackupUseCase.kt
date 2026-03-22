@@ -33,7 +33,10 @@ class CreateBackupUseCase @Inject constructor(
         val widgetsToExport: Map<Int, PhotoWidget> = photoWidgetStorage.getKnownWidgetIds()
             .first()
             .associateWith { id: Int -> loadPhotoWidgetUseCase(appWidgetId = id).first() }
-            .filterValues { widget: PhotoWidget -> widget.source == PhotoWidgetSource.PHOTOS }
+            .filterValues { widget: PhotoWidget ->
+                widget.source in
+                    listOf(PhotoWidgetSource.PHOTOS, PhotoWidgetSource.GIF)
+            }
 
         val backupDir: File = createBackupFiles()
             .apply {

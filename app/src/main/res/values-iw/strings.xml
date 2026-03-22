@@ -87,7 +87,9 @@
     <string name="photo_widget_source_photos">תמונות</string>
     <string name="photo_widget_source_directory">תיקייה</string>
     <string name="photo_widget_source_photos_description">בחר תמונה אחת או יותר באמצעות בורר הגלריה המוגדר כברירת מחדל.</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">בחר תיקייה אחת או יותר לסנכרון. התמונות מתווספות אוטומטית ומתעדכנות במרווחי זמן קבועים.</string>
+    <string name="photo_widget_source_gif_description">בחר קובץ GIF. הפריימים שלו ייחלצו וישמשו כתמונות בודדות.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">פורמט</string>
     <string name="photo_widget_aspect_ratio_shape">צורות</string>
@@ -126,6 +128,7 @@
     <string name="photo_widget_configure_photos_excluded">החרג מהווידג\'ט</string>
     <string name="photo_widget_configure_pick_photo">בחר תמונות</string>
     <string name="photo_widget_configure_pick_folder">בחר תיקיה</string>
+    <string name="photo_widget_configure_pick_gif">בחר GIF</string>
     <string name="photo_widget_configure_change_source">שנה מקור</string>
     <string name="photo_widget_configure_select_cycling_mode">טיימר צילום</string>
     <string name="photo_widget_configure_cycling_mode_interval">מרווח זמן</string>

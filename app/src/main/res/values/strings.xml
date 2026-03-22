@@ -99,8 +99,10 @@
     <!-- Source -->
     <string name="photo_widget_source_photos">Photos</string>
     <string name="photo_widget_source_directory">Folder</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_photos_description">Choose one or more photos using your default gallery picker.</string>
     <string name="photo_widget_source_directory_description">Choose one or more folders to sync. Photos are added automatically and refreshed at regular intervals.</string>
+    <string name="photo_widget_source_gif_description">Choose a GIF file. Its frames will be extracted and used as individual photos.</string>
 
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
@@ -151,6 +153,7 @@
 
     <string name="photo_widget_configure_pick_photo">Pick photos</string>
     <string name="photo_widget_configure_pick_folder">Pick folder</string>
+    <string name="photo_widget_configure_pick_gif">Pick GIF</string>
     <string name="photo_widget_configure_change_source">Change source</string>
 
     <string name="photo_widget_configure_select_cycling_mode">Photo timer</string>

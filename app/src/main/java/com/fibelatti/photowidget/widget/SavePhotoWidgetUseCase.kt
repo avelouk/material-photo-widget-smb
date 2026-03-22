@@ -91,7 +91,7 @@ class SavePhotoWidgetUseCase @Inject constructor(
                 )
             }
 
-            PhotoWidgetSource.PHOTOS == photoWidget.source -> {
+            PhotoWidgetSource.PHOTOS == photoWidget.source || PhotoWidgetSource.GIF == photoWidget.source -> {
                 photoWidgetStorage.replacePhotosForDeletion(
                     appWidgetId = appWidgetId,
                     photoIds = removedPhotoIds,
