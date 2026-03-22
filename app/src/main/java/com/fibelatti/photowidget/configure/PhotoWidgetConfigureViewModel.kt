@@ -283,6 +283,14 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
             _state.update { current -> current.copy(isProcessing = true) }
 
+            val existingPhotos = _state.value.photoWidget.photos
+            if (existingPhotos.isNotEmpty()) {
+                photoWidgetStorage.deletePhotos(
+                    appWidgetId = appWidgetId,
+                    photoIds = existingPhotos.map { it.photoId },
+                )
+            }
+
             val newPhotos = photoWidgetStorage.newWidgetPhotosFromGif(
                 appWidgetId = appWidgetId,
                 source = source,
@@ -298,7 +306,12 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
                 current.copy(
                     isProcessing = false,
                     cropQueue = emptyList(),
-                ) + newPhotos + message
+                    photoWidget = current.photoWidget.copy(
+                        photos = newPhotos,
+                        currentPhoto = newPhotos.firstOrNull(),
+                        removedPhotos = emptyList(),
+                    ),
+                ) + message
             }
         }
     }

@@ -26,6 +26,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
@@ -34,8 +36,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -93,6 +98,8 @@ fun PhotoWidgetConfigureContentTab(
         onResult = viewModel::gifPicked,
     )
 
+    var showGifReplaceDialog by rememberSaveable { mutableStateOf(false) }
+
     PhotoWidgetConfigureContentTab(
         photoWidget = state.photoWidget,
         onChangeSourceClick = sourceSheetState::showBottomSheet,
@@ -100,7 +107,13 @@ fun PhotoWidgetConfigureContentTab(
         onImportClick = importFromWidgetSheetState::showBottomSheet,
         onPhotoPickerClick = { photoPickerLauncher.launch(input = "image/*") },
         onDirPickerClick = { dirPickerLauncher.launch(input = null) },
-        onGifPickerClick = { gifPickerLauncher.launch(input = "image/gif") },
+        onGifPickerClick = {
+            if (state.photoWidget.photos.isNotEmpty()) {
+                showGifReplaceDialog = true
+            } else {
+                gifPickerLauncher.launch(input = "image/gif")
+            }
+        },
         onPhotoClick = viewModel::previewPhoto,
         onReorderFinish = viewModel::reorderPhotos,
         onRemovedPhotoClick = { photo ->
@@ -108,6 +121,34 @@ fun PhotoWidgetConfigureContentTab(
         },
         modifier = modifier,
     )
+
+    if (showGifReplaceDialog) {
+        AlertDialog(
+            onDismissRequest = { showGifReplaceDialog = false },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showGifReplaceDialog = false
+                        gifPickerLauncher.launch(input = "image/gif")
+                    },
+                    shapes = ButtonDefaults.shapes(),
+                ) {
+                    Text(text = stringResource(id = R.string.photo_widget_action_continue))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showGifReplaceDialog = false },
+                    shapes = ButtonDefaults.shapes(),
+                ) {
+                    Text(text = stringResource(id = R.string.photo_widget_action_cancel))
+                }
+            },
+            text = {
+                Text(text = stringResource(id = R.string.photo_widget_configure_pick_gif_replace))
+            },
+        )
+    }
 
     // region Sheets
     PhotoWidgetSourceBottomSheet(

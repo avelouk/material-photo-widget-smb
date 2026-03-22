@@ -128,6 +128,7 @@
     <string name="photo_widget_configure_pick_photo">Alege fotografiile</string>
     <string name="photo_widget_configure_pick_folder">Alege dosarul</string>
     <string name="photo_widget_configure_pick_gif">Alege GIF</string>
+    <string name="photo_widget_configure_pick_gif_replace">Alegerea altui GIF îl va înlocui pe cel existent, continui?</string>
     <string name="photo_widget_configure_change_source">Schimbă sursa</string>
     <string name="photo_widget_configure_select_cycling_mode">Temporizator poză</string>
     <string name="photo_widget_configure_cycling_mode_interval">Interval</string>
