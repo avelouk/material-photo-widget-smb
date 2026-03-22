@@ -303,15 +303,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             }
 
             _state.getAndUpdate { current ->
-                current.copy(
-                    isProcessing = false,
-                    cropQueue = emptyList(),
-                    photoWidget = current.photoWidget.copy(
-                        photos = newPhotos,
-                        currentPhoto = newPhotos.firstOrNull(),
-                        removedPhotos = emptyList(),
-                    ),
-                ) + message
+                current.copy(isProcessing = false) + newPhotos + message
             }
         }
     }
