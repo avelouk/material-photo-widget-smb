@@ -80,7 +80,7 @@ val PhotoWidget.canSort: Boolean
     get() = source in listOf(PhotoWidgetSource.PHOTOS) && photos.size > 1 && !shuffle
 
 val PhotoWidget.canShuffle: Boolean
-    get() = photos.size > 1
+    get() = photos.size > 1 && source != PhotoWidgetSource.GIF
 
 val PhotoWidget.tapActionIncreaseBrightness: Boolean
     get() = tapActions.increaseBrightness
