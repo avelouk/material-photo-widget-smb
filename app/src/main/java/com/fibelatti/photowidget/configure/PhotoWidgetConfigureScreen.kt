@@ -399,15 +399,17 @@ private fun PhotoWidgetViewer(
                     areaColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
 
-                EditingControls(
-                    onCropClick = { onCropClick(selectedPhoto) },
-                    onRemoveClick = { onRemoveClick(selectedPhoto) },
-                    showMoveControls = photoWidget.canSort,
-                    moveLeftEnabled = photoWidget.photos.indexOf(selectedPhoto) != 0,
-                    onMoveLeftClick = { onMoveLeftClick(selectedPhoto) },
-                    moveRightEnabled = photoWidget.photos.indexOf(selectedPhoto) < photoWidget.photos.size - 1,
-                    onMoveRightClick = { onMoveRightClick(selectedPhoto) },
-                )
+                if (photoWidget.source != PhotoWidgetSource.GIF) {
+                    EditingControls(
+                        onCropClick = { onCropClick(selectedPhoto) },
+                        onRemoveClick = { onRemoveClick(selectedPhoto) },
+                        showMoveControls = photoWidget.canSort,
+                        moveLeftEnabled = photoWidget.photos.indexOf(selectedPhoto) != 0,
+                        onMoveLeftClick = { onMoveLeftClick(selectedPhoto) },
+                        moveRightEnabled = photoWidget.photos.indexOf(selectedPhoto) < photoWidget.photos.size - 1,
+                        onMoveRightClick = { onMoveRightClick(selectedPhoto) },
+                    )
+                }
             }
         }
 
