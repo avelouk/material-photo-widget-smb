@@ -233,8 +233,21 @@ private fun PhotoWidgetTapAction.coerceTapAction(source: PhotoWidgetSource): Pho
             PhotoWidgetTapAction.ViewFullScreen()
         }
 
+        PhotoWidgetSource.GIF if !isAllowedForGifWidget() -> {
+            PhotoWidgetTapAction.None
+        }
+
         else -> this
     }.also {
         Timber.tag("PhotoWidgetTapAction").d("Check result — tapAction=$it")
     }
+}
+
+private fun PhotoWidgetTapAction.isAllowedForGifWidget(): Boolean {
+    return this is PhotoWidgetTapAction.None ||
+        // this is PhotoWidgetTapAction.ToggleCycling || // TODO: Conditional broadcast to toggle widget playback
+        this is PhotoWidgetTapAction.AppShortcut ||
+        this is PhotoWidgetTapAction.AppFolder ||
+        this is PhotoWidgetTapAction.UrlShortcut ||
+        this is PhotoWidgetTapAction.FileShortcut
 }
