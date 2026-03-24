@@ -13,6 +13,7 @@ import com.fibelatti.photowidget.model.TapActionArea
 import com.fibelatti.photowidget.model.WidgetOffset
 import com.fibelatti.photowidget.model.WidgetPhotos
 import com.fibelatti.photowidget.model.allWidgetPhotos
+import com.fibelatti.photowidget.platform.UriPermissionGrantor
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -38,6 +39,7 @@ class PhotoWidgetStorage @Inject constructor(
     private val pendingDeletionPhotosDao: PendingDeletionWidgetPhotoDao,
     private val excludedPhotosDao: ExcludedWidgetPhotoDao,
     private val widgetDirectoryDao: WidgetDirectoryDao,
+    private val uriPermissionGrantor: UriPermissionGrantor,
 ) {
 
     private val migrationMutex: Mutex = Mutex()
@@ -146,9 +148,9 @@ class PhotoWidgetStorage @Inject constructor(
     fun loadWidgetPhotos(appWidgetId: Int): Flow<WidgetPhotos> = flow {
         Timber.i("Retrieving photos (appWidgetId=$appWidgetId)")
 
-        val excludedPhotos = getExcludedPhotoIds(appWidgetId = appWidgetId)
+        val excludedPhotos: Set<String> = getExcludedPhotoIds(appWidgetId = appWidgetId)
 
-        val local = getLocalWidgetPhotos(
+        val local: WidgetPhotos = getLocalWidgetPhotos(
             appWidgetId = appWidgetId,
             excludedPhotos = excludedPhotos,
         )
@@ -157,7 +159,7 @@ class PhotoWidgetStorage @Inject constructor(
             emit(local)
         }
 
-        val source = getSourceWidgetPhotos(
+        val source: WidgetPhotos = getSourceWidgetPhotos(
             appWidgetId = appWidgetId,
             excludedPhotos = excludedPhotos,
         )
@@ -186,19 +188,19 @@ class PhotoWidgetStorage @Inject constructor(
     ): WidgetPhotos {
         Timber.d("Retrieving photos from source")
 
-        val source = getWidgetSource(appWidgetId = appWidgetId)
+        val source: PhotoWidgetSource = getWidgetSource(appWidgetId = appWidgetId)
 
         Timber.d("Widget source: $source")
 
         val directoryName: String = getOrCreateDirectoryName(appWidgetId)
-        val croppedPhotos = internalFileStorage.getWidgetPhotos(
+        val croppedPhotos: Map<String, LocalPhoto> = internalFileStorage.getWidgetPhotos(
             directoryName = directoryName,
             source = source,
         ).associateBy { it.photoId }
 
         Timber.d("Cropped photos found: ${croppedPhotos.size}")
 
-        val loadedPhotos = if (PhotoWidgetSource.DIRECTORY == source) {
+        val loadedPhotos: Map<Boolean, List<LocalPhoto>> = if (PhotoWidgetSource.DIRECTORY == source) {
             externalFileStorage.getPhotos(
                 dirUri = getWidgetSyncDir(appWidgetId),
                 croppedPhotos = croppedPhotos,
@@ -208,7 +210,7 @@ class PhotoWidgetStorage @Inject constructor(
             // Check for legacy storage value
             // Migrate found value to the new storage
             // or retrieve it from the new storage if not found
-            val widgetOrder = sharedPreferences.getWidgetOrder(appWidgetId = appWidgetId)
+            val widgetOrder: List<String> = sharedPreferences.getWidgetOrder(appWidgetId = appWidgetId)
                 ?.also { saveWidgetOrder(appWidgetId = appWidgetId, order = it.toSet()) }
                 ?: orderDao.getWidgetOrder(widgetId = appWidgetId)
 
@@ -235,13 +237,20 @@ class PhotoWidgetStorage @Inject constructor(
     ): WidgetPhotos {
         Timber.d("Retrieving photos from cache")
 
-        val localPhotos = localPhotoDao.getLocalPhotos(widgetId = appWidgetId)
+        val source: PhotoWidgetSource = getWidgetSource(appWidgetId)
+
+        val localPhotos: Map<Boolean, List<LocalPhoto>> = localPhotoDao.getLocalPhotos(widgetId = appWidgetId)
             .map {
                 LocalPhoto(
                     photoId = it.photoId,
                     croppedPhotoPath = it.croppedPhotoPath,
                     originalPhotoPath = it.originalPhotoPath,
                     externalUri = it.externalUri?.let(Uri::parse),
+                    launcherUri = if (source == PhotoWidgetSource.GIF && it.croppedPhotoPath != null) {
+                        uriPermissionGrantor(it.croppedPhotoPath)
+                    } else {
+                        null
+                    },
                     timestamp = it.timestamp,
                 )
             }

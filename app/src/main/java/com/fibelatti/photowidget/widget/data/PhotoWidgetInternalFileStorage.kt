@@ -219,10 +219,17 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
             widgetDir.list(fileNameFilter)
                 .orEmpty()
                 .map { fileName ->
+                    val croppedPhotoPath = "$widgetDir/$fileName"
+
                     LocalPhoto(
                         photoId = fileName,
-                        croppedPhotoPath = "$widgetDir/$fileName",
+                        croppedPhotoPath = croppedPhotoPath,
                         originalPhotoPath = "$originalPhotosDir/$fileName",
+                        launcherUri = if (source == PhotoWidgetSource.GIF) {
+                            uriPermissionGrantor(path = croppedPhotoPath)
+                        } else {
+                            null
+                        },
                     )
                 }
         }
