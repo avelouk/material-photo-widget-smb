@@ -97,6 +97,7 @@ class LoadPhotoWidgetUseCase @Inject constructor(
             verticalOffset = verticalOffset,
             padding = padding,
             text = getWidgetText(appWidgetId = appWidgetId),
+            gifInterval = getWidgetGifInterval(appWidgetId = appWidgetId),
             deletionTimestamp = getWidgetDeletionTimestamp(appWidgetId = appWidgetId),
         )
     }

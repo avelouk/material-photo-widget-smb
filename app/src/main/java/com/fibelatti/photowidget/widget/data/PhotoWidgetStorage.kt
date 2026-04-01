@@ -2,6 +2,7 @@ package com.fibelatti.photowidget.widget.data
 
 import android.net.Uri
 import com.fibelatti.photowidget.model.DirectorySorting
+import com.fibelatti.photowidget.model.GifFrames
 import com.fibelatti.photowidget.model.LocalPhoto
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.model.PhotoWidgetBorder
@@ -122,7 +123,7 @@ class PhotoWidgetStorage @Inject constructor(
         return internalFileStorage.newWidgetPhoto(directoryName = directoryName, source = source)
     }
 
-    suspend fun newWidgetPhotosFromGif(appWidgetId: Int, source: Uri): List<LocalPhoto> {
+    suspend fun newWidgetPhotosFromGif(appWidgetId: Int, source: Uri): GifFrames {
         val directoryName = getOrCreateDirectoryName(appWidgetId)
         return internalFileStorage.newWidgetPhotosFromGif(directoryName = directoryName, source = source)
     }
@@ -354,7 +355,7 @@ class PhotoWidgetStorage @Inject constructor(
         return when (getWidgetSource(appWidgetId = appWidgetId)) {
             PhotoWidgetSource.PHOTOS,
             PhotoWidgetSource.GIF,
-            -> {
+                -> {
                 pendingDeletionPhotosDao.getPendingDeletionPhotos(widgetId = appWidgetId)
                     .map { it.photoId }
                     .toSet()
@@ -564,6 +565,14 @@ class PhotoWidgetStorage @Inject constructor(
 
     fun getWidgetText(appWidgetId: Int): PhotoWidgetText {
         return sharedPreferences.getWidgetText(appWidgetId = appWidgetId)
+    }
+
+    fun saveWidgetGifInterval(appWidgetId: Int, interval: Long) {
+        sharedPreferences.saveWidgetGifInterval(appWidgetId = appWidgetId, interval = interval)
+    }
+
+    fun getWidgetGifInterval(appWidgetId: Int): Long {
+        return sharedPreferences.getWidgetGifInterval(appWidgetId = appWidgetId)
     }
 
     fun saveWidgetDeletionTimestamp(appWidgetId: Int, timestamp: Long?) {

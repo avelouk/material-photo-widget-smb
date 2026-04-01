@@ -6,6 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fibelatti.photowidget.model.DirectorySorting
+import com.fibelatti.photowidget.model.GifFrames
 import com.fibelatti.photowidget.model.LocalPhoto
 import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
@@ -291,19 +292,22 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
                 )
             }
 
-            val newPhotos = photoWidgetStorage.newWidgetPhotosFromGif(
+            val gifFrames: GifFrames = photoWidgetStorage.newWidgetPhotosFromGif(
                 appWidgetId = appWidgetId,
                 source = source,
             )
 
-            val message = if (newPhotos.isEmpty()) {
+            val message = if (gifFrames.frames.isEmpty()) {
                 PhotoWidgetConfigureState.Message.ImportFailed
             } else {
                 null
             }
 
             _state.getAndUpdate { current ->
-                current.copy(isProcessing = false) + newPhotos + message
+                current.copy(
+                    photoWidget = current.photoWidget.copy(gifInterval = gifFrames.interval.toLong()),
+                    isProcessing = false,
+                ) + gifFrames.frames + message
             }
         }
     }

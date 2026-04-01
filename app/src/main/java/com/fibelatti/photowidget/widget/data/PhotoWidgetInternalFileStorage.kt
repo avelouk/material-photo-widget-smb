@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import com.fibelatti.photowidget.model.GifFrames
 import com.fibelatti.photowidget.model.LocalPhoto
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.platform.ImageFormat
@@ -99,7 +100,7 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
         }
     }
 
-    suspend fun newWidgetPhotosFromGif(directoryName: String, source: Uri): List<LocalPhoto> {
+    suspend fun newWidgetPhotosFromGif(directoryName: String, source: Uri): GifFrames {
         return withContext(Dispatchers.IO) {
             runCatching {
                 Timber.d("New widget photos from GIF: $source (directoryName=$directoryName)")
@@ -109,10 +110,11 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
 
                 val gifDrawable: GifDrawable = contentResolver.openInputStream(source)
                     ?.use { input -> GifDrawable(input.readBytes()) }
-                    ?: return@withContext emptyList()
+                    ?: return@withContext GifFrames.EMPTY
 
-                val frameCount = gifDrawable.numberOfFrames
-                Timber.d("GIF has $frameCount frames")
+                val frameCount: Int = gifDrawable.numberOfFrames
+                val duration: Int = gifDrawable.duration
+                Timber.d("GIF has $frameCount frames, over $duration milliseconds")
 
                 val photos = mutableListOf<LocalPhoto>()
 
@@ -142,10 +144,13 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
 
                 gifDrawable.recycle()
 
-                return@withContext photos
+                return@withContext GifFrames(
+                    frames = photos,
+                    interval = duration / frameCount,
+                )
             }.getOrElse { throwable ->
                 Timber.e(throwable, "Failed to extract GIF frames")
-                emptyList()
+                GifFrames.EMPTY
             }
         }
     }
