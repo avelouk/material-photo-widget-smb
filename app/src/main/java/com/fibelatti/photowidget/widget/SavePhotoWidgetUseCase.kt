@@ -17,6 +17,7 @@ import timber.log.Timber
 class SavePhotoWidgetUseCase @Inject constructor(
     private val photoWidgetStorage: PhotoWidgetStorage,
     private val photoWidgetAlarmManager: PhotoWidgetAlarmManager,
+    private val prepareGifPhotosUseCase: PrepareGifPhotosUseCase,
 ) {
 
     suspend operator fun invoke(
@@ -36,6 +37,10 @@ class SavePhotoWidgetUseCase @Inject constructor(
 
         // Draft widgets won't have alarms yet...
         if (PhotoWidget.isDraftWidgetId(appWidgetId)) return
+
+        if (PhotoWidgetSource.GIF == photoWidget.source) {
+            prepareGifPhotosUseCase(appWidgetId = appWidgetId, photoWidget = photoWidget)
+        }
 
         if (photoWidget.photoCycleEnabled) {
             photoWidgetAlarmManager.setup(appWidgetId = appWidgetId)
