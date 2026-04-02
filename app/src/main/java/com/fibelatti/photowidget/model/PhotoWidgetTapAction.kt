@@ -245,7 +245,7 @@ private fun PhotoWidgetTapAction.coerceTapAction(source: PhotoWidgetSource): Pho
 
 private fun PhotoWidgetTapAction.isAllowedForGifWidget(): Boolean {
     return this is PhotoWidgetTapAction.None ||
-        // this is PhotoWidgetTapAction.ToggleCycling || // TODO: Conditional broadcast to toggle widget playback
+        this is PhotoWidgetTapAction.ToggleCycling ||
         this is PhotoWidgetTapAction.AppShortcut ||
         this is PhotoWidgetTapAction.AppFolder ||
         this is PhotoWidgetTapAction.UrlShortcut ||

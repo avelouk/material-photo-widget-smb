@@ -13,24 +13,50 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.ServiceCompat
 import androidx.core.content.getSystemService
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.fibelatti.photowidget.R
+import com.fibelatti.photowidget.configure.appWidgetId
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import timber.log.Timber
 
+@AndroidEntryPoint
 class KeepAliveService : Service() {
+
+    @Inject
+    lateinit var gifPlaybackController: GifPlaybackController
+
+    private val setupGifBroadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context, intent: Intent) {
+            logger.i("SetupGifBroadcastReceiver: Broadcast received (action=${intent.action})")
+
+            if (ACTION_SETUP_GIF == intent.action) {
+                gifPlaybackController.setupWidgetGif(appWidgetId = intent.appWidgetId)
+            }
+        }
+    }
+
+    private val toggleBroadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context, intent: Intent) {
+            logger.i("ToggleBroadcastReceiver: Broadcast received (action=${intent.action})")
+
+            when (intent.action) {
+                ACTION_RESUME_GIF -> gifPlaybackController.setPlaybackAllowed(true)
+                ACTION_PAUSE_GIF -> gifPlaybackController.setPlaybackAllowed(false)
+            }
+        }
+    }
 
     private val screenStateBroadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
-            logger.i("Broadcast received (action=${intent.action})")
+            logger.i("ScreenStateBroadcastReceiver: Broadcast received (action=${intent.action})")
 
             when (intent.action) {
-                Intent.ACTION_SCREEN_ON -> {
-                    logger.d("Screen on: put widgets to work.")
-                }
-
-                Intent.ACTION_SCREEN_OFF -> {
-                    logger.d("Screen off: put widgets to sleep.")
-                }
+                Intent.ACTION_SCREEN_ON -> gifPlaybackController.setPlaybackAllowed(true)
+                Intent.ACTION_SCREEN_OFF -> gifPlaybackController.setPlaybackAllowed(false)
             }
         }
     }
@@ -44,10 +70,7 @@ class KeepAliveService : Service() {
             return
         }
 
-        registerReceiver(
-            screenStateBroadcastReceiver,
-            IntentFilter(Intent.ACTION_SCREEN_ON).apply { addAction(Intent.ACTION_SCREEN_OFF) },
-        )
+        registerReceivers()
 
         logger.d("Service is running...")
     }
@@ -55,14 +78,15 @@ class KeepAliveService : Service() {
     override fun onDestroy() {
         logger.i("Destroying keep-alive service.")
 
-        try {
-            unregisterReceiver(screenStateBroadcastReceiver)
-        } catch (_: Exception) {
-            // An exception here only means that the receiver didn't get a chance to be registered
-        }
+        unregisterReceivers()
+        gifPlaybackController.tearDown()
 
         super.onDestroy()
     }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
+
+    override fun onBind(intent: Intent): IBinder? = null
 
     private fun startForeground(): Boolean {
         try {
@@ -107,15 +131,52 @@ class KeepAliveService : Service() {
             .build()
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
+    private fun registerReceivers() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            /* receiver = */ setupGifBroadcastReceiver,
+            /* filter = */ IntentFilter(ACTION_SETUP_GIF),
+        )
 
-    override fun onBind(intent: Intent): IBinder? = null
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            /* receiver = */ toggleBroadcastReceiver,
+            /* filter = */ IntentFilter(ACTION_RESUME_GIF).apply { addAction(ACTION_PAUSE_GIF) },
+        )
+
+        registerReceiver(
+            /* receiver = */ screenStateBroadcastReceiver,
+            /* filter = */ IntentFilter(Intent.ACTION_SCREEN_ON).apply { addAction(Intent.ACTION_SCREEN_OFF) },
+        )
+    }
+
+    private fun unregisterReceivers() {
+        try {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(setupGifBroadcastReceiver)
+        } catch (_: Exception) {
+            // An exception here only means that the receiver didn't get a chance to be registered
+        }
+
+        try {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(toggleBroadcastReceiver)
+        } catch (_: Exception) {
+            // An exception here only means that the receiver didn't get a chance to be registered
+        }
+
+        try {
+            unregisterReceiver(screenStateBroadcastReceiver)
+        } catch (_: Exception) {
+            // An exception here only means that the receiver didn't get a chance to be registered
+        }
+    }
 
     companion object {
 
         private val logger: Timber.Tree = Timber.tag("KeepAliveService")
 
         private const val NOTIFICATION_CHANNEL_ID: String = "keep-alive-service"
+
+        private const val ACTION_SETUP_GIF = "ACTION_SETUP_GIF"
+        private const val ACTION_RESUME_GIF = "ACTION_RESUME_GIF"
+        private const val ACTION_PAUSE_GIF = "ACTION_PAUSE_GIF"
 
         private fun newIntent(context: Context): Intent {
             return Intent(context, KeepAliveService::class.java)
@@ -134,6 +195,27 @@ class KeepAliveService : Service() {
 
         fun stop(context: Context) {
             context.stopService(newIntent(context))
+        }
+
+        fun sendSetupGifBroadcast(context: Context, appWidgetId: Int) {
+            val intent: Intent = Intent(ACTION_SETUP_GIF).apply {
+                this.appWidgetId = appWidgetId
+            }
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+        }
+
+        fun sendResumeGifBroadcast(context: Context, appWidgetId: Int) {
+            val intent: Intent = Intent(ACTION_RESUME_GIF).apply {
+                this.appWidgetId = appWidgetId
+            }
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+        }
+
+        fun sendPauseGifBroadcast(context: Context, appWidgetId: Int) {
+            val intent: Intent = Intent(ACTION_PAUSE_GIF).apply {
+                this.appWidgetId = appWidgetId
+            }
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
         }
     }
 }

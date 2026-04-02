@@ -20,10 +20,12 @@ import com.fibelatti.photowidget.di.PhotoWidgetEntryPoint
 import com.fibelatti.photowidget.di.entryPoint
 import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
+import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.PhotoWidgetTapAction
 import com.fibelatti.photowidget.model.PhotoWidgetText
 import com.fibelatti.photowidget.model.tapActionDisableTap
 import com.fibelatti.photowidget.model.textToBitmap
+import com.fibelatti.photowidget.platform.KeepAliveService
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -174,6 +176,10 @@ class PhotoWidgetProvider : AppWidgetProvider() {
 
                 try {
                     appWidgetManager.updateAppWidget(appWidgetId, views)
+
+                    if (PhotoWidgetSource.GIF == photoWidget.source) {
+                        KeepAliveService.sendSetupGifBroadcast(context = context, appWidgetId = appWidgetId)
+                    }
                 } catch (ex: IllegalArgumentException) {
                     if (!recoveryMode) {
                         update(context = context, appWidgetId = appWidgetId, recoveryMode = true)
