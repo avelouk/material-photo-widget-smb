@@ -42,6 +42,8 @@ data class PhotoWidgetConfigureState(
         data object CancelWidget : Message()
 
         data object DraftSaved : Message()
+
+        data object KeepAliveRequired : Message()
     }
 }
 

@@ -104,6 +104,12 @@ class PhotoWidgetStorage @Inject constructor(
         return sharedPreferences.getWidgetSource(appWidgetId = appWidgetId)
     }
 
+    suspend fun hasActiveGifWidgets(): Boolean {
+        return getKnownWidgetIds().first().any { id ->
+            getWidgetSource(appWidgetId = id) == PhotoWidgetSource.GIF
+        }
+    }
+
     fun saveWidgetSyncedDir(appWidgetId: Int, dirUri: Set<Uri>) {
         externalFileStorage.takePersistableUriPermission(dirUri = dirUri)
         sharedPreferences.saveWidgetSyncedDir(appWidgetId = appWidgetId, dirUri = dirUri)
@@ -355,7 +361,7 @@ class PhotoWidgetStorage @Inject constructor(
         return when (getWidgetSource(appWidgetId = appWidgetId)) {
             PhotoWidgetSource.PHOTOS,
             PhotoWidgetSource.GIF,
-                -> {
+            -> {
                 pendingDeletionPhotosDao.getPendingDeletionPhotos(widgetId = appWidgetId)
                     .map { it.photoId }
                     .toSet()

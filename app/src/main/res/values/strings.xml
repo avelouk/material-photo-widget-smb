@@ -356,6 +356,8 @@
     <string name="photo_widget_keep_alive_service_dialog_title">Background Service</string>
     <string name="photo_widget_keep_alive_service_dialog_toggle">Enable Background Service</string>
     <string name="photo_widget_keep_alive_service_dialog_body">You can enable the background service to let Android know the app is important and that it shouldn\'t be stopped. Don\'t worry, the app only does what\'s needed to keep your widgets showing photos on schedule, without extra battery drain.&lt;br/>&lt;br/>Widgets on your home screen are managed by your app launcher, not directly by the app. Since the app rarely runs in the foreground, &lt;b>the system may assume it\'s not important and stop it&lt;/b>. When that happens, &lt;b>widgets are stopped too, causing photos not to appear&lt;/b>. This is especially common on &lt;b>Samsung devices&lt;/b>.</string>
+    <string name="photo_widget_keep_alive_service_required_for_gif">GIF widgets require the background service to play animations. You can find more about it in the settings tab. Would you like to enable it?</string>
+    <string name="photo_widget_keep_alive_service_gif_widgets_warning">There are active GIF widgets that depend on the background service. Disabling it may cause them to stop playing animations.</string>
 
     <!-- Notifications -->
     <string name="notification_channel_name_keep_alive">Background Service</string>

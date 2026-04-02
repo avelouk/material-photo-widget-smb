@@ -305,6 +305,8 @@
     <string name="photo_widget_keep_alive_service_dialog_title">Фоновый сервис</string>
     <string name="photo_widget_keep_alive_service_dialog_toggle">Включить фоновый сервис</string>
     <string name="photo_widget_keep_alive_service_dialog_body">Вы можете включить фоновый сервис, чтобы сообщить Android о важности приложения и предотвратить его остановку. Не беспокойтесь — приложение делает только необходимое для своевременного показа фотографий в виджетах, без дополнительного расхода батареи.&lt;br/&gt;&lt;br/&gt;Виджеты на вашем главном экране управляются лаунчером, а не напрямую приложением. Поскольку приложение редко работает на переднем плане, &lt;b&gt;система может посчитать его неважным и завершить его работу&lt;/b&gt;. Когда это происходит, &lt;b&gt;виджеты тоже перестают работать, и фотографии перестают отображаться&lt;/b&gt;. Это особенно часто встречается на &lt;b&gt;устройствах Samsung&lt;/b&gt;.</string>
+    <string name="photo_widget_keep_alive_service_required_for_gif">GIF-виджеты требуют фонового сервиса для воспроизведения анимаций. Подробнее об этом можно узнать во вкладке настроек. Хотите включить его?</string>
+    <string name="photo_widget_keep_alive_service_gif_widgets_warning">Есть активные GIF-виджеты, которые зависят от фонового сервиса. Его отключение может привести к тому, что анимации перестанут воспроизводиться.</string>
     <!-- Notifications -->
     <string name="notification_channel_name_keep_alive">Фоновый сервис</string>
     <string name="notification_channel_description_keep_alive">Поддерживает работу приложения в фоновом режиме. Обеспечивает своевременное обновление виджетов.</string>

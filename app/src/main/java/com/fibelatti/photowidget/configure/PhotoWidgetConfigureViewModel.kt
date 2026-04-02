@@ -17,6 +17,7 @@ import com.fibelatti.photowidget.model.PhotoWidgetTapActions
 import com.fibelatti.photowidget.model.PhotoWidgetText
 import com.fibelatti.photowidget.model.coerceTapActions
 import com.fibelatti.photowidget.platform.savedState
+import com.fibelatti.photowidget.preferences.UserPreferencesStorage
 import com.fibelatti.photowidget.widget.DuplicatePhotoWidgetUseCase
 import com.fibelatti.photowidget.widget.LoadPhotoWidgetUseCase
 import com.fibelatti.photowidget.widget.RestoreWidgetUseCase
@@ -47,6 +48,7 @@ import timber.log.Timber
 @HiltViewModel
 class PhotoWidgetConfigureViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val userPreferencesStorage: UserPreferencesStorage,
     private val photoWidgetStorage: PhotoWidgetStorage,
     loadPhotoWidgetUseCase: LoadPhotoWidgetUseCase,
     private val sanitizeTapActionsUseCase: SanitizeTapActionsUseCase,
@@ -191,6 +193,11 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
     }
 
     fun changeSource(newSource: PhotoWidgetSource) {
+        if (PhotoWidgetSource.GIF == newSource && !userPreferencesStorage.keepAlive) {
+            _state += PhotoWidgetConfigureState.Message.KeepAliveRequired
+            return
+        }
+
         photoWidgetStorage.saveWidgetSource(appWidgetId = effectiveWidgetId, source = newSource)
         photoWidgetStorage.loadWidgetPhotos(appWidgetId = effectiveWidgetId)
             .onEach { widgetPhotos ->
@@ -209,6 +216,11 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    fun confirmKeepAliveForGif() {
+        userPreferencesStorage.keepAlive = true
+        changeSource(PhotoWidgetSource.GIF)
     }
 
     fun setAspectRatio(photoWidgetAspectRatio: PhotoWidgetAspectRatio) {

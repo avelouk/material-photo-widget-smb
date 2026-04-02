@@ -293,6 +293,8 @@
     <string name="photo_widget_keep_alive_service_dialog_title">Arka plan hizmeti</string>
     <string name="photo_widget_keep_alive_service_dialog_toggle">Arka plan hizmetini etkinleştir</string>
     <string name="photo_widget_keep_alive_service_dialog_body">Arka plan hizmetini etkinleştirerek Android\'e uygulamanın önemli olduğunu ve durdurulmaması gerektiğini bildirebilirsiniz. Merak etmeyin, uygulama yalnızca widget\'larınızın fotoğrafları zamanlamaya göre göstermesini sağlamak için gerekeni yapar ve ekstra pil tüketimi olmaz.&lt;br/&gt;&lt;br/&gt;Ana ekranınızdaki widget\'lar, doğrudan uygulama tarafından değil, uygulama başlatıcınız tarafından yönetilir. Uygulama ön planda nadiren çalıştığından, &lt;b&gt;sistem uygulamanın önemsiz olduğunu varsayarak durdurabilir&lt;/b&gt;. Bu olduğunda, &lt;b&gt;widget\'lar da durur ve fotoğraflar görünmez hale gelir&lt;/b&gt;. Bu durum özellikle &lt;b&gt;Samsung cihazlarda&lt;/b&gt; yaygındır.</string>
+    <string name="photo_widget_keep_alive_service_required_for_gif">GIF widget\'ları animasyon oynatmak için arka plan hizmetine ihtiyaç duyar. Bu konuda daha fazla bilgiyi ayarlar sekmesinde bulabilirsiniz. Etkinleştirmek ister misiniz?</string>
+    <string name="photo_widget_keep_alive_service_gif_widgets_warning">Arka plan hizmetine bağlı aktif GIF widget\'ları var. Hizmeti devre dışı bırakmak animasyonların durmasına neden olabilir.</string>
     <!-- Notifications -->
     <string name="notification_channel_name_keep_alive">Arka plan hizmeti</string>
     <string name="notification_channel_description_keep_alive">Arka planda uzun süre olsa bile uygulamayı aktif tutar. Widget\'ların beklendiği gibi güncellenebilmesini sağlar.</string>
