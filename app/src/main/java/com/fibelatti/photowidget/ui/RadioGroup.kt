@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -33,6 +34,7 @@ fun <T : Any> RadioGroup(
     itemTitle: (T) -> String,
     modifier: Modifier = Modifier,
     itemDescription: (T) -> String? = { null },
+    itemFlag: @Composable RowScope.(T) -> Unit = {},
 ) {
     Column(
         modifier = modifier.selectableGroup(),
@@ -49,6 +51,7 @@ fun <T : Any> RadioGroup(
                     items.lastIndex -> Shapes.BottomShape
                     else -> Shapes.MiddleShape
                 },
+                flag = { itemFlag(item) },
             )
         }
     }
@@ -62,6 +65,7 @@ private fun RadioGroupItem(
     description: String?,
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small,
+    flag: @Composable RowScope.() -> Unit = {},
 ) {
     val backgroundColor: Color by animateColorAsState(
         targetValue = if (selected) {
@@ -95,11 +99,18 @@ private fun RadioGroupItem(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(1.dp),
         ) {
-            Text(
-                text = title,
-                color = contentColorFor(backgroundColor),
-                style = MaterialTheme.typography.titleMediumEmphasized,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = title,
+                    color = contentColorFor(backgroundColor),
+                    style = MaterialTheme.typography.titleMediumEmphasized,
+                )
+
+                flag()
+            }
 
             if (description != null) {
                 Text(

@@ -87,7 +87,7 @@
     <string name="photo_widget_source_photos_description">Scegli una o più foto utilizzando il selettore della galleria predefinito.</string>
     <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Scegli una o più cartelle da sincronizzare. Le foto vengono aggiunte automaticamente e aggiornate a intervalli regolari.</string>
-    <string name="photo_widget_source_gif_description">Scegli un file GIF. I suoi fotogrammi verranno estratti e utilizzati come foto individuali.</string>
+    <string name="photo_widget_source_gif_description">Scegli una GIF animata da riprodurre nella schermata iniziale. Si consigliano GIF più brevi e semplici.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Formato</string>
     <string name="photo_widget_aspect_ratio_shape">Forme</string>
@@ -318,6 +318,8 @@
     <string name="photo_widget_action_reset">Reimposta</string>
     <!-- Hints -->
     <string name="hint_scroll_to_view_more">Scorri per visualizzare altro</string>
+    <string name="warning_experimental">Sperimentale</string>
+    <string name="warning_gif_widget_battery_usage">I widget GIF potrebbero consumare più batteria! L\'app deve svolgere un lavoro costante per riprodurre l\'animazione. Il lavoro viene sospeso quando lo schermo è spento per risparmiare risorse, ma l\'app non è in grado di rilevare quando la schermata iniziale non è visibile durante l\'utilizzo di altre app.</string>
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Widget schermata iniziale Material Photo</string>
 </resources>

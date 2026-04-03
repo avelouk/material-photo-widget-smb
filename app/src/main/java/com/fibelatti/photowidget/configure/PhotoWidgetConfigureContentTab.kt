@@ -62,6 +62,7 @@ import com.fibelatti.photowidget.model.PhotoWidgetColors
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.canSort
 import com.fibelatti.photowidget.ui.ShapedPhoto
+import com.fibelatti.photowidget.ui.WarningSign
 import com.fibelatti.ui.foundation.AppSheetState
 import com.fibelatti.ui.foundation.fadingEdges
 import com.fibelatti.ui.foundation.rememberAppSheetState
@@ -391,36 +392,43 @@ private fun PhotoPicker(
         }
 
         AnimatedVisibility(
-            visible = removedPhotos.isNotEmpty(),
+            visible = removedPhotos.isNotEmpty() || PhotoWidgetSource.GIF == source,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            RemovedPhotosPicker(
-                title = when (source) {
-                    PhotoWidgetSource.PHOTOS,
-                    PhotoWidgetSource.GIF,
-                    -> stringResource(
-                        R.string.photo_widget_configure_photos_pending_deletion,
-                    )
+            if (PhotoWidgetSource.GIF != source) {
+                RemovedPhotosPicker(
+                    title = when (source) {
+                        PhotoWidgetSource.PHOTOS -> stringResource(
+                            R.string.photo_widget_configure_photos_pending_deletion,
+                        )
 
-                    PhotoWidgetSource.DIRECTORY -> stringResource(R.string.photo_widget_configure_photos_excluded)
-                },
-                photos = removedPhotos,
-                onPhotoClick = onRemovedPhotoClick,
-                aspectRatio = aspectRatio,
-                shapeId = shapeId,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colorStops = arrayOf(
-                                0f to Color.Transparent,
-                                0.2f to MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-                                1f to MaterialTheme.colorScheme.background,
+                        PhotoWidgetSource.DIRECTORY -> stringResource(R.string.photo_widget_configure_photos_excluded)
+                    },
+                    photos = removedPhotos,
+                    onPhotoClick = onRemovedPhotoClick,
+                    aspectRatio = aspectRatio,
+                    shapeId = shapeId,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colorStops = arrayOf(
+                                    0f to Color.Transparent,
+                                    0.2f to MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+                                    1f to MaterialTheme.colorScheme.background,
+                                ),
                             ),
-                        ),
-                    )
-                    .padding(top = 32.dp),
-            )
+                        )
+                        .padding(top = 32.dp),
+                )
+            } else {
+                WarningSign(
+                    text = stringResource(R.string.warning_gif_widget_battery_usage),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                )
+            }
         }
     }
 }

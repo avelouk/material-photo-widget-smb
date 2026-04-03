@@ -106,6 +106,23 @@ private fun SourcePickerContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
+            itemFlag = { source ->
+                if (PhotoWidgetSource.GIF == source) {
+                    Text(
+                        text = stringResource(R.string.warning_experimental),
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.tertiaryContainer,
+                                shape = MaterialTheme.shapes.small,
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+            },
         )
 
         var dirList: List<Uri> by remember(syncedDir) { mutableStateOf(syncedDir.toList()) }

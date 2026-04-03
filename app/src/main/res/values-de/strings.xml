@@ -87,7 +87,7 @@
     <string name="photo_widget_source_photos_description">Wähle ein oder mehrere Fotos über den standardmäßigen Galerie-Auswahlbildschirm aus.</string>
     <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Wähle einen oder mehrere Ordner zum Synchronisieren aus. Fotos werden automatisch hinzugefügt und regelmäßig aktualisiert.</string>
-    <string name="photo_widget_source_gif_description">Wähle eine GIF-Datei. Die einzelnen Frames werden extrahiert und als einzelne Fotos verwendet.</string>
+    <string name="photo_widget_source_gif_description">Wähle ein animiertes GIF, das auf deinem Startbildschirm abgespielt wird. Kürzere, einfachere GIFs werden empfohlen.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
     <string name="photo_widget_aspect_ratio_shape">Formen</string>
@@ -317,6 +317,8 @@
     <string name="photo_widget_action_reset">Zurücksetzen</string>
     <!-- Hints -->
     <string name="hint_scroll_to_view_more">Scrollen, um mehr anzuzeigen</string>
+    <string name="warning_experimental">Experimentell</string>
+    <string name="warning_gif_widget_battery_usage">GIF-Widgets können mehr Akku verbrauchen! Die App muss ständig arbeiten, um die Animation abzuspielen. Die Arbeit wird unterbrochen, wenn der Bildschirm ausgeschaltet ist, um Ressourcen zu sparen, aber die App kann nicht erkennen, wenn dein Startbildschirm nicht sichtbar ist, während du andere Apps verwendest.</string>
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Material Photo Startbildschirm-Widget</string>
 </resources>

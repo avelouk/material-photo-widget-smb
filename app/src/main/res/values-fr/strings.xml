@@ -87,7 +87,7 @@
     <string name="photo_widget_source_photos_description">Choisissez une ou plusieurs photos à l\'aide du sélecteur de galerie par défaut.</string>
     <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Choisissez un ou plusieurs dossiers à synchroniser. Les photos sont ajoutées automatiquement et mises à jour à intervalles réguliers.</string>
-    <string name="photo_widget_source_gif_description">Choisissez un fichier GIF. Ses images seront extraites et utilisées comme photos individuelles.</string>
+    <string name="photo_widget_source_gif_description">Choisissez un GIF animé à lire sur votre écran d\'accueil. Les GIF plus courts et plus simples sont recommandés.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
     <string name="photo_widget_aspect_ratio_shape">Formes</string>
@@ -317,6 +317,8 @@
     <string name="photo_widget_action_reset">Réinitialiser</string>
     <!-- Hints -->
     <string name="hint_scroll_to_view_more">Faites défiler pour en voir plus</string>
+    <string name="warning_experimental">Expérimental</string>
+    <string name="warning_gif_widget_battery_usage">Les widgets GIF peuvent consommer plus de batterie ! L\'application doit effectuer un travail constant pour lire l\'animation. Le travail est mis en pause lorsque l\'écran est éteint pour économiser les ressources, mais l\'application ne peut pas détecter quand votre écran d\'accueil n\'est pas visible pendant l\'utilisation d\'autres applications.</string>
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Widget d\'accueil Material Photo</string>
 </resources>

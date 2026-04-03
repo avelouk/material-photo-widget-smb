@@ -88,7 +88,7 @@
     <string name="photo_widget_source_photos_description">Alege una sau mai multe fotografii folosind selectorul implicit al galeriei.</string>
     <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Alege unul sau mai multe foldere pentru sincronizare. Fotografiile sunt adăugate automat și actualizate periodic.</string>
-    <string name="photo_widget_source_gif_description">Alege un fișier GIF. Cadrele sale vor fi extrase și utilizate ca fotografii individuale.</string>
+    <string name="photo_widget_source_gif_description">Alege un GIF animat pentru a-l reda pe ecranul de pornire. Se recomandă GIF-uri mai scurte și mai simple.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
     <string name="photo_widget_aspect_ratio_shape">Forme</string>
@@ -323,6 +323,8 @@
     <string name="photo_widget_action_reset">Resetează</string>
     <!-- Hints -->
     <string name="hint_scroll_to_view_more">Derulează pentru a vedea mai mult</string>
+    <string name="warning_experimental">Experimental</string>
+    <string name="warning_gif_widget_battery_usage">Widgeturile GIF pot consuma mai multă baterie! Aplicația trebuie să efectueze lucrări constante pentru a reda animația. Lucrările sunt întrerupte când ecranul este stins pentru a economisi resurse, dar aplicația nu poate detecta când ecranul de pornire nu este vizibil în timp ce utilizezi alte aplicații.</string>
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Widget ecranul de pornire Material Photo</string>
 </resources>

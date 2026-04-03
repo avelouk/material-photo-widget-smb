@@ -87,7 +87,7 @@
     <string name="photo_widget_source_photos_description">Escolha uma ou mais fotos usando o seletor de galeria padrão.</string>
     <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Escolha uma ou mais pastas para sincronizar. As fotos são adicionadas automaticamente e atualizadas em intervalos regulares.</string>
-    <string name="photo_widget_source_gif_description">Escolha um arquivo GIF. Seus quadros serão extraídos e usados como fotos individuais.</string>
+    <string name="photo_widget_source_gif_description">Escolha um GIF animado para reproduzir na sua tela inicial. GIFs mais curtos e simples são recomendados.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Formato</string>
     <string name="photo_widget_aspect_ratio_shape">Formas</string>
@@ -317,6 +317,8 @@
     <string name="photo_widget_action_reset">Redefinir</string>
     <!-- Hints -->
     <string name="hint_scroll_to_view_more">Role para ver mais</string>
+    <string name="warning_experimental">Experimental</string>
+    <string name="warning_gif_widget_battery_usage">Widgets GIF podem consumir mais bateria! O app precisa fazer um trabalho constante para reproduzir a animação. O trabalho é pausado quando a tela está desligada para economizar recursos, mas o app não consegue detectar quando sua tela inicial não está visível enquanto você usa outros apps.</string>
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Widget de fotos da tela inicial</string>
 </resources>
