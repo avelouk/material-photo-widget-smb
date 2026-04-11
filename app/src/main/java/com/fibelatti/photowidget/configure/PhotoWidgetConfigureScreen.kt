@@ -124,6 +124,7 @@ fun PhotoWidgetConfigureScreen(
                 PhotoWidgetTapActionPicker(
                     onNavClick = configureBackStack::pop,
                     currentTapActions = state.photoWidget.tapActions,
+                    source = state.photoWidget.source,
                     onApplyClick = { actions ->
                         viewModel.tapActionSelected(actions)
                         configureBackStack.pop()

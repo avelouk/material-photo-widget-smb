@@ -243,7 +243,7 @@ private fun PhotoWidgetTapAction.coerceTapAction(source: PhotoWidgetSource): Pho
     }
 }
 
-private fun PhotoWidgetTapAction.isAllowedForGifWidget(): Boolean {
+fun PhotoWidgetTapAction.isAllowedForGifWidget(): Boolean {
     return this is PhotoWidgetTapAction.None ||
         this is PhotoWidgetTapAction.ToggleCycling ||
         this is PhotoWidgetTapAction.AppShortcut ||
