@@ -527,6 +527,12 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
         }
     }
 
+    fun saveGifFrameInterval(interval: Long) {
+        _state.update { current ->
+            current.copy(photoWidget = current.photoWidget.copy(gifInterval = interval))
+        }
+    }
+
     fun saveShuffle(value: Boolean) {
         _state.update { current ->
             current.copy(photoWidget = current.photoWidget.copy(shuffle = value))
