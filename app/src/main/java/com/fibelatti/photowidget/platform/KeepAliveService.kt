@@ -29,10 +29,16 @@ class KeepAliveService : Service() {
     private val setupGifBroadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
-            logger.i("SetupGifBroadcastReceiver: Broadcast received (action=${intent.action})")
+            logger.i(
+                "SetupGifBroadcastReceiver: Broadcast received (" +
+                    "action=${intent.action}," +
+                    "appWidgetId=${intent.appWidgetId}" +
+                    ")",
+            )
 
-            if (ACTION_SETUP_GIF == intent.action) {
-                gifPlaybackController.setupWidgetGif(appWidgetId = intent.appWidgetId)
+            when (intent.action) {
+                ACTION_SETUP_GIF -> gifPlaybackController.setupWidgetGif(appWidgetId = intent.appWidgetId)
+                ACTION_TEAR_DOWN_GIF -> gifPlaybackController.tearDownWidgetGif(appWidgetId = intent.appWidgetId)
             }
         }
     }
@@ -134,7 +140,7 @@ class KeepAliveService : Service() {
     private fun registerReceivers() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
             /* receiver = */ setupGifBroadcastReceiver,
-            /* filter = */ IntentFilter(ACTION_SETUP_GIF),
+            /* filter = */ IntentFilter(ACTION_SETUP_GIF).apply { addAction(ACTION_TEAR_DOWN_GIF) },
         )
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -175,6 +181,7 @@ class KeepAliveService : Service() {
         private const val NOTIFICATION_CHANNEL_ID: String = "keep-alive-service"
 
         private const val ACTION_SETUP_GIF = "ACTION_SETUP_GIF"
+        private const val ACTION_TEAR_DOWN_GIF = "ACTION_TEAR_DOWN_GIF"
         private const val ACTION_RESUME_GIF = "ACTION_RESUME_GIF"
         private const val ACTION_PAUSE_GIF = "ACTION_PAUSE_GIF"
 
@@ -199,6 +206,13 @@ class KeepAliveService : Service() {
 
         fun sendSetupGifBroadcast(context: Context, appWidgetId: Int) {
             val intent: Intent = Intent(ACTION_SETUP_GIF).apply {
+                this.appWidgetId = appWidgetId
+            }
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+        }
+
+        fun sendTearDownGifBroadcast(context: Context, appWidgetId: Int) {
+            val intent: Intent = Intent(ACTION_TEAR_DOWN_GIF).apply {
                 this.appWidgetId = appWidgetId
             }
             LocalBroadcastManager.getInstance(context).sendBroadcast(intent)

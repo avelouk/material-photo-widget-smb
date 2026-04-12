@@ -104,6 +104,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
             for (appWidgetId in appWidgetIds) {
                 storage.saveWidgetDeletionTimestamp(appWidgetId = appWidgetId, timestamp = System.currentTimeMillis())
                 alarmManager.cancel(appWidgetId = appWidgetId)
+                KeepAliveService.sendTearDownGifBroadcast(context = context, appWidgetId = appWidgetId)
             }
         }
     }

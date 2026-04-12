@@ -2,10 +2,9 @@ package com.fibelatti.photowidget.platform
 
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.net.Uri
 import android.widget.RemoteViews
 import com.fibelatti.photowidget.R
-import com.fibelatti.photowidget.model.LocalPhoto
-import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.widget.LoadPhotoWidgetUseCase
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
@@ -60,10 +59,15 @@ class GifPlaybackController @Inject constructor(
         }
     }
 
+    fun tearDownWidgetGif(appWidgetId: Int) {
+        logger.i("Tearing down gif (appWidgetId=$appWidgetId)")
+        gifPlaybackJobs.remove(appWidgetId)?.cancel()
+    }
+
     fun tearDown() {
         logger.i("Tearing down gifs...")
 
-        gifPlaybackJobs.values.onEach { it.cancel() }
+        gifPlaybackJobs.values.forEach { it.cancel() }
         gifPlaybackJobs.clear()
     }
 
@@ -82,24 +86,27 @@ class GifPlaybackController @Inject constructor(
 
     private fun getGifPlaybackJob(appWidgetId: Int, packageName: String): Job {
         return coroutineScope.launch {
-            val photoWidgetFlow: Flow<PhotoWidget> = loadPhotoWidgetUseCase(appWidgetId = appWidgetId)
+            val gifFlow: Flow<Pair<List<Uri>, Long>> = loadPhotoWidgetUseCase(appWidgetId = appWidgetId)
                 .filterNot { it.isLoading }
                 .take(1)
+                .map { photoWidget ->
+                    photoWidget.photos.mapNotNull { it.launcherUri } to photoWidget.gifInterval
+                }
             val playbackFlow: Flow<Boolean> = playbackAllowed.map { dict ->
                 dict.getOrDefault(appWidgetId, false)
             }
 
-            combine(flow = photoWidgetFlow, flow2 = playbackFlow) { photoWidget: PhotoWidget, shouldPlay: Boolean ->
-                photoWidget to shouldPlay
-            }.collectLatest { (photoWidget: PhotoWidget, shouldPlay: Boolean) ->
-                while (shouldPlay) {
-                    photoWidget.photos.forEach { photo: LocalPhoto ->
+            combine(flow = gifFlow, flow2 = playbackFlow) { gif: Pair<List<Uri>, Long>, shouldPlay: Boolean ->
+                Triple(gif.first, gif.second, shouldPlay)
+            }.collectLatest { (frames: List<Uri>, interval: Long, shouldPlay: Boolean) ->
+                while (shouldPlay && frames.isNotEmpty()) {
+                    frames.forEach { frame: Uri ->
                         val remoteViews = RemoteViews(packageName, R.layout.photo_widget)
-                        remoteViews.setImageViewUri(R.id.iv_widget, photo.launcherUri)
+                        remoteViews.setImageViewUri(R.id.iv_widget, frame)
 
                         widgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews)
 
-                        delay(timeMillis = photoWidget.gifInterval.coerceAtLeast(33))
+                        delay(timeMillis = interval.coerceAtLeast(33))
                     }
                 }
             }
