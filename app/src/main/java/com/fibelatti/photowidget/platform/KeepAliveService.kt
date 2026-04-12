@@ -43,8 +43,8 @@ class KeepAliveService : Service() {
             logger.i("ToggleBroadcastReceiver: Broadcast received (action=${intent.action})")
 
             when (intent.action) {
-                ACTION_RESUME_GIF -> gifPlaybackController.setPlaybackAllowed(true)
-                ACTION_PAUSE_GIF -> gifPlaybackController.setPlaybackAllowed(false)
+                ACTION_RESUME_GIF -> gifPlaybackController.setPlaybackAllowed(true, intent.appWidgetId)
+                ACTION_PAUSE_GIF -> gifPlaybackController.setPlaybackAllowed(false, intent.appWidgetId)
             }
         }
     }

@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,16 +35,21 @@ class GifPlaybackController @Inject constructor(
 
     private val widgetManager: AppWidgetManager by lazy { AppWidgetManager.getInstance(context) }
 
-    private val playbackAllowed: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    private val playbackAllowed: MutableStateFlow<Map<Int, Boolean>> = MutableStateFlow(emptyMap())
     private val gifPlaybackJobs: ConcurrentHashMap<Int, Job> = ConcurrentHashMap()
 
     fun setupWidgetGif(appWidgetId: Int) {
-        logger.i("Starting gif playback (appWidgetId=$appWidgetId)")
-
-        val source: PhotoWidgetSource = photoWidgetStorage.getWidgetSource(appWidgetId = appWidgetId)
-        if (source != PhotoWidgetSource.GIF) return
+        logger.i("Setting up gif playback (appWidgetId=$appWidgetId)")
 
         coroutineScope.launch {
+            val source: PhotoWidgetSource = photoWidgetStorage.getWidgetSource(appWidgetId = appWidgetId)
+            if (source != PhotoWidgetSource.GIF) return@launch
+
+            val shouldPlay: Boolean = !photoWidgetStorage.getWidgetCyclePaused(appWidgetId = appWidgetId)
+            playbackAllowed.update { currentMap ->
+                currentMap.toMutableMap().apply { put(appWidgetId, shouldPlay) }.toMap()
+            }
+
             val existingJob: Job? = gifPlaybackJobs.remove(appWidgetId)
             existingJob?.cancel()
 
@@ -61,9 +67,17 @@ class GifPlaybackController @Inject constructor(
         gifPlaybackJobs.clear()
     }
 
-    fun setPlaybackAllowed(value: Boolean) {
-        Timber.d("Playback allowed: $value")
-        playbackAllowed.update { value }
+    fun setPlaybackAllowed(value: Boolean, appWidgetId: Int? = null) {
+        logger.d("Updating playback allowed (value=$value,appWidgetId=$appWidgetId)")
+        playbackAllowed.update { currentMap ->
+            if (appWidgetId == null) {
+                currentMap.mapValues { (key, _) ->
+                    value && !photoWidgetStorage.getWidgetCyclePaused(appWidgetId = key)
+                }
+            } else {
+                currentMap.toMutableMap().apply { put(appWidgetId, value) }.toMap()
+            }
+        }
     }
 
     private fun getGifPlaybackJob(appWidgetId: Int, packageName: String): Job {
@@ -71,8 +85,11 @@ class GifPlaybackController @Inject constructor(
             val photoWidgetFlow: Flow<PhotoWidget> = loadPhotoWidgetUseCase(appWidgetId = appWidgetId)
                 .filterNot { it.isLoading }
                 .take(1)
+            val playbackFlow: Flow<Boolean> = playbackAllowed.map { dict ->
+                dict.getOrDefault(appWidgetId, false)
+            }
 
-            combine(flow = photoWidgetFlow, flow2 = playbackAllowed) { photoWidget: PhotoWidget, shouldPlay: Boolean ->
+            combine(flow = photoWidgetFlow, flow2 = playbackFlow) { photoWidget: PhotoWidget, shouldPlay: Boolean ->
                 photoWidget to shouldPlay
             }.collectLatest { (photoWidget: PhotoWidget, shouldPlay: Boolean) ->
                 while (shouldPlay) {
