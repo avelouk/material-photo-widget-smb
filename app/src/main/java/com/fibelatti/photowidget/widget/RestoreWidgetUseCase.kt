@@ -16,7 +16,7 @@ class RestoreWidgetUseCase @Inject constructor(
         originalWidget: PhotoWidget,
         newAppWidgetId: Int,
     ): PhotoWidget {
-        require(originalWidget.source in listOf(PhotoWidgetSource.PHOTOS, PhotoWidgetSource.GIF)) {
+        require(originalWidget.source == PhotoWidgetSource.PHOTOS || originalWidget.source == PhotoWidgetSource.GIF) {
             "Only photos and GIF widgets can be restored."
         }
 

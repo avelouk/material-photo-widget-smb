@@ -78,7 +78,7 @@ val PhotoWidget.photoCycleEnabled: Boolean
     get() = photos.size > 1 && cycleMode !is PhotoWidgetCycleMode.Disabled
 
 val PhotoWidget.canSort: Boolean
-    get() = source in listOf(PhotoWidgetSource.PHOTOS) && photos.size > 1 && !shuffle
+    get() = source == PhotoWidgetSource.PHOTOS && photos.size > 1 && !shuffle
 
 val PhotoWidget.canShuffle: Boolean
     get() = photos.size > 1 && source != PhotoWidgetSource.GIF

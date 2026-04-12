@@ -34,8 +34,7 @@ class CreateBackupUseCase @Inject constructor(
             .first()
             .associateWith { id: Int -> loadPhotoWidgetUseCase(appWidgetId = id).first() }
             .filterValues { widget: PhotoWidget ->
-                widget.source in
-                    listOf(PhotoWidgetSource.PHOTOS, PhotoWidgetSource.GIF)
+                widget.source == PhotoWidgetSource.PHOTOS || widget.source == PhotoWidgetSource.GIF
             }
 
         val backupDir: File = createBackupFiles()
