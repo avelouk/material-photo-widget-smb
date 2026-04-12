@@ -91,11 +91,6 @@ class PhotoWidgetConfigureActivity : AppCompatActivity() {
         checkIntent()
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel.maybeClearPinRequest()
-    }
-
     override fun onDestroy() {
         LocalBroadcastManager.getInstance(this)
             .unregisterReceiver(/* receiver = */ finishReceiver)

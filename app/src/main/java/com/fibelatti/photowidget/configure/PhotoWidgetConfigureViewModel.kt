@@ -20,6 +20,7 @@ import com.fibelatti.photowidget.platform.savedState
 import com.fibelatti.photowidget.preferences.UserPreferencesStorage
 import com.fibelatti.photowidget.widget.DuplicatePhotoWidgetUseCase
 import com.fibelatti.photowidget.widget.LoadPhotoWidgetUseCase
+import com.fibelatti.photowidget.widget.PrepareGifPhotosUseCase
 import com.fibelatti.photowidget.widget.RestoreWidgetUseCase
 import com.fibelatti.photowidget.widget.SanitizeTapActionsUseCase
 import com.fibelatti.photowidget.widget.SavePhotoWidgetUseCase
@@ -55,6 +56,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
     private val duplicatePhotoWidgetUseCase: DuplicatePhotoWidgetUseCase,
     private val restoreWidgetUseCase: RestoreWidgetUseCase,
     private val savePhotoWidgetUseCase: SavePhotoWidgetUseCase,
+    private val prepareGifPhotosUseCase: PrepareGifPhotosUseCase,
     private val pinningCache: PhotoWidgetPinningCache,
     private val scope: CoroutineScope,
 ) : ViewModel() {
@@ -299,13 +301,13 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             val existingPhotos = _state.value.photoWidget.photos
             if (existingPhotos.isNotEmpty()) {
                 photoWidgetStorage.deletePhotos(
-                    appWidgetId = appWidgetId,
+                    appWidgetId = effectiveWidgetId,
                     photoIds = existingPhotos.map { it.photoId },
                 )
             }
 
             val gifFrames: GifFrames = photoWidgetStorage.newWidgetPhotosFromGif(
-                appWidgetId = appWidgetId,
+                appWidgetId = effectiveWidgetId,
                 source = source,
             )
 
@@ -661,10 +663,18 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
             // The user started configuring from within the app, request to pin, but they might cancel
             currentState.isDraft -> {
-                pinningCache.populate(currentState.photoWidget, draftWidgetId = effectiveWidgetId)
+                scope.launch {
+                    if (PhotoWidgetSource.GIF == currentState.photoWidget.source) {
+                        _state.update { current -> current.copy(isProcessing = true) }
 
-                _state.getAndUpdate { current ->
-                    current.copy(isProcessingPin = true) + PhotoWidgetConfigureState.Message.RequestPin
+                        prepareGifPhotosUseCase(appWidgetId = effectiveWidgetId, photoWidget = currentState.photoWidget)
+                    }
+
+                    pinningCache.populate(pendingWidget = currentState.photoWidget, draftWidgetId = effectiveWidgetId)
+
+                    _state.getAndUpdate { current ->
+                        current.copy(isProcessing = false) + PhotoWidgetConfigureState.Message.RequestPin
+                    }
                 }
             }
 
@@ -672,6 +682,10 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             else -> {
                 scope.launch {
                     _state.update { current -> current.copy(isProcessing = true) }
+
+                    if (PhotoWidgetSource.GIF == currentState.photoWidget.source) {
+                        prepareGifPhotosUseCase(appWidgetId = appWidgetId, photoWidget = currentState.photoWidget)
+                    }
 
                     withContext(NonCancellable) {
                         savePhotoWidgetUseCase(
@@ -696,10 +710,6 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
                 restoreFromId?.let { photoWidgetStorage.deleteWidgetData(appWidgetId = it) }
             }
         }
-    }
-
-    fun maybeClearPinRequest() {
-        _state.update { current -> current.copy(isProcessingPin = false) }
     }
 
     fun saveDraft() {
