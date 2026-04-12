@@ -81,7 +81,7 @@ class GifPlaybackController @Inject constructor(
 
                         widgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews)
 
-                        delay(timeMillis = photoWidget.gifInterval)
+                        delay(timeMillis = photoWidget.gifInterval.coerceAtLeast(33))
                     }
                 }
             }

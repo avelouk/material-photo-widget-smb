@@ -146,7 +146,7 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
 
                 return@withContext GifFrames(
                     frames = photos,
-                    interval = duration / frameCount,
+                    interval = (duration / frameCount).coerceAtLeast(33),
                 )
             }.getOrElse { throwable ->
                 Timber.e(throwable, "Failed to extract GIF frames")
