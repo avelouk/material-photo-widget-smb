@@ -108,8 +108,8 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
                 val widgetDir = getWidgetDir(directoryName = directoryName)
                 val originalPhotosDir: File = File("$widgetDir/original").apply { mkdirs() }
 
-                val gifDrawable: GifDrawable = contentResolver.openInputStream(source)
-                    ?.use { input -> GifDrawable(input.readBytes()) }
+                val gifDrawable: GifDrawable = contentResolver.openAssetFileDescriptor(source, "r")
+                    ?.let(::GifDrawable)
                     ?: return@withContext GifFrames.EMPTY
 
                 val frameCount: Int = gifDrawable.numberOfFrames
