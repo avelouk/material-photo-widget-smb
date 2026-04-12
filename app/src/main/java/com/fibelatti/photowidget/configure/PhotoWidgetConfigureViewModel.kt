@@ -319,7 +319,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
             _state.getAndUpdate { current ->
                 current.copy(
-                    photoWidget = current.photoWidget.copy(gifInterval = gifFrames.interval.toLong()),
+                    photoWidget = current.photoWidget.copy(gifInterval = gifFrames.interval),
                     isProcessing = false,
                 ) + gifFrames.frames + message
             }

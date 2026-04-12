@@ -2,7 +2,7 @@ package com.fibelatti.photowidget.model
 
 data class GifFrames(
     val frames: List<LocalPhoto>,
-    val interval: Int,
+    val interval: Long,
 ) {
 
     companion object {
