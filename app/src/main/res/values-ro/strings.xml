@@ -217,6 +217,7 @@
     <string name="photo_widget_configure_tap_action_choose_file">Alege fișierul</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling">Activează/dezactivează temporizatorul</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling_description">Atinge pentru a întrerupe temporizatorul foto. Apasă din nou pentru a relua. Această acțiune va fi dezactivată în timp ce widget-ul este blocat.</string>
+    <string name="photo_widget_configure_tap_action_toggle_gif_playback">Activează/dezactivează redarea GIF</string>
     <string name="photo_widget_configure_tap_action_share_photo">Distribuie fotografia</string>
     <string name="photo_widget_configure_tap_action_set_wallpaper">Setează ca fundal</string>
     <string name="photo_widget_configure_tap_action_remove_photo">Elimină fotografia</string>

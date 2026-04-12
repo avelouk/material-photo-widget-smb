@@ -211,6 +211,7 @@
     <string name="photo_widget_configure_tap_action_choose_file">Escolher arquivo</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling">Ativar/desativar timer</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling_description">Toque para pausar o timer de fotos. Toque novamente para retomar. Esta ação será desativada enquanto o widget estiver bloqueado.</string>
+    <string name="photo_widget_configure_tap_action_toggle_gif_playback">Ativar/desativar reprodução de GIF</string>
     <string name="photo_widget_configure_tap_action_share_photo">Compartilhar foto</string>
     <string name="photo_widget_configure_tap_action_set_wallpaper">Definir como papel de parede</string>
     <string name="photo_widget_configure_tap_action_remove_photo">Remover foto</string>

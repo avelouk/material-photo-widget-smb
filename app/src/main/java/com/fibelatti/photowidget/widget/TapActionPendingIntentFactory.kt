@@ -116,7 +116,7 @@ object TapActionPendingIntentFactory {
                 )
             }
 
-            is PhotoWidgetTapAction.ToggleCycling -> {
+            is PhotoWidgetTapAction.ToggleCycling, is PhotoWidgetTapAction.ToggleGifPlayback -> {
                 val intent = Intent(context, ToggleCyclingFeedbackActivity::class.java).apply {
                     setIdentifierCompat("$appWidgetId")
                     this.appWidgetId = appWidgetId

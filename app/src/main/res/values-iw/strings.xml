@@ -223,6 +223,7 @@
     <string name="photo_widget_configure_tap_action_choose_file">בחר קובץ</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling">הפעל/השבת טיימר</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling_description">הקש כדי להשהות את טיימר התמונות. הקש שוב כדי לחדש. פעולה זו תושבת כאשר הווידג\'ט נעול.</string>
+    <string name="photo_widget_configure_tap_action_toggle_gif_playback">הפעל/השבת הפעלת GIF</string>
     <string name="photo_widget_configure_tap_action_share_photo">שתף תמונה</string>
     <string name="photo_widget_configure_tap_action_set_wallpaper">הגדר כטפט</string>
     <string name="photo_widget_configure_tap_action_remove_photo">הסר תמונה</string>

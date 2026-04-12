@@ -44,7 +44,6 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
-
     }
 
     @Parcelize
@@ -174,6 +173,25 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
+    }
+
+    @Parcelize
+    data object ToggleGifPlayback : PhotoWidgetTapAction {
+
+        @IgnoredOnParcel
+        override val label: Int = R.string.photo_widget_configure_tap_action_toggle_gif_playback
+
+        @IgnoredOnParcel
+        override val serializedName: String = "TOGGLE_GIF_PLAYBACK"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(
+            PhotoWidgetSource.PHOTOS,
+            PhotoWidgetSource.DIRECTORY,
+        )
     }
 
     @Parcelize
@@ -231,6 +249,7 @@ sealed interface PhotoWidgetTapAction : Parcelable {
                 ViewPreviousPhoto,
                 ChooseNextPhoto,
                 ToggleCycling(),
+                ToggleGifPlayback,
                 AppShortcut(),
                 AppFolder(),
                 UrlShortcut(),

@@ -209,6 +209,7 @@
     <string name="photo_widget_configure_tap_action_choose_file">Pumili ng file</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling">I-on/i-off ang timer</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling_description">Pindutin upang ihinto ang timer sa paglipat ng larawan. Muling pumindot upang ituloy. I-o-off ang aksyong ito pag naka-lock ang widget.</string>
+    <string name="photo_widget_configure_tap_action_toggle_gif_playback">I-on/i-off ang GIF playback</string>
     <string name="photo_widget_configure_tap_action_share_photo">Ibahagi ang larawan</string>
     <string name="photo_widget_configure_tap_action_set_wallpaper">Itakda bilang wallpaper</string>
     <string name="photo_widget_configure_tap_action_remove_photo">Alisin ang larawan</string>
