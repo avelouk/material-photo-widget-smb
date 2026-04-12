@@ -229,7 +229,6 @@
     <string name="photo_widget_configure_tap_action_view_original_photo">Vezi fotografia originală (fără tăiere sau rotație)</string>
     <string name="photo_widget_configure_tap_action_do_not_shuffle">Nu amesteca fotografiile la schimbarea lor în vizualizator</string>
     <string name="photo_widget_configure_tap_action_keep_current_photo">Nu schimba fotografia curentă la schimbarea fotografiilor în vizualizator</string>
-    <string name="photo_widget_configure_tap_action_gallery_description_compatibility">Compatibil cu widget-urile bazate pe dosar, widget-urile bazate pe fotografii vor utiliza în schimb \"Vezi fotografia în ecran complet\".</string>
     <string name="photo_widget_configure_tap_action_gallery_description_warning">Această acțiune deschide fotografia curentă folosind aplicația galerie. Nu va fi posibil să vezi sau să navighezi la alte fotografii.</string>
     <string name="photo_widget_configure_tap_action_gallery_description_app_selection">De asemenea, puteți alege ce aplicație galerie să o utilizați.</string>
     <string name="photo_widget_configure_tap_action_choose_app">Alege aplicația</string>

@@ -97,7 +97,6 @@ import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.PhotoWidgetTapAction
 import com.fibelatti.photowidget.model.PhotoWidgetTapActions
 import com.fibelatti.photowidget.model.TapActionArea
-import com.fibelatti.photowidget.model.isAllowedForGifWidget
 import com.fibelatti.photowidget.platform.getInstalledApp
 import com.fibelatti.photowidget.platform.withRoundedCorners
 import com.fibelatti.photowidget.preferences.PickerDefault
@@ -615,9 +614,7 @@ private fun TapOptionsPicker(
             title = stringResource(R.string.photo_widget_configure_tap_action),
         ) {
             RadioGroup(
-                items = PhotoWidgetTapAction.entries.filter { tapAction ->
-                    source != PhotoWidgetSource.GIF || tapAction.isAllowedForGifWidget()
-                },
+                items = PhotoWidgetTapAction.entriesForSource(source = source),
                 itemSelected = { action -> action::class == currentTapAction::class },
                 onItemClick = { selection ->
                     onTapActionClick(
@@ -635,10 +632,6 @@ private fun TapOptionsPicker(
                     .padding(horizontal = 16.dp),
                 itemDescription = itemDescription@{ action ->
                     val descriptionRes: Int = when (action) {
-                        is PhotoWidgetTapAction.ViewInGallery -> {
-                            R.string.photo_widget_configure_tap_action_gallery_description_compatibility
-                        }
-
                         is PhotoWidgetTapAction.AppFolder -> {
                             R.string.photo_widget_configure_tap_action_app_folder_description
                         }

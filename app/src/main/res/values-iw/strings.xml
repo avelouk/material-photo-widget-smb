@@ -233,7 +233,6 @@
     <string name="photo_widget_configure_tap_action_view_original_photo">צפה בתמונה המקורית (ללא חיתוך או סיבוב)</string>
     <string name="photo_widget_configure_tap_action_do_not_shuffle">לא לערבב תמונות בעת החלפת תמונות בצופה</string>
     <string name="photo_widget_configure_tap_action_keep_current_photo">לא לשנות את התמונה הנוכחית בעת החלפת תמונות בצופה</string>
-    <string name="photo_widget_configure_tap_action_gallery_description_compatibility">תואם לווידג\'טים מבוססי תיקיות, ווידג\'טים מבוססי תמונות ישתמשו במקום זאת באפשרות \"הצג תמונה במסך מלא\".</string>
     <string name="photo_widget_configure_tap_action_gallery_description_warning">פעולה זו פותחת את התמונה הנוכחית באמצעות אפליקציית הגלריה. לא ניתן יהיה לצפות בתמונות אחרות או לנווט אליהן.</string>
     <string name="photo_widget_configure_tap_action_gallery_description_app_selection">באפשרותך גם לבחור באיזו אפליקציית גלריה להשתמש.</string>
     <string name="photo_widget_configure_tap_action_choose_app">בחר אפליקציה</string>

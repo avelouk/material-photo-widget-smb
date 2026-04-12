@@ -16,6 +16,8 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
     val isPhotoChangingAction: Boolean get() = false
 
+    val disallowedSources: List<PhotoWidgetSource> get() = emptyList()
+
     @Parcelize
     data object None : PhotoWidgetTapAction {
 
@@ -39,6 +41,10 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val serializedName: String = "VIEW_FULL_SCREEN"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
+
     }
 
     @Parcelize
@@ -51,6 +57,12 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val serializedName: String = "VIEW_IN_GALLERY"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(
+            PhotoWidgetSource.PHOTOS,
+            PhotoWidgetSource.GIF,
+        )
     }
 
     @Parcelize
@@ -64,6 +76,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -77,6 +92,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -90,6 +108,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -163,6 +184,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val serializedName: String = "SHARE_PHOTO"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -173,6 +197,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val serializedName: String = "SET_WALLPAPER"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -186,6 +213,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     companion object {
@@ -211,6 +241,10 @@ sealed interface PhotoWidgetTapAction : Parcelable {
             )
         }
 
+        fun entriesForSource(source: PhotoWidgetSource): List<PhotoWidgetTapAction> {
+            return entries.filter { tapAction -> source !in tapAction.disallowedSources }
+        }
+
         fun fromSerializedName(serializedName: String): PhotoWidgetTapAction {
             return entries.firstOrNull { it.serializedName == serializedName } ?: DEFAULT
         }
@@ -229,25 +263,13 @@ private fun PhotoWidgetTapAction.coerceTapAction(source: PhotoWidgetSource): Pho
     Timber.tag("PhotoWidgetTapAction").d("Check action validity (tapAction=$this,source=$source)")
 
     return when (source) {
-        PhotoWidgetSource.PHOTOS if this is PhotoWidgetTapAction.ViewInGallery -> {
-            PhotoWidgetTapAction.ViewFullScreen()
-        }
+        // Backwards compatibility behavior; Users can no longer select `ViewInGallery` when source is `PHOTOS`
+        PhotoWidgetSource.PHOTOS if this is PhotoWidgetTapAction.ViewInGallery -> PhotoWidgetTapAction.ViewFullScreen()
 
-        PhotoWidgetSource.GIF if !isAllowedForGifWidget() -> {
-            PhotoWidgetTapAction.None
-        }
+        in disallowedSources -> PhotoWidgetTapAction.None
 
         else -> this
     }.also {
         Timber.tag("PhotoWidgetTapAction").d("Check result — tapAction=$it")
     }
-}
-
-fun PhotoWidgetTapAction.isAllowedForGifWidget(): Boolean {
-    return this is PhotoWidgetTapAction.None ||
-        this is PhotoWidgetTapAction.ToggleCycling ||
-        this is PhotoWidgetTapAction.AppShortcut ||
-        this is PhotoWidgetTapAction.AppFolder ||
-        this is PhotoWidgetTapAction.UrlShortcut ||
-        this is PhotoWidgetTapAction.FileShortcut
 }
