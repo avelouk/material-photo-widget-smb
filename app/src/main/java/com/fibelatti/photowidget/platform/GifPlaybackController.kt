@@ -10,6 +10,7 @@ import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.widget.LoadPhotoWidgetUseCase
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -34,7 +35,7 @@ class GifPlaybackController @Inject constructor(
     private val widgetManager: AppWidgetManager by lazy { AppWidgetManager.getInstance(context) }
 
     private val playbackAllowed: MutableStateFlow<Boolean> = MutableStateFlow(true)
-    private val gifPlaybackJobs: MutableMap<Int, Job> = mutableMapOf()
+    private val gifPlaybackJobs: ConcurrentHashMap<Int, Job> = ConcurrentHashMap()
 
     fun setupWidgetGif(appWidgetId: Int) {
         logger.i("Starting gif playback (appWidgetId=$appWidgetId)")
