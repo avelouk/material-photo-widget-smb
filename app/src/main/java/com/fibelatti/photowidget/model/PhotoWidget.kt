@@ -83,6 +83,12 @@ val PhotoWidget.canSort: Boolean
 val PhotoWidget.canShuffle: Boolean
     get() = photos.size > 1 && source != PhotoWidgetSource.GIF
 
+val PhotoWidget.canSync: Boolean
+    get() = source == PhotoWidgetSource.DIRECTORY
+
+val PhotoWidget.canLock: Boolean
+    get() = photos.isNotEmpty() && source != PhotoWidgetSource.GIF
+
 val PhotoWidget.tapActionIncreaseBrightness: Boolean
     get() = tapActions.increaseBrightness
 
