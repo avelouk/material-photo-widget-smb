@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.widget.RemoteViews
 import com.fibelatti.photowidget.R
+import com.fibelatti.photowidget.model.GifFrames
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.widget.LoadPhotoWidgetUseCase
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
@@ -106,7 +107,7 @@ class GifPlaybackController @Inject constructor(
 
                         widgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews)
 
-                        delay(timeMillis = interval.coerceAtLeast(33))
+                        delay(timeMillis = interval.coerceAtLeast(GifFrames.MIN_INTERVAL_MS))
                     }
                 }
             }

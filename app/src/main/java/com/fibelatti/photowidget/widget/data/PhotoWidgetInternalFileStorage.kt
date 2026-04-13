@@ -113,7 +113,7 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
                     ?: return@withContext GifFrames.EMPTY
 
                 val frameCount: Int = gifDrawable.numberOfFrames
-                val duration: Int = gifDrawable.duration
+                val duration: Long = gifDrawable.duration.toLong()
                 Timber.d("GIF has $frameCount frames, over $duration milliseconds")
 
                 val photos = mutableListOf<LocalPhoto>()
@@ -146,7 +146,7 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
 
                 return@withContext GifFrames(
                     frames = photos,
-                    interval = (duration / frameCount).coerceAtLeast(33).toLong(),
+                    interval = (duration / frameCount).coerceIn(GifFrames.MIN_INTERVAL_MS, GifFrames.MAX_INTERVAL_MS),
                 )
             }.getOrElse { throwable ->
                 Timber.e(throwable, "Failed to extract GIF frames")

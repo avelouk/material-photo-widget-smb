@@ -8,5 +8,8 @@ data class GifFrames(
     companion object {
 
         val EMPTY = GifFrames(frames = emptyList(), interval = 0)
+
+        const val MIN_INTERVAL_MS: Long = 20
+        const val MAX_INTERVAL_MS: Long = 200
     }
 }

@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastRoundToInt
 import com.fibelatti.photowidget.R
+import com.fibelatti.photowidget.model.GifFrames
 import com.fibelatti.photowidget.platform.RememberedEffect
 import com.fibelatti.photowidget.ui.DefaultSheetContent
 import com.fibelatti.photowidget.ui.SliderSmallThumb
@@ -78,7 +79,7 @@ fun PhotoWidgetGifIntervalBottomSheet(
                     value = value.toFloat(),
                     onValueChange = { value = it.fastRoundToInt().toLong() },
                     modifier = Modifier.weight(1f),
-                    valueRange = 33f..100f,
+                    valueRange = GifFrames.MIN_INTERVAL_MS.toFloat()..GifFrames.MAX_INTERVAL_MS.toFloat(),
                     thumb = { SliderSmallThumb() },
                 )
 
@@ -107,11 +108,12 @@ fun PhotoWidgetGifIntervalBottomSheet(
 
                 val presets: Map<String, Long> = remember {
                     mapOf(
-                        "10 fps" to 100L,
-                        "12 fps" to 83L,
-                        "15 fps" to 66L,
-                        "24 fps" to 41L,
-                        "30 fps" to 33L,
+                        "10 fps" to 100,
+                        "12 fps" to 83,
+                        "15 fps" to 66,
+                        "24 fps" to 41,
+                        "30 fps" to 33,
+                        "50 fps" to 20,
                     )
                 }
 
