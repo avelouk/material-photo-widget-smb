@@ -392,43 +392,45 @@ private fun PhotoPicker(
         }
 
         AnimatedVisibility(
-            visible = removedPhotos.isNotEmpty() || PhotoWidgetSource.GIF == source,
+            visible = removedPhotos.isNotEmpty() && source != PhotoWidgetSource.GIF,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            if (PhotoWidgetSource.GIF != source) {
-                RemovedPhotosPicker(
-                    title = when (source) {
-                        PhotoWidgetSource.PHOTOS -> stringResource(
-                            R.string.photo_widget_configure_photos_pending_deletion,
-                        )
+            RemovedPhotosPicker(
+                title = when (source) {
+                    PhotoWidgetSource.PHOTOS -> stringResource(
+                        R.string.photo_widget_configure_photos_pending_deletion,
+                    )
 
-                        PhotoWidgetSource.DIRECTORY -> stringResource(R.string.photo_widget_configure_photos_excluded)
-                    },
-                    photos = removedPhotos,
-                    onPhotoClick = onRemovedPhotoClick,
-                    aspectRatio = aspectRatio,
-                    shapeId = shapeId,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colorStops = arrayOf(
-                                    0f to Color.Transparent,
-                                    0.2f to MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-                                    1f to MaterialTheme.colorScheme.background,
-                                ),
+                    PhotoWidgetSource.DIRECTORY -> stringResource(R.string.photo_widget_configure_photos_excluded)
+
+                    PhotoWidgetSource.GIF -> error("GIF source does not support removing photos.")
+                },
+                photos = removedPhotos,
+                onPhotoClick = onRemovedPhotoClick,
+                aspectRatio = aspectRatio,
+                shapeId = shapeId,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colorStops = arrayOf(
+                                0f to Color.Transparent,
+                                0.2f to MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+                                1f to MaterialTheme.colorScheme.background,
                             ),
-                        )
-                        .padding(top = 32.dp),
-                )
-            } else {
-                WarningSign(
-                    text = stringResource(R.string.warning_gif_widget_battery_usage),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
-            }
+                        ),
+                    )
+                    .padding(top = 32.dp),
+            )
+        }
+
+        if (source == PhotoWidgetSource.GIF) {
+            WarningSign(
+                text = stringResource(R.string.warning_gif_widget_battery_usage),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            )
         }
     }
 }

@@ -359,9 +359,7 @@ class PhotoWidgetStorage @Inject constructor(
 
     suspend fun getExcludedPhotoIds(appWidgetId: Int): Set<String> {
         return when (getWidgetSource(appWidgetId = appWidgetId)) {
-            PhotoWidgetSource.PHOTOS,
-            PhotoWidgetSource.GIF,
-            -> {
+            PhotoWidgetSource.PHOTOS -> {
                 pendingDeletionPhotosDao.getPendingDeletionPhotos(widgetId = appWidgetId)
                     .map { it.photoId }
                     .toSet()
@@ -372,6 +370,8 @@ class PhotoWidgetStorage @Inject constructor(
                     .map { it.photoId }
                     .toSet()
             }
+
+            PhotoWidgetSource.GIF -> emptySet() // GIF source does not support removing photos
         }
     }
 

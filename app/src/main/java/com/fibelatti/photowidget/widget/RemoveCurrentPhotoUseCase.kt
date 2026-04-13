@@ -14,7 +14,7 @@ class RemoveCurrentPhotoUseCase @Inject constructor(
         if (photoWidgetStorage.getWidgetPhotoCountEstimate(appWidgetId = appWidgetId) <= 1) return false
 
         when (photoWidgetStorage.getWidgetSource(appWidgetId = appWidgetId)) {
-            PhotoWidgetSource.PHOTOS, PhotoWidgetSource.GIF -> {
+            PhotoWidgetSource.PHOTOS -> {
                 photoWidgetStorage.appendPhotosForDeletion(
                     appWidgetId = appWidgetId,
                     photoIds = listOf(currentPhotoId),
@@ -27,6 +27,8 @@ class RemoveCurrentPhotoUseCase @Inject constructor(
                     photoIds = listOf(currentPhotoId),
                 )
             }
+
+            PhotoWidgetSource.GIF -> error("GIF source does not support removing photos.")
         }
 
         return true
