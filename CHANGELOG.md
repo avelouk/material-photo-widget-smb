@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* Add support for animated GIFs
 * Add flip horizontally/vertically buttons to the crop tool
 * New tap action: file shortcut
 
