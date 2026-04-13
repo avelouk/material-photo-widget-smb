@@ -8,10 +8,7 @@ import timber.log.Timber
 
 suspend inline fun File.runWithFileOutputStream(crossinline operation: (FileOutputStream) -> Unit) {
     withContext(Dispatchers.IO) {
-        if (!exists()) {
-            mkdirs()
-            createNewFile()
-        }
+        if (!exists()) createNewFile()
 
         runCatching {
             FileOutputStream(this@runWithFileOutputStream).use(operation)
