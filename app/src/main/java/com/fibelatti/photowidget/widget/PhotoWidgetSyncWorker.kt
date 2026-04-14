@@ -16,7 +16,6 @@ import java.time.Duration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -40,7 +39,6 @@ class PhotoWidgetSyncWorker @AssistedInject constructor(
         var shouldRetry = false
 
         for (id in ids) {
-            coroutineContext.ensureActive()
             try {
                 Timber.d("Processing widget (id=$id)")
 
