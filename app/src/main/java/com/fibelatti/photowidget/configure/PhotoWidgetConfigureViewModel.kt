@@ -200,24 +200,26 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             return
         }
 
-        photoWidgetStorage.saveWidgetSource(appWidgetId = effectiveWidgetId, source = newSource)
-        photoWidgetStorage.loadWidgetPhotos(appWidgetId = effectiveWidgetId)
-            .onEach { widgetPhotos ->
-                _state.getAndUpdate { current ->
-                    current.copy(
-                        photoWidget = current.photoWidget.copy(
-                            source = newSource,
-                            photos = widgetPhotos.current,
-                            currentPhoto = widgetPhotos.current.firstOrNull(),
-                            tapActions = current.photoWidget.tapActions.coerceTapActions(source = newSource),
-                            removedPhotos = widgetPhotos.excluded,
-                        ),
-                        selectedPhoto = widgetPhotos.current.firstOrNull(),
-                        cropQueue = emptyList(),
-                    )
+        viewModelScope.launch {
+            photoWidgetStorage.saveWidgetSource(appWidgetId = effectiveWidgetId, source = newSource)
+            photoWidgetStorage.loadWidgetPhotos(appWidgetId = effectiveWidgetId)
+                .onEach { widgetPhotos ->
+                    _state.getAndUpdate { current ->
+                        current.copy(
+                            photoWidget = current.photoWidget.copy(
+                                source = newSource,
+                                photos = widgetPhotos.current,
+                                currentPhoto = widgetPhotos.current.firstOrNull(),
+                                tapActions = current.photoWidget.tapActions.coerceTapActions(source = newSource),
+                                removedPhotos = widgetPhotos.excluded,
+                            ),
+                            selectedPhoto = widgetPhotos.current.firstOrNull(),
+                            cropQueue = emptyList(),
+                        )
+                    }
                 }
-            }
-            .launchIn(viewModelScope)
+                .launchIn(this)
+        }
     }
 
     fun confirmKeepAliveForGif() {

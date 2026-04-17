@@ -96,7 +96,16 @@ class PhotoWidgetStorage @Inject constructor(
         return directoryName
     }
 
-    fun saveWidgetSource(appWidgetId: Int, source: PhotoWidgetSource) {
+    suspend fun saveWidgetSource(appWidgetId: Int, source: PhotoWidgetSource) {
+        val currentSource: PhotoWidgetSource = sharedPreferences.getWidgetSource(appWidgetId = appWidgetId)
+        if (source != currentSource) {
+            internalFileStorage.deleteWidgetData(directoryName = getOrCreateDirectoryName(appWidgetId = appWidgetId))
+
+            deleteWidgetTableData(appWidgetId = appWidgetId)
+
+            sharedPreferences.saveWidgetSyncedDir(appWidgetId = appWidgetId, dirUri = emptySet())
+        }
+
         sharedPreferences.saveWidgetSource(appWidgetId = appWidgetId, source = source)
     }
 
@@ -598,11 +607,7 @@ class PhotoWidgetStorage @Inject constructor(
             widgetDirectoryDao.deleteByWidgetId(widgetId = appWidgetId)
         }
 
-        localPhotoDao.deletePhotosByWidgetId(widgetId = appWidgetId)
-        displayedPhotoDao.deletePhotosByWidgetId(widgetId = appWidgetId)
-        orderDao.deletePhotosByWidgetId(widgetId = appWidgetId)
-        pendingDeletionPhotosDao.deletePhotosByWidgetId(widgetId = appWidgetId)
-        excludedPhotosDao.deletePhotosByWidgetId(widgetId = appWidgetId)
+        deleteWidgetTableData(appWidgetId = appWidgetId)
 
         sharedPreferences.deleteWidgetData(appWidgetId = appWidgetId)
     }
@@ -614,12 +619,18 @@ class PhotoWidgetStorage @Inject constructor(
 
         internalFileStorage.deleteWidgetData(directoryName = "$LEGACY_DRAFT_WIDGET_ID")
         widgetDirectoryDao.deleteByWidgetId(widgetId = draftWidgetId)
-        localPhotoDao.deletePhotosByWidgetId(widgetId = draftWidgetId)
-        displayedPhotoDao.deletePhotosByWidgetId(widgetId = draftWidgetId)
-        orderDao.deletePhotosByWidgetId(widgetId = draftWidgetId)
-        pendingDeletionPhotosDao.deletePhotosByWidgetId(widgetId = draftWidgetId)
-        excludedPhotosDao.deletePhotosByWidgetId(widgetId = draftWidgetId)
+
+        deleteWidgetTableData(appWidgetId = draftWidgetId)
+
         sharedPreferences.deleteWidgetData(appWidgetId = draftWidgetId)
+    }
+
+    private suspend fun deleteWidgetTableData(appWidgetId: Int) {
+        localPhotoDao.deletePhotosByWidgetId(widgetId = appWidgetId)
+        displayedPhotoDao.deletePhotosByWidgetId(widgetId = appWidgetId)
+        orderDao.deletePhotosByWidgetId(widgetId = appWidgetId)
+        pendingDeletionPhotosDao.deletePhotosByWidgetId(widgetId = appWidgetId)
+        excludedPhotosDao.deletePhotosByWidgetId(widgetId = appWidgetId)
     }
 
     /**

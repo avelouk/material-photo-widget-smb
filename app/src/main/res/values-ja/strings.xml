@@ -116,7 +116,7 @@
     <string name="photo_widget_configure_menu_source">ソース</string>
     <string name="photo_widget_configure_source_selection_directory_empty">このウィジェットはまだどのフォルダーとも同期されていません。</string>
     <string name="photo_widget_configure_source_selection_directory_non_empty">このウィジェットはこれらのフォルダーと同期されています:</string>
-    <string name="photo_widget_configure_source_warning">ソースを変更すると、このウィジェットの現在の写真が置き換えられます</string>
+    <string name="photo_widget_configure_source_warning">ソースを変更すると、確認後にこのウィジェットのすべてのコンテンツデータが消去されます。この変更は元に戻せません。写真やフォルダーを再度選択する必要があります。</string>
     <string name="photo_widget_configure_menu_crop">切り抜き</string>
     <string name="photo_widget_configure_menu_remove">削除</string>
     <string name="photo_widget_configure_menu_move_left">左へ移動</string>

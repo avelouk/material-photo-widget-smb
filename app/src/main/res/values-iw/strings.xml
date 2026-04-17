@@ -119,7 +119,7 @@
     <string name="photo_widget_configure_menu_source">מקור</string>
     <string name="photo_widget_configure_source_selection_directory_empty">ווידג\'ט זה עדיין לא מסונכרן עם אף תיקייה.</string>
     <string name="photo_widget_configure_source_selection_directory_non_empty">ווידג\'ט זה מסונכרן עם התיקיות הבאות:</string>
-    <string name="photo_widget_configure_source_warning">שינוי המקור יחליף את התמונות הנוכחיות מהווידג\'ט הזה</string>
+    <string name="photo_widget_configure_source_warning">שינוי המקור ימחק את כל נתוני התוכן מהווידג\'ט הזה ברגע שתאשר. לא ניתן לבטל שינוי זה ותצטרך לבחור שוב תמונות או תיקיות.</string>
     <string name="photo_widget_configure_menu_crop">חתוך</string>
     <string name="photo_widget_configure_menu_remove">הסר</string>
     <string name="photo_widget_configure_menu_move_left">הזז שמאלה</string>
