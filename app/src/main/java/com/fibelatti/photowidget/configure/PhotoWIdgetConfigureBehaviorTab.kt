@@ -46,6 +46,7 @@ fun PhotoWidgetConfigureBehaviorTab(
 
     val backgroundRestrictionSheetState: AppSheetState = rememberAppSheetState()
     val cycleModePickerSheetState: AppSheetState = rememberAppSheetState()
+    val gifIntervalPickerSheetState: AppSheetState = rememberAppSheetState()
     val directoryPickerSheetState: AppSheetState = rememberAppSheetState()
 
     val localContext: Context = LocalContext.current
@@ -59,6 +60,7 @@ fun PhotoWidgetConfigureBehaviorTab(
                 cycleModePickerSheetState.showBottomSheet()
             }
         },
+        onGifIntervalPickerClick = gifIntervalPickerSheetState::showBottomSheet,
         onShuffleChange = viewModel::saveShuffle,
         onSortClick = directoryPickerSheetState::showBottomSheet,
         onTapActionPickerClick = { onNav(PhotoWidgetConfigureNav.TapActionPicker) },
@@ -88,6 +90,12 @@ fun PhotoWidgetConfigureBehaviorTab(
         onApplyClick = viewModel::cycleModeSelected,
     )
 
+    PhotoWidgetGifIntervalBottomSheet(
+        sheetState = gifIntervalPickerSheetState,
+        gifInterval = state.photoWidget.gifInterval,
+        onApplyClick = viewModel::saveGifFrameInterval,
+    )
+
     DirectorySortingBottomSheet(
         sheetState = directoryPickerSheetState,
         onItemClick = viewModel::saveSorting,
@@ -98,6 +106,7 @@ fun PhotoWidgetConfigureBehaviorTab(
 fun PhotoWidgetConfigureBehaviorTab(
     photoWidget: PhotoWidget,
     onCycleModePickerClick: () -> Unit,
+    onGifIntervalPickerClick: () -> Unit,
     onShuffleChange: (Boolean) -> Unit,
     onSortClick: () -> Unit,
     onTapActionPickerClick: () -> Unit,
@@ -108,7 +117,8 @@ fun PhotoWidgetConfigureBehaviorTab(
             .fillMaxSize()
             .padding(horizontal = 16.dp),
     ) {
-        val showTimerPicker: Boolean = photoWidget.photos.size > 1
+        val showTimerPicker: Boolean = photoWidget.photos.size > 1 && PhotoWidgetSource.GIF != photoWidget.source
+        val showGifIntervalPicker: Boolean = photoWidget.photos.size > 1 && PhotoWidgetSource.GIF == photoWidget.source
         val showShufflePicker: Boolean = photoWidget.canShuffle
         val showSortPicker: Boolean = PhotoWidgetSource.DIRECTORY == photoWidget.source && !photoWidget.shuffle
 
@@ -120,7 +130,7 @@ fun PhotoWidgetConfigureBehaviorTab(
                 appendLine(stringResource(id = photoWidget.tapActions.right.label))
             },
             onClick = onTapActionPickerClick,
-            shape = if (showTimerPicker || showShufflePicker || showSortPicker) {
+            shape = if (showTimerPicker || showGifIntervalPicker || showShufflePicker || showSortPicker) {
                 Shapes.TopShape
             } else {
                 Shapes.StandaloneShape
@@ -163,6 +173,16 @@ fun PhotoWidgetConfigureBehaviorTab(
             )
         }
 
+        if (showGifIntervalPicker) {
+            PickerDefault(
+                title = stringResource(R.string.photo_widget_configure_gif_frame_interval),
+                currentValue = "${photoWidget.gifInterval} ms",
+                onClick = onGifIntervalPickerClick,
+                modifier = Modifier.padding(top = 2.dp),
+                shape = Shapes.BottomShape,
+            )
+        }
+
         if (showShufflePicker) {
             BooleanDefault(
                 title = stringResource(R.string.widget_defaults_shuffle),
@@ -195,6 +215,7 @@ private fun PhotoWidgetConfigureBehaviorTabSinglePhotoPreview() {
                 photos = List(1) { index -> LocalPhoto(photoId = "photo-$index") },
             ),
             onCycleModePickerClick = {},
+            onGifIntervalPickerClick = {},
             onShuffleChange = {},
             onSortClick = {},
             onTapActionPickerClick = {},
@@ -213,6 +234,7 @@ private fun PhotoWidgetConfigureBehaviorTabMultiPhotoPreview() {
                 source = PhotoWidgetSource.DIRECTORY,
             ),
             onCycleModePickerClick = {},
+            onGifIntervalPickerClick = {},
             onShuffleChange = {},
             onSortClick = {},
             onTapActionPickerClick = {},

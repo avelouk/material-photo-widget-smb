@@ -93,6 +93,7 @@ import androidx.core.net.toUri
 import com.fibelatti.photowidget.R
 import com.fibelatti.photowidget.model.InstalledApp
 import com.fibelatti.photowidget.model.PhotoWidget
+import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.PhotoWidgetTapAction
 import com.fibelatti.photowidget.model.PhotoWidgetTapActions
 import com.fibelatti.photowidget.model.TapActionArea
@@ -123,6 +124,7 @@ import sh.calvin.reorderable.ReorderableColumn
 fun PhotoWidgetTapActionPicker(
     onNavClick: () -> Unit,
     currentTapActions: PhotoWidgetTapActions,
+    source: PhotoWidgetSource,
     onApplyClick: (newTapActions: PhotoWidgetTapActions) -> Unit,
 ) {
     var tapActions: PhotoWidgetTapActions by rememberSaveable { mutableStateOf(currentTapActions) }
@@ -170,6 +172,7 @@ fun PhotoWidgetTapActionPicker(
         onTapActionChange = { newAction ->
             tapActions = onTapActionChange(tapActions = tapActions, newAction = newAction, selectedArea = selectedArea)
         },
+        source = source,
         onCopyFromClick = { sourceArea ->
             tapActions = onTapActionChange(
                 tapActions = tapActions,
@@ -361,6 +364,7 @@ private fun TapActionPickerContent(
     onSelectedAreaChange: (TapActionArea) -> Unit,
     currentTapAction: PhotoWidgetTapAction,
     onTapActionChange: (PhotoWidgetTapAction) -> Unit,
+    source: PhotoWidgetSource,
     onCopyFromClick: (TapActionArea) -> Unit,
     onChooseAppShortcutClick: () -> Unit,
     onAddAppToFolderClick: () -> Unit,
@@ -441,6 +445,7 @@ private fun TapActionPickerContent(
                 currentTapAction = currentTapAction,
                 onTapActionClick = onTapActionChange,
                 selectedArea = selectedArea,
+                source = source,
                 onCopyFromClick = onCopyFromClick,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -576,6 +581,7 @@ private fun TapOptionsPicker(
     currentTapAction: PhotoWidgetTapAction,
     onTapActionClick: (PhotoWidgetTapAction) -> Unit,
     selectedArea: TapActionArea,
+    source: PhotoWidgetSource,
     onCopyFromClick: (TapActionArea) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -608,7 +614,7 @@ private fun TapOptionsPicker(
             title = stringResource(R.string.photo_widget_configure_tap_action),
         ) {
             RadioGroup(
-                items = PhotoWidgetTapAction.entries,
+                items = PhotoWidgetTapAction.entriesForSource(source = source),
                 itemSelected = { action -> action::class == currentTapAction::class },
                 onItemClick = { selection ->
                     onTapActionClick(
@@ -626,10 +632,6 @@ private fun TapOptionsPicker(
                     .padding(horizontal = 16.dp),
                 itemDescription = itemDescription@{ action ->
                     val descriptionRes: Int = when (action) {
-                        is PhotoWidgetTapAction.ViewInGallery -> {
-                            R.string.photo_widget_configure_tap_action_gallery_description_compatibility
-                        }
-
                         is PhotoWidgetTapAction.AppFolder -> {
                             R.string.photo_widget_configure_tap_action_app_folder_description
                         }
@@ -1057,6 +1059,7 @@ private fun PhotoWidgetTapActionPickerPreview() {
             onSelectedAreaChange = {},
             currentTapAction = PhotoWidgetTapAction.DEFAULT,
             onTapActionChange = {},
+            source = PhotoWidgetSource.PHOTOS,
             onCopyFromClick = {},
             onChooseAppShortcutClick = {},
             onAddAppToFolderClick = {},

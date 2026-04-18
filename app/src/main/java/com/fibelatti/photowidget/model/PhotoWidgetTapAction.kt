@@ -16,6 +16,8 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
     val isPhotoChangingAction: Boolean get() = false
 
+    val disallowedSources: List<PhotoWidgetSource> get() = emptyList()
+
     @Parcelize
     data object None : PhotoWidgetTapAction {
 
@@ -39,6 +41,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val serializedName: String = "VIEW_FULL_SCREEN"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -51,6 +56,12 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val serializedName: String = "VIEW_IN_GALLERY"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(
+            PhotoWidgetSource.PHOTOS,
+            PhotoWidgetSource.GIF,
+        )
     }
 
     @Parcelize
@@ -64,6 +75,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -77,6 +91,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -90,6 +107,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -153,6 +173,25 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
+    }
+
+    @Parcelize
+    data object ToggleGifPlayback : PhotoWidgetTapAction {
+
+        @IgnoredOnParcel
+        override val label: Int = R.string.photo_widget_configure_tap_action_toggle_gif_playback
+
+        @IgnoredOnParcel
+        override val serializedName: String = "TOGGLE_GIF_PLAYBACK"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(
+            PhotoWidgetSource.PHOTOS,
+            PhotoWidgetSource.DIRECTORY,
+        )
     }
 
     @Parcelize
@@ -163,6 +202,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val serializedName: String = "SHARE_PHOTO"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -173,6 +215,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val serializedName: String = "SET_WALLPAPER"
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     @Parcelize
@@ -186,6 +231,9 @@ sealed interface PhotoWidgetTapAction : Parcelable {
 
         @IgnoredOnParcel
         override val isPhotoChangingAction: Boolean = true
+
+        @IgnoredOnParcel
+        override val disallowedSources: List<PhotoWidgetSource> = listOf(PhotoWidgetSource.GIF)
     }
 
     companion object {
@@ -201,6 +249,7 @@ sealed interface PhotoWidgetTapAction : Parcelable {
                 ViewPreviousPhoto,
                 ChooseNextPhoto,
                 ToggleCycling(),
+                ToggleGifPlayback,
                 AppShortcut(),
                 AppFolder(),
                 UrlShortcut(),
@@ -209,6 +258,10 @@ sealed interface PhotoWidgetTapAction : Parcelable {
                 SetWallpaper,
                 RemovePhoto,
             )
+        }
+
+        fun entriesForSource(source: PhotoWidgetSource): List<PhotoWidgetTapAction> {
+            return entries.filter { tapAction -> source !in tapAction.disallowedSources }
         }
 
         fun fromSerializedName(serializedName: String): PhotoWidgetTapAction {
@@ -229,9 +282,10 @@ private fun PhotoWidgetTapAction.coerceTapAction(source: PhotoWidgetSource): Pho
     Timber.tag("PhotoWidgetTapAction").d("Check action validity (tapAction=$this,source=$source)")
 
     return when (source) {
-        PhotoWidgetSource.PHOTOS if this is PhotoWidgetTapAction.ViewInGallery -> {
-            PhotoWidgetTapAction.ViewFullScreen()
-        }
+        // Backwards compatibility behavior; Users can no longer select `ViewInGallery` when source is `PHOTOS`
+        PhotoWidgetSource.PHOTOS if this is PhotoWidgetTapAction.ViewInGallery -> PhotoWidgetTapAction.ViewFullScreen()
+
+        in disallowedSources -> PhotoWidgetTapAction.None
 
         else -> this
     }.also {

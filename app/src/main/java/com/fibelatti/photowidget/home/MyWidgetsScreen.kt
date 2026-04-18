@@ -56,6 +56,8 @@ import com.fibelatti.photowidget.model.PhotoWidgetColors
 import com.fibelatti.photowidget.model.PhotoWidgetShapeBuilder
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.PhotoWidgetStatus
+import com.fibelatti.photowidget.model.canLock
+import com.fibelatti.photowidget.model.canSync
 import com.fibelatti.photowidget.model.isWidgetRemoved
 import com.fibelatti.photowidget.platform.letIf
 import com.fibelatti.photowidget.ui.ColoredShape
@@ -79,7 +81,7 @@ fun MyWidgetsScreen(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter,
     ) {
-        val options: List<PhotoWidgetSource?> = listOf(null, PhotoWidgetSource.PHOTOS, PhotoWidgetSource.DIRECTORY)
+        val options: List<PhotoWidgetSource?> = listOf(null) + PhotoWidgetSource.entries
         var selectedSource: PhotoWidgetSource? by remember { mutableStateOf(null) }
         val filteredWidgets: List<Pair<Int, PhotoWidget>> by remember(widgets) {
             derivedStateOf {
@@ -134,8 +136,8 @@ fun MyWidgetsScreen(
                                         else -> {
                                             onCurrentWidgetClick(
                                                 /* appWidgetId = */ id,
-                                                /* canSync = */ widget.source == PhotoWidgetSource.DIRECTORY,
-                                                /* canLock = */ widget.photos.isNotEmpty(),
+                                                /* canSync = */ widget.canSync,
+                                                /* canLock = */ widget.canLock,
                                                 /* isLocked = */ PhotoWidgetStatus.LOCKED == widget.status,
                                             )
                                         }

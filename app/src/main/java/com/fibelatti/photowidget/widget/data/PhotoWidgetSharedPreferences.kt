@@ -579,6 +579,20 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         }
     }
 
+    fun saveWidgetGifInterval(appWidgetId: Int, interval: Long?) {
+        sharedPreferences.edit {
+            if (interval != null) {
+                putLong("${PreferencePrefix.GIF_INTERVAL}$appWidgetId", interval)
+            } else {
+                remove("${PreferencePrefix.GIF_INTERVAL}$appWidgetId")
+            }
+        }
+    }
+
+    fun getWidgetGifInterval(appWidgetId: Int): Long {
+        return sharedPreferences.getLong("${PreferencePrefix.GIF_INTERVAL}$appWidgetId", 0)
+    }
+
     fun saveWidgetDeletionTimestamp(appWidgetId: Int, timestamp: Long?) {
         sharedPreferences.edit {
             if (timestamp != null) {
@@ -733,6 +747,8 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         TEXT_SIZE(value = "appwidget_text_size_"),
         TEXT_VERTICAL_OFFSET(value = "appwidget_text_vertical_offset_"),
         TEXT_HAS_SHADOW(value = "appwidget_text_has_shadow_"),
+
+        GIF_INTERVAL(value = "appwidget_gif_interval_"),
 
         DELETION_TIMESTAMP(value = "appwidget_deletion_timestamp_"),
         ;

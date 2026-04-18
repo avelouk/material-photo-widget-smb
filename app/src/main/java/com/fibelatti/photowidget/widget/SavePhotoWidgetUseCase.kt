@@ -32,6 +32,8 @@ class SavePhotoWidgetUseCase @Inject constructor(
 
         photoWidgetStorage.saveWidgetText(appWidgetId = appWidgetId, text = photoWidget.text)
 
+        photoWidgetStorage.saveWidgetGifInterval(appWidgetId = appWidgetId, interval = photoWidget.gifInterval)
+
         // Draft widgets won't have alarms yet...
         if (PhotoWidget.isDraftWidgetId(appWidgetId)) return
 

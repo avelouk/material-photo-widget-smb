@@ -26,6 +26,7 @@ import com.fibelatti.photowidget.configure.PhotoCropActivity.Companion.outputPat
 import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.platform.AppTheme
+import com.fibelatti.photowidget.platform.KeepAliveService
 import com.fibelatti.photowidget.platform.RememberedEffect
 import com.fibelatti.photowidget.platform.setIdentifierCompat
 import com.fibelatti.photowidget.platform.showMaterialAlertDialog
@@ -88,11 +89,6 @@ class PhotoWidgetConfigureActivity : AppCompatActivity() {
             .registerReceiver(/* receiver = */ finishReceiver, /* filter = */ IntentFilter(ACTION_FINISH))
 
         checkIntent()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.maybeClearPinRequest()
     }
 
     override fun onDestroy() {
@@ -212,6 +208,18 @@ class PhotoWidgetConfigureActivity : AppCompatActivity() {
             is PhotoWidgetConfigureState.Message.DraftSaved -> {
                 viewModel.messageHandled(message = message)
                 finish()
+            }
+
+            is PhotoWidgetConfigureState.Message.KeepAliveRequired -> {
+                showMaterialAlertDialog {
+                    setMessage(R.string.photo_widget_keep_alive_service_required_for_gif)
+                    setPositiveButton(R.string.photo_widget_action_continue) { _, _ ->
+                        viewModel.confirmKeepAliveForGif()
+                        KeepAliveService.tryStart(this@PhotoWidgetConfigureActivity)
+                    }
+                    setNegativeButton(R.string.photo_widget_action_cancel) { _, _ -> }
+                    setOnDismissListener { viewModel.messageHandled(message = message) }
+                }
             }
         }
     }
