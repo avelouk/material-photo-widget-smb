@@ -216,7 +216,7 @@ class PhotoWidgetStorage @Inject constructor(
 
         Timber.d("Cropped photos found: ${croppedPhotos.size}")
 
-        val loadedPhotos: Map<Boolean, List<LocalPhoto>> = if (PhotoWidgetSource.DIRECTORY == source) {
+        val loadedPhotos: Map<Boolean, List<LocalPhoto>> = if (source == PhotoWidgetSource.DIRECTORY) {
             externalFileStorage.getPhotos(
                 dirUri = getWidgetSyncDir(appWidgetId),
                 croppedPhotos = croppedPhotos,

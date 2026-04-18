@@ -195,7 +195,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
     }
 
     fun changeSource(newSource: PhotoWidgetSource) {
-        if (PhotoWidgetSource.GIF == newSource && !userPreferencesStorage.keepAlive) {
+        if (newSource == PhotoWidgetSource.GIF && !userPreferencesStorage.keepAlive) {
             _state += PhotoWidgetConfigureState.Message.KeepAliveRequired
             return
         }
@@ -232,19 +232,19 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             current.copy(
                 photoWidget = current.photoWidget.copy(
                     aspectRatio = photoWidgetAspectRatio,
-                    shapeId = if (PhotoWidgetAspectRatio.SQUARE == photoWidgetAspectRatio) {
+                    shapeId = if (photoWidgetAspectRatio == PhotoWidgetAspectRatio.SQUARE) {
                         current.photoWidget.shapeId
                     } else {
                         PhotoWidget.DEFAULT_SHAPE_ID
                     },
-                    cornerRadius = if (PhotoWidgetAspectRatio.SQUARE == photoWidgetAspectRatio ||
-                        PhotoWidgetAspectRatio.FILL_WIDGET == photoWidgetAspectRatio
+                    cornerRadius = if (photoWidgetAspectRatio == PhotoWidgetAspectRatio.SQUARE ||
+                        photoWidgetAspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET
                     ) {
                         PhotoWidget.DEFAULT_CORNER_RADIUS
                     } else {
                         current.photoWidget.cornerRadius
                     },
-                    border = if (PhotoWidgetAspectRatio.FILL_WIDGET == photoWidgetAspectRatio) {
+                    border = if (photoWidgetAspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET) {
                         PhotoWidgetBorder.None
                     } else {
                         current.photoWidget.border
@@ -666,7 +666,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             // The user started configuring from within the app, request to pin, but they might cancel
             currentState.isDraft -> {
                 scope.launch {
-                    if (PhotoWidgetSource.GIF == currentState.photoWidget.source) {
+                    if (currentState.photoWidget.source == PhotoWidgetSource.GIF) {
                         _state.update { current -> current.copy(isProcessing = true) }
 
                         prepareGifPhotosUseCase(appWidgetId = effectiveWidgetId, photoWidget = currentState.photoWidget)
@@ -685,7 +685,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
                 scope.launch {
                     _state.update { current -> current.copy(isProcessing = true) }
 
-                    if (PhotoWidgetSource.GIF == currentState.photoWidget.source) {
+                    if (currentState.photoWidget.source == PhotoWidgetSource.GIF) {
                         prepareGifPhotosUseCase(appWidgetId = appWidgetId, photoWidget = currentState.photoWidget)
                     }
 

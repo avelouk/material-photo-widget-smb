@@ -107,7 +107,7 @@ private fun SourcePickerContent(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
             itemFlag = { source ->
-                if (PhotoWidgetSource.GIF == source) {
+                if (source == PhotoWidgetSource.GIF) {
                     Text(
                         text = stringResource(R.string.warning_experimental),
                         modifier = Modifier

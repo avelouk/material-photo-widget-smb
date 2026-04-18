@@ -178,7 +178,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
                 try {
                     appWidgetManager.updateAppWidget(appWidgetId, views)
 
-                    if (PhotoWidgetSource.GIF == photoWidget.source) {
+                    if (photoWidget.source == PhotoWidgetSource.GIF) {
                         KeepAliveService.sendSetupGifBroadcast(context = context, appWidgetId = appWidgetId)
                     }
                 } catch (ex: IllegalArgumentException) {
@@ -230,7 +230,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
                 val visibleImageViewId: Int
                 val hiddenImageViewId: Int
 
-                if (PhotoWidgetAspectRatio.FILL_WIDGET == photoWidget.aspectRatio) {
+                if (photoWidget.aspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET) {
                     visibleImageViewId = R.id.iv_widget_fill
                     hiddenImageViewId = R.id.iv_widget
                 } else {

@@ -11,10 +11,10 @@ class PhotoWidgetRescheduleReceiver : EntryPointBroadcastReceiver() {
     override suspend fun doWork(context: Context, intent: Intent, entryPoint: PhotoWidgetEntryPoint) {
         Timber.i("Working...")
 
-        val isBoot: Boolean = Intent.ACTION_BOOT_COMPLETED == intent.action ||
-            Intent.ACTION_LOCKED_BOOT_COMPLETED == intent.action
-        val isUpdate: Boolean = Intent.ACTION_MY_PACKAGE_REPLACED == intent.action ||
-            (Intent.ACTION_PACKAGE_REPLACED == intent.action && intent.data?.schemeSpecificPart == context.packageName)
+        val isBoot: Boolean = intent.action == Intent.ACTION_BOOT_COMPLETED ||
+            intent.action == Intent.ACTION_LOCKED_BOOT_COMPLETED
+        val isUpdate: Boolean = intent.action == Intent.ACTION_MY_PACKAGE_REPLACED ||
+            (intent.action == Intent.ACTION_PACKAGE_REPLACED && intent.data?.schemeSpecificPart == context.packageName)
         val isManual: Boolean = ACTION_RESCHEDULE == intent.action
 
         if (isBoot || isUpdate || isManual) {

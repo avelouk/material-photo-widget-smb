@@ -556,21 +556,21 @@ private fun TapAreaIndicator(
                 modifier = Modifier
                     .weight(3f)
                     .fillMaxHeight()
-                    .background(color = if (TapActionArea.LEFT == tapActionArea) color else Color.Transparent),
+                    .background(color = if (tapActionArea == TapActionArea.LEFT) color else Color.Transparent),
             )
 
             Box(
                 modifier = Modifier
                     .weight(4f)
                     .fillMaxHeight()
-                    .background(color = if (TapActionArea.CENTER == tapActionArea) color else Color.Transparent),
+                    .background(color = if (tapActionArea == TapActionArea.CENTER) color else Color.Transparent),
             )
 
             Box(
                 modifier = Modifier
                     .weight(3f)
                     .fillMaxHeight()
-                    .background(color = if (TapActionArea.RIGHT == tapActionArea) color else Color.Transparent),
+                    .background(color = if (tapActionArea == TapActionArea.RIGHT) color else Color.Transparent),
             )
         }
     }

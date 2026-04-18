@@ -121,7 +121,7 @@ fun MyWidgetsScreen(
                                 .aspectRatio(1f)
                                 .clickable {
                                     when {
-                                        PhotoWidgetStatus.DRAFT == widget.status -> {
+                                        widget.status == PhotoWidgetStatus.DRAFT -> {
                                             onDraftWidgetClick(id)
                                         }
 
@@ -129,7 +129,7 @@ fun MyWidgetsScreen(
                                             onRemovedWidgetClick(id, widget.status)
                                         }
 
-                                        PhotoWidgetStatus.INVALID == widget.status -> {
+                                        widget.status == PhotoWidgetStatus.INVALID -> {
                                             onInvalidWidgetClick(id)
                                         }
 
@@ -138,7 +138,7 @@ fun MyWidgetsScreen(
                                                 /* appWidgetId = */ id,
                                                 /* canSync = */ widget.canSync,
                                                 /* canLock = */ widget.canLock,
-                                                /* isLocked = */ PhotoWidgetStatus.LOCKED == widget.status,
+                                                /* isLocked = */ widget.status == PhotoWidgetStatus.LOCKED,
                                             )
                                         }
                                     }
@@ -161,7 +161,7 @@ fun MyWidgetsScreen(
                             )
 
                             when {
-                                PhotoWidgetStatus.DRAFT == widget.status -> {
+                                widget.status == PhotoWidgetStatus.DRAFT -> {
                                     MyWidgetBadge(
                                         text = stringResource(R.string.photo_widget_home_draft_label),
                                         backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
@@ -170,7 +170,7 @@ fun MyWidgetsScreen(
                                     )
                                 }
 
-                                PhotoWidgetStatus.LOCKED == widget.status -> {
+                                widget.status == PhotoWidgetStatus.LOCKED -> {
                                     MyWidgetBadge(
                                         text = stringResource(R.string.photo_widget_home_locked_label),
                                         backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -186,11 +186,11 @@ fun MyWidgetsScreen(
                                         contentColor = MaterialTheme.colorScheme.onErrorContainer,
                                         modifier = Modifier.padding(bottom = 8.dp),
                                         icon = painterResource(R.drawable.ic_trash_clock)
-                                            .takeIf { PhotoWidgetStatus.REMOVED == widget.status },
+                                            .takeIf { widget.status == PhotoWidgetStatus.REMOVED },
                                     )
                                 }
 
-                                PhotoWidgetStatus.INVALID == widget.status -> {
+                                widget.status == PhotoWidgetStatus.INVALID -> {
                                     MyWidgetBadge(
                                         text = stringResource(R.string.photo_widget_home_invalid_label),
                                         backgroundColor = Color(0xFFFF8A65),
@@ -286,7 +286,7 @@ private fun MyWidgetsScreenPreview() {
                     shapeId = allShapeIds.random(),
                     colors = PhotoWidgetColors(opacity = opacities.random()),
                     status = status,
-                    deletionTimestamp = if (PhotoWidgetStatus.REMOVED == status) 1 else -1,
+                    deletionTimestamp = if (status == PhotoWidgetStatus.REMOVED) 1 else -1,
                 )
             },
             onCurrentWidgetClick = { _, _, _, _ -> },

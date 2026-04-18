@@ -39,11 +39,11 @@ class ToggleCyclingFeedbackActivity : AppCompatActivity() {
         val source: PhotoWidgetSource = photoWidgetStorage.getWidgetSource(appWidgetId = appWidgetId)
 
         when {
-            PhotoWidgetSource.GIF == source && paused -> {
+            source == PhotoWidgetSource.GIF && paused -> {
                 KeepAliveService.sendResumeGifBroadcast(context = this, appWidgetId = appWidgetId)
             }
 
-            PhotoWidgetSource.GIF == source -> {
+            source == PhotoWidgetSource.GIF -> {
                 KeepAliveService.sendPauseGifBroadcast(context = this, appWidgetId = appWidgetId)
             }
 

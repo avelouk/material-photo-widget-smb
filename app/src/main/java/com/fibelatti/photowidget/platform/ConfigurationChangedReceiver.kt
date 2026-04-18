@@ -15,7 +15,7 @@ class ConfigurationChangedReceiver : EntryPointBroadcastReceiver() {
     override suspend fun doWork(context: Context, intent: Intent, entryPoint: PhotoWidgetEntryPoint) {
         Timber.i("Working...")
 
-        val acceptedAction: Boolean = Intent.ACTION_CONFIGURATION_CHANGED == intent.action
+        val acceptedAction: Boolean = intent.action == Intent.ACTION_CONFIGURATION_CHANGED
 
         if (!acceptedAction) {
             return

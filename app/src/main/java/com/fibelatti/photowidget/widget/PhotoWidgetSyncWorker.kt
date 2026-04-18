@@ -44,7 +44,7 @@ class PhotoWidgetSyncWorker @AssistedInject constructor(
 
                 val source = photoWidgetStorage.getWidgetSource(appWidgetId = id)
 
-                if (PhotoWidgetSource.DIRECTORY == source) {
+                if (source == PhotoWidgetSource.DIRECTORY) {
                     coroutineScope.launch {
                         withContext(NonCancellable) {
                             photoWidgetStorage.syncWidgetPhotos(appWidgetId = id)

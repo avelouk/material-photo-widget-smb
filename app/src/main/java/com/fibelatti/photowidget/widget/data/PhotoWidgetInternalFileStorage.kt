@@ -218,7 +218,7 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
             val originalPhotoNames = originalPhotosDir.list().orEmpty().toSet()
 
             val fileNameFilter = FilenameFilter { _, name ->
-                name != "original" && (name in originalPhotoNames || PhotoWidgetSource.DIRECTORY == source)
+                name != "original" && (name in originalPhotoNames || source == PhotoWidgetSource.DIRECTORY)
             }
 
             widgetDir.list(fileNameFilter)

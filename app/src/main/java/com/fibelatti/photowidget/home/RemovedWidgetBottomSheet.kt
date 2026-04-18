@@ -34,7 +34,7 @@ fun RemovedWidgetBottomSheet(
         sheetState = sheetState,
         options = buildList {
             add(RemovedWidgetOptions.RESTORE)
-            if (PhotoWidgetStatus.KEPT != data.status) {
+            if (data.status != PhotoWidgetStatus.KEPT) {
                 add(RemovedWidgetOptions.KEEP)
             }
             add(RemovedWidgetOptions.DELETE)

@@ -136,7 +136,7 @@ private fun ImportFromWidgetContent(
                             contentColor = MaterialTheme.colorScheme.onErrorContainer,
                             modifier = Modifier.padding(bottom = 8.dp),
                             icon = painterResource(R.drawable.ic_trash_clock)
-                                .takeIf { PhotoWidgetStatus.REMOVED == widget.status },
+                                .takeIf { widget.status == PhotoWidgetStatus.REMOVED },
                         )
                     }
                 }

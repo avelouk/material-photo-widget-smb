@@ -258,7 +258,7 @@ private fun PhotoPicker(
                     ShapedPhoto(
                         photo = photo,
                         aspectRatio = PhotoWidgetAspectRatio.SQUARE,
-                        shapeId = if (PhotoWidgetAspectRatio.SQUARE == aspectRatio) {
+                        shapeId = if (aspectRatio == PhotoWidgetAspectRatio.SQUARE) {
                             shapeId
                         } else {
                             PhotoWidget.DEFAULT_SHAPE_ID
@@ -466,7 +466,7 @@ private fun RemovedPhotosPicker(
                 ShapedPhoto(
                     photo = photo,
                     aspectRatio = PhotoWidgetAspectRatio.SQUARE,
-                    shapeId = if (PhotoWidgetAspectRatio.SQUARE == aspectRatio) {
+                    shapeId = if (aspectRatio == PhotoWidgetAspectRatio.SQUARE) {
                         shapeId
                     } else {
                         PhotoWidget.DEFAULT_SHAPE_ID

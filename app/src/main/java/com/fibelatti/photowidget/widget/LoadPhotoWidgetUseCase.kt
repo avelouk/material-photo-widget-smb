@@ -56,7 +56,7 @@ class LoadPhotoWidgetUseCase @Inject constructor(
         val verticalOffset: Int
         val padding: Int
 
-        if (PhotoWidgetAspectRatio.FILL_WIDGET == aspectRatio) {
+        if (aspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET) {
             cornerRadius = PhotoWidget.DEFAULT_CORNER_RADIUS
             border = PhotoWidgetBorder.None
             horizontalOffset = 0

@@ -176,14 +176,14 @@ fun PhotoWidgetConfigureAppearanceTab(
             shape = Shapes.TopShape,
         )
 
-        if (PhotoWidgetAspectRatio.SQUARE == photoWidget.aspectRatio) {
+        if (photoWidget.aspectRatio == PhotoWidgetAspectRatio.SQUARE) {
             ShapeDefault(
                 title = stringResource(id = R.string.widget_defaults_shape),
                 currentValue = photoWidget.shapeId,
                 onClick = onShapeClick,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
-        } else if (PhotoWidgetAspectRatio.FILL_WIDGET != photoWidget.aspectRatio) {
+        } else if (photoWidget.aspectRatio != PhotoWidgetAspectRatio.FILL_WIDGET) {
             PickerDefault(
                 title = stringResource(id = R.string.widget_defaults_corner_radius),
                 currentValue = photoWidget.cornerRadius.toString(),
@@ -192,7 +192,7 @@ fun PhotoWidgetConfigureAppearanceTab(
             )
         }
 
-        if (PhotoWidgetAspectRatio.FILL_WIDGET != photoWidget.aspectRatio) {
+        if (photoWidget.aspectRatio != PhotoWidgetAspectRatio.FILL_WIDGET) {
             val currentValue: String = buildString {
                 append(stringResource(photoWidget.border.label))
 
@@ -240,14 +240,14 @@ fun PhotoWidgetConfigureAppearanceTab(
             currentValue = formatRangeValue(value = photoWidget.colors.brightness),
             onClick = onBrightnessClick,
             modifier = Modifier.padding(horizontal = 16.dp),
-            shape = if (PhotoWidgetAspectRatio.FILL_WIDGET != photoWidget.aspectRatio) {
+            shape = if (photoWidget.aspectRatio != PhotoWidgetAspectRatio.FILL_WIDGET) {
                 Shapes.MiddleShape
             } else {
                 Shapes.BottomShape
             },
         )
 
-        if (PhotoWidgetAspectRatio.FILL_WIDGET != photoWidget.aspectRatio) {
+        if (photoWidget.aspectRatio != PhotoWidgetAspectRatio.FILL_WIDGET) {
             PickerDefault(
                 title = stringResource(id = R.string.photo_widget_configure_offset),
                 currentValue = stringResource(

@@ -65,7 +65,7 @@ class PrepareGifPhotosUseCase @Inject constructor(
                         }
 
                         Timber.d("Transforming the bitmap")
-                        val transformedBitmap: Bitmap = if (PhotoWidgetAspectRatio.SQUARE == photoWidget.aspectRatio) {
+                        val transformedBitmap: Bitmap = if (photoWidget.aspectRatio == PhotoWidgetAspectRatio.SQUARE) {
                             bitmap.withPolygonalShape(
                                 context = context,
                                 shapeId = photoWidget.shapeId,
