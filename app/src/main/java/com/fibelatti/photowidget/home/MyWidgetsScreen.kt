@@ -28,7 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -91,7 +91,7 @@ fun MyWidgetsScreen(
 
         val enforcedShape: Shape = RoundedCornerShape(28.dp)
 
-        val isAtLeastMediumWidth: Boolean = currentWindowAdaptiveInfo().windowSizeClass
+        val isAtLeastMediumWidth: Boolean = currentWindowAdaptiveInfoV2().windowSizeClass
             .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         AnimatedContent(

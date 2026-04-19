@@ -50,7 +50,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -287,7 +287,7 @@ private fun PhotoWidgetConfigureContent(
     onAddToHomeClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isAtLeastMediumWidth: Boolean = currentWindowAdaptiveInfo().windowSizeClass
+    val isAtLeastMediumWidth: Boolean = currentWindowAdaptiveInfoV2().windowSizeClass
         .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
     if (!isAtLeastMediumWidth) {
