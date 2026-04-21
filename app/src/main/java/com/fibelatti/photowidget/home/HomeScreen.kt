@@ -56,7 +56,7 @@ import com.fibelatti.photowidget.preferences.WidgetDefaultsActivity
 import com.fibelatti.ui.foundation.hideBottomSheet
 import com.fibelatti.ui.foundation.rememberAppSheetState
 import com.fibelatti.ui.foundation.showBottomSheet
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.theme.ExtendedTheme
 
 @Composable
@@ -375,7 +375,7 @@ private enum class HomeNavigationDestination(
 
 // region Previews
 @Composable
-@PreviewsAll
+@PreviewAll
 private fun HomeScreenPreview() {
     ExtendedTheme {
         HomeScreen(

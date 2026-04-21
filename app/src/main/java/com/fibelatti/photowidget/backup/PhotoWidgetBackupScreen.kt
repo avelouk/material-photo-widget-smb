@@ -64,7 +64,7 @@ import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.getPhotoPath
 import com.fibelatti.photowidget.ui.AsyncPhotoViewer
 import com.fibelatti.photowidget.ui.LoadingIndicator
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.theme.ExtendedTheme
 
 @Composable
@@ -322,7 +322,7 @@ private fun RestoredWidgetItem(
 
 // region Previews
 
-@PreviewsAll
+@PreviewAll
 @Composable
 private fun PhotoWidgetBackupScreenPreview() {
     ExtendedTheme {
@@ -337,7 +337,7 @@ private fun PhotoWidgetBackupScreenPreview() {
     }
 }
 
-@PreviewsAll
+@PreviewAll
 @Composable
 private fun PhotoWidgetBackupScreenBackupSelectedPreview() {
     ExtendedTheme {

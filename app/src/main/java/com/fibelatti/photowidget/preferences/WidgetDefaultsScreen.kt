@@ -81,8 +81,8 @@ import com.fibelatti.ui.foundation.Shapes
 import com.fibelatti.ui.foundation.hideBottomSheet
 import com.fibelatti.ui.foundation.rememberAppSheetState
 import com.fibelatti.ui.foundation.showBottomSheet
-import com.fibelatti.ui.preview.PreviewsAll
-import com.fibelatti.ui.preview.PreviewsThemes
+import com.fibelatti.ui.preview.PreviewAll
+import com.fibelatti.ui.preview.PreviewThemesAndColors
 import com.fibelatti.ui.text.AutoSizeText
 import com.fibelatti.ui.theme.ExtendedTheme
 import java.util.concurrent.TimeUnit
@@ -552,7 +552,7 @@ fun ShapeDefault(
 
 // region Previews
 @Composable
-@PreviewsAll
+@PreviewAll
 private fun WidgetDefaultsScreenPreview() {
     ExtendedTheme {
         WidgetDefaultsScreen(
@@ -590,7 +590,7 @@ private fun WidgetDefaultsScreenPreview() {
 }
 
 @Composable
-@PreviewsThemes
+@PreviewThemesAndColors
 private fun PickerDefaultPreview() {
     ExtendedTheme {
         PickerDefault(
@@ -602,7 +602,7 @@ private fun PickerDefaultPreview() {
 }
 
 @Composable
-@PreviewsThemes
+@PreviewThemesAndColors
 private fun BooleanDefaultPreview() {
     ExtendedTheme {
         BooleanDefault(

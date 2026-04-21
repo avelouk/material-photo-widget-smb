@@ -26,8 +26,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.fibelatti.photowidget.R
-import com.fibelatti.ui.preview.PreviewsLocales
-import com.fibelatti.ui.preview.PreviewsThemes
+import com.fibelatti.ui.preview.PreviewLocales
+import com.fibelatti.ui.preview.PreviewThemesAndColors
 import com.fibelatti.ui.text.AutoSizeText
 import com.fibelatti.ui.theme.ExtendedTheme
 
@@ -96,8 +96,8 @@ inline fun ConfigureTabs(
 
 // region Previews
 @Composable
-@PreviewsThemes
-@PreviewsLocales
+@PreviewThemesAndColors
+@PreviewLocales
 private fun ConfigureTabsPreview() {
     ExtendedTheme {
         ConfigureTabs(

@@ -33,8 +33,8 @@ import com.fibelatti.photowidget.platform.KeepAliveService
 import com.fibelatti.photowidget.ui.Toggle
 import com.fibelatti.ui.foundation.AppBottomSheet
 import com.fibelatti.ui.foundation.AppSheetState
-import com.fibelatti.ui.preview.PreviewsLocales
-import com.fibelatti.ui.preview.PreviewsThemes
+import com.fibelatti.ui.preview.PreviewLocales
+import com.fibelatti.ui.preview.PreviewThemesAndColors
 import com.fibelatti.ui.theme.ExtendedTheme
 import kotlinx.coroutines.launch
 
@@ -154,8 +154,8 @@ private fun KeepAliveServiceContent(
 }
 
 @Composable
-@PreviewsThemes
-@PreviewsLocales
+@PreviewThemesAndColors
+@PreviewLocales
 private fun KeepAliveServiceContentPreview() {
     ExtendedTheme {
         KeepAliveServiceContent(

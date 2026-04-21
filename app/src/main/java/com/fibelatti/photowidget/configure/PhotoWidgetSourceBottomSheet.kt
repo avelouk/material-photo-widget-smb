@@ -42,7 +42,7 @@ import com.fibelatti.ui.foundation.AppBottomSheet
 import com.fibelatti.ui.foundation.AppSheetState
 import com.fibelatti.ui.foundation.Shapes
 import com.fibelatti.ui.foundation.hideBottomSheet
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.text.AutoSizeText
 import com.fibelatti.ui.theme.ExtendedTheme
 
@@ -240,7 +240,7 @@ private fun DirListItem(
 
 // region Previews
 @Composable
-@PreviewsAll
+@PreviewAll
 private fun SourcePickerContentPhotosPreview() {
     ExtendedTheme {
         SourcePickerContent(
@@ -254,7 +254,7 @@ private fun SourcePickerContentPhotosPreview() {
 }
 
 @Composable
-@PreviewsAll
+@PreviewAll
 private fun SourcePickerContentDirectoryPreview() {
     ExtendedTheme {
         SourcePickerContent(

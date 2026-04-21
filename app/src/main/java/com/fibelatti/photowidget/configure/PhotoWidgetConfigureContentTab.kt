@@ -67,7 +67,7 @@ import com.fibelatti.ui.foundation.AppSheetState
 import com.fibelatti.ui.foundation.fadingEdges
 import com.fibelatti.ui.foundation.rememberAppSheetState
 import com.fibelatti.ui.foundation.showBottomSheet
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.text.AutoSizeText
 import com.fibelatti.ui.theme.ExtendedTheme
 import sh.calvin.reorderable.ReorderableItem
@@ -490,7 +490,7 @@ private fun RemovedPhotosPicker(
 }
 
 // region Previews
-@PreviewsAll
+@PreviewAll
 @Composable
 private fun PhotoWidgetConfigureContentTabPreview() {
     ExtendedTheme {
@@ -512,7 +512,7 @@ private fun PhotoWidgetConfigureContentTabPreview() {
     }
 }
 
-@PreviewsAll
+@PreviewAll
 @Composable
 private fun PhotoWidgetConfigureContentTabDirectoryPreview() {
     ExtendedTheme {

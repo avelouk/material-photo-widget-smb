@@ -115,7 +115,7 @@ import com.fibelatti.ui.foundation.fadingEdges
 import com.fibelatti.ui.foundation.hideBottomSheet
 import com.fibelatti.ui.foundation.rememberAppSheetState
 import com.fibelatti.ui.foundation.showBottomSheet
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.text.AutoSizeText
 import com.fibelatti.ui.theme.ExtendedTheme
 import sh.calvin.reorderable.ReorderableColumn
@@ -1050,7 +1050,7 @@ private fun AppFolderCustomizationItem(
 
 // region Previews
 @Composable
-@PreviewsAll
+@PreviewAll
 private fun PhotoWidgetTapActionPickerPreview() {
     ExtendedTheme {
         TapActionPickerContent(

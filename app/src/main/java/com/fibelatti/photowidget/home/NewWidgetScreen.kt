@@ -58,7 +58,7 @@ import com.fibelatti.photowidget.ui.ShapesBanner
 import com.fibelatti.photowidget.ui.WarningSign
 import com.fibelatti.ui.foundation.Shapes
 import com.fibelatti.ui.foundation.fadingEdges
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.text.AutoSizeText
 import com.fibelatti.ui.theme.ExtendedTheme
 
@@ -351,7 +351,7 @@ private fun FillAspectRatioRepresentation(
 }
 
 // region Previews
-@PreviewsAll
+@PreviewAll
 @Composable
 private fun NewWidgetScreenPreview() {
     ExtendedTheme {

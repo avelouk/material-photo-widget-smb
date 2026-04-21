@@ -29,7 +29,7 @@ import com.fibelatti.ui.foundation.Shapes
 import com.fibelatti.ui.foundation.hideBottomSheet
 import com.fibelatti.ui.foundation.rememberAppSheetState
 import com.fibelatti.ui.foundation.showBottomSheet
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.theme.ExtendedTheme
 
 @Composable
@@ -271,7 +271,7 @@ fun PhotoWidgetConfigureAppearanceTab(
 }
 
 // region Previews
-@PreviewsAll
+@PreviewAll
 @Composable
 private fun PhotoWidgetConfigureAppearanceTabPreview() {
     ExtendedTheme {
@@ -294,7 +294,7 @@ private fun PhotoWidgetConfigureAppearanceTabPreview() {
     }
 }
 
-@PreviewsAll
+@PreviewAll
 @Composable
 private fun PhotoWidgetConfigureAppearanceTabShapePreview() {
     ExtendedTheme {
@@ -317,7 +317,7 @@ private fun PhotoWidgetConfigureAppearanceTabShapePreview() {
     }
 }
 
-@PreviewsAll
+@PreviewAll
 @Composable
 private fun PhotoWidgetConfigureAppearanceTabFillPreview() {
     ExtendedTheme {

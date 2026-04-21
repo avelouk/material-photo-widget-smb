@@ -2,6 +2,8 @@ package com.fibelatti.ui.preview
 
 import androidx.compose.ui.tooling.preview.Preview
 
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
 @Preview(
     name = "Locale Preview - PT",
     group = "Localization",
@@ -9,10 +11,10 @@ import androidx.compose.ui.tooling.preview.Preview
     locale = "pt",
 )
 @Preview(
-    name = "Locale Preview - ES",
+    name = "Locale Preview - DE",
     group = "Localization",
     showBackground = true,
-    locale = "es",
+    locale = "de",
 )
 @Preview(
     name = "Locale Preview - FR",
@@ -27,9 +29,9 @@ import androidx.compose.ui.tooling.preview.Preview
     locale = "ru",
 )
 @Preview(
-    name = "Locale Preview - TR",
+    name = "Locale Preview - IW",
     group = "Localization",
     showBackground = true,
-    locale = "tr",
+    locale = "iw",
 )
-annotation class PreviewsLocales
+annotation class PreviewLocales

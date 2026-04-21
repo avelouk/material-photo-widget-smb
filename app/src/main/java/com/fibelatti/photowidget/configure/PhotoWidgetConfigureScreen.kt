@@ -89,7 +89,7 @@ import com.fibelatti.photowidget.ui.LoadingIndicator
 import com.fibelatti.photowidget.ui.LocalSamplePhoto
 import com.fibelatti.photowidget.ui.WidgetPositionViewer
 import com.fibelatti.ui.foundation.fadingEdges
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.theme.ExtendedTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -580,7 +580,7 @@ private fun PhotoWidgetEditor(
 
 // region Previews
 @Composable
-@PreviewsAll
+@PreviewAll
 private fun PhotoWidgetConfigureScreenPreview() {
     ExtendedTheme {
         PhotoWidgetConfigureScreen(
@@ -605,7 +605,7 @@ private fun PhotoWidgetConfigureScreenPreview() {
 }
 
 @Composable
-@PreviewsAll
+@PreviewAll
 private fun PhotoWidgetConfigureScreenTallPreview() {
     ExtendedTheme {
         PhotoWidgetConfigureScreen(

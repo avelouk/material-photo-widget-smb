@@ -59,7 +59,7 @@ import com.fibelatti.ui.foundation.Shapes
 import com.fibelatti.ui.foundation.hideBottomSheet
 import com.fibelatti.ui.foundation.rememberAppSheetState
 import com.fibelatti.ui.foundation.showBottomSheet
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.theme.ExtendedTheme
 
 @Composable
@@ -393,7 +393,7 @@ private fun PhotoWidgetVerticalOffsetPicker(
 // endregion Pickers
 
 // region Previews
-@PreviewsAll
+@PreviewAll
 @Composable
 private fun PhotoWidgetConfigureTextTabPreview() {
     ExtendedTheme {

@@ -60,7 +60,7 @@ import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.platform.AppTheme
 import com.fibelatti.photowidget.platform.intentExtras
 import com.fibelatti.ui.foundation.ConnectedButtonRowItem
-import com.fibelatti.ui.preview.PreviewsThemes
+import com.fibelatti.ui.preview.PreviewThemesAndColors
 import com.fibelatti.ui.theme.ExtendedTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.roundToInt
@@ -352,7 +352,7 @@ private fun RatioShortcuts(
 }
 
 @Composable
-@PreviewsThemes
+@PreviewThemesAndColors
 private fun RatioShortcutsPreview() {
     ExtendedTheme {
         CropControls(

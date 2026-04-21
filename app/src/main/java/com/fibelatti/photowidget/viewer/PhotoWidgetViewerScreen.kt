@@ -58,7 +58,7 @@ import com.fibelatti.ui.foundation.onHorizontalDrag
 import com.fibelatti.ui.foundation.onVerticalDrag
 import com.fibelatti.ui.foundation.pxToDp
 import com.fibelatti.ui.foundation.rememberDragState
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.theme.ExtendedTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -352,7 +352,7 @@ private fun Controls(
 }
 
 @Composable
-@PreviewsAll
+@PreviewAll
 private fun ScreenContentPreview() {
     ExtendedTheme {
         PhotoWidgetViewerScreen(

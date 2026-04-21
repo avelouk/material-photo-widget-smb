@@ -42,7 +42,7 @@ import com.fibelatti.ui.foundation.AppBottomSheet
 import com.fibelatti.ui.foundation.AppSheetState
 import com.fibelatti.ui.foundation.TextWithLinks
 import com.fibelatti.ui.foundation.hideBottomSheet
-import com.fibelatti.ui.preview.PreviewsAll
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.theme.ExtendedTheme
 
 @Composable
@@ -209,7 +209,7 @@ private fun BackgroundPickerContent(
 }
 
 @Composable
-@PreviewsAll
+@PreviewAll
 private fun BackgroundPickerContentPreviews() {
     ExtendedTheme {
         BackgroundPickerContent(
