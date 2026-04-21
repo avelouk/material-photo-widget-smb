@@ -38,7 +38,8 @@ import androidx.compose.ui.tooling.preview.Preview
     group = "Device",
     showSystemUi = true,
     showBackground = true,
-    device = "spec:width=1280dp,height=800dp,dpi=240,orientation=portrait", // Devices.PIXEL_TABLET has no named portrait constant
+    // Devices.PIXEL_TABLET has no named portrait constant
+    device = "spec:width=1280dp,height=800dp,dpi=240,orientation=portrait",
 )
 @Preview(
     name = "Tablet — Landscape",
