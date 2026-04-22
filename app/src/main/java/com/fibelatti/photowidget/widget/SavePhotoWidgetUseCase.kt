@@ -3,6 +3,7 @@ package com.fibelatti.photowidget.widget
 import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.model.PhotoWidgetBorder
+import com.fibelatti.photowidget.model.PhotoWidgetCycleMode
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.PhotoWidgetTapAction
 import com.fibelatti.photowidget.model.TapActionArea
@@ -29,10 +30,17 @@ class SavePhotoWidgetUseCase @Inject constructor(
 
         photoWidgetStorage.saveWidgetText(appWidgetId = appWidgetId, text = photoWidget.text)
 
-        if (photoWidget.photoCycleEnabled) {
+        val smbCycleEnabled = photoWidget.source == PhotoWidgetSource.SMB &&
+            photoWidget.cycleMode !is PhotoWidgetCycleMode.Disabled
+
+        if (photoWidget.photoCycleEnabled || smbCycleEnabled) {
             photoWidgetAlarmManager.setup(appWidgetId = appWidgetId)
         } else {
             photoWidgetAlarmManager.cancel(appWidgetId = appWidgetId)
+        }
+
+        if (photoWidget.source == PhotoWidgetSource.SMB) {
+            photoWidgetAlarmManager.setupDailySmbRefresh()
         }
     }
 
@@ -48,28 +56,33 @@ class SavePhotoWidgetUseCase @Inject constructor(
             photoWidgetStorage.saveWidgetSyncedDir(appWidgetId = appWidgetId, dirUri = photoWidget.syncedDir)
         }
 
-        photoWidgetStorage.syncWidgetPhotos(
-            appWidgetId = appWidgetId,
-            currentPhotos = photoWidget.photos,
-            removedPhotos = photoWidget.removedPhotos,
-        )
-
-        val currentPhotoId = photoWidgetStorage.getCurrentPhotoId(appWidgetId = appWidgetId)
         val removedPhotos = photoWidget.removedPhotos.map { it.photoId }
 
-        when (currentPhotoId) {
-            null -> {
-                photoWidgetStorage.saveDisplayedPhoto(
-                    appWidgetId = appWidgetId,
-                    photoId = photoWidget.photos.first().photoId,
-                )
-            }
+        // SMB photos are managed by the sync worker — skip local photo sync and displayed-photo
+        // tracking here to avoid wiping the already-cached files.
+        if (photoWidget.source != PhotoWidgetSource.SMB) {
+            photoWidgetStorage.syncWidgetPhotos(
+                appWidgetId = appWidgetId,
+                currentPhotos = photoWidget.photos,
+                removedPhotos = photoWidget.removedPhotos,
+            )
 
-            in removedPhotos if photoWidget.currentPhoto?.photoId != null -> {
-                photoWidgetStorage.saveDisplayedPhoto(
-                    appWidgetId = appWidgetId,
-                    photoId = photoWidget.currentPhoto.photoId,
-                )
+            val currentPhotoId = photoWidgetStorage.getCurrentPhotoId(appWidgetId = appWidgetId)
+
+            when (currentPhotoId) {
+                null -> {
+                    photoWidgetStorage.saveDisplayedPhoto(
+                        appWidgetId = appWidgetId,
+                        photoId = photoWidget.photos.first().photoId,
+                    )
+                }
+
+                in removedPhotos if photoWidget.currentPhoto?.photoId != null -> {
+                    photoWidgetStorage.saveDisplayedPhoto(
+                        appWidgetId = appWidgetId,
+                        photoId = photoWidget.currentPhoto.photoId,
+                    )
+                }
             }
         }
 
@@ -81,7 +94,7 @@ class SavePhotoWidgetUseCase @Inject constructor(
                 )
             }
 
-            PhotoWidgetSource.DIRECTORY -> {
+            PhotoWidgetSource.DIRECTORY, PhotoWidgetSource.SMB -> {
                 photoWidgetStorage.saveExcludedPhotos(
                     appWidgetId = appWidgetId,
                     photoIds = removedPhotos,

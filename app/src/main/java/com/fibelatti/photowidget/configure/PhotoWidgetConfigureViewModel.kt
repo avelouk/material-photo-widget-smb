@@ -1,5 +1,6 @@
 package com.fibelatti.photowidget.configure
 
+import android.app.Application
 import android.appwidget.AppWidgetManager
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
@@ -14,6 +15,8 @@ import com.fibelatti.photowidget.model.PhotoWidgetCycleMode
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.PhotoWidgetTapActions
 import com.fibelatti.photowidget.model.PhotoWidgetText
+import com.fibelatti.photowidget.model.SmbConfig
+import com.fibelatti.photowidget.model.SmbFolder
 import com.fibelatti.photowidget.platform.savedState
 import com.fibelatti.photowidget.widget.DeleteStaleDataUseCase
 import com.fibelatti.photowidget.widget.DuplicatePhotoWidgetUseCase
@@ -21,7 +24,10 @@ import com.fibelatti.photowidget.widget.LoadPhotoWidgetUseCase
 import com.fibelatti.photowidget.widget.RestoreWidgetUseCase
 import com.fibelatti.photowidget.widget.SanitizeTapActionsUseCase
 import com.fibelatti.photowidget.widget.SavePhotoWidgetUseCase
+import com.fibelatti.photowidget.widget.SmbSyncWorker
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +51,7 @@ import timber.log.Timber
 
 @HiltViewModel
 class PhotoWidgetConfigureViewModel @Inject constructor(
+    private val application: Application,
     savedStateHandle: SavedStateHandle,
     private val photoWidgetStorage: PhotoWidgetStorage,
     loadPhotoWidgetUseCase: LoadPhotoWidgetUseCase,
@@ -74,6 +81,9 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
     init {
         Timber.d("Configuring widget (appWidgetId=$appWidgetId)")
+
+        // Load SMB config eagerly
+        _state.update { it.copy(smbConfig = photoWidgetStorage.getSmbConfig(appWidgetId)) }
 
         viewModelScope.launch {
             deleteStaleDataUseCase()
@@ -185,6 +195,16 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
     fun changeSource(newSource: PhotoWidgetSource) {
         photoWidgetStorage.saveWidgetSource(appWidgetId = appWidgetId, source = newSource)
+
+        // Auto-set "On this day" text for SMB widgets when text is currently None
+        if (newSource == PhotoWidgetSource.SMB && _state.value.photoWidget.text is PhotoWidgetText.None) {
+            _state.update { current ->
+                current.copy(
+                    photoWidget = current.photoWidget.copy(text = PhotoWidgetText.OnThisDay()),
+                )
+            }
+        }
+
         photoWidgetStorage.getWidgetPhotos(appWidgetId = appWidgetId)
             .onEach { widgetPhotos ->
                 _state.update { current ->
@@ -201,6 +221,163 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    /** Save credential-level changes (host, username, password, port, domain). */
+    fun updateSmbCredentials(config: SmbConfig) {
+        val merged = config.copy(selectedFolders = _state.value.smbConfig.selectedFolders)
+        _state.update { it.copy(smbConfig = merged) }
+        photoWidgetStorage.saveSmbConfig(appWidgetId = appWidgetId, config = merged)
+    }
+
+    // region SMB folder browser
+
+    fun openSmbBrowser() {
+        _state.update { current ->
+            current.copy(
+                smbBrowseState = PhotoWidgetConfigureState.SmbBrowseState(
+                    selectedFolders = current.smbConfig.selectedFolders.toSet(),
+                    isLoading = true,
+                ),
+            )
+        }
+        loadSmbShares()
+    }
+
+    fun closeSmbBrowser() {
+        _state.update { it.copy(smbBrowseState = null) }
+    }
+
+    fun goToRootInBrowser() {
+        loadSmbShares()
+    }
+
+    private fun loadSmbShares() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = photoWidgetStorage.listSmbShares(config = _state.value.smbConfig)
+            _state.update { current ->
+                current.copy(
+                    smbBrowseState = current.smbBrowseState?.copy(
+                        currentShare = "",
+                        breadcrumb = emptyList(),
+                        currentFolderContents = result.getOrElse { emptyList() },
+                        isLoading = false,
+                        loadError = result.isFailure,
+                    ),
+                )
+            }
+        }
+    }
+
+    fun enterSmbShare(shareName: String) {
+        loadSmbFolders(share = shareName, path = "")
+    }
+
+    fun loadSmbFolders(share: String, path: String) {
+        val newBreadcrumb = if (path.isBlank()) emptyList()
+        else path.replace('\\', '/').split('/').filter { it.isNotBlank() }
+
+        _state.update { current ->
+            current.copy(
+                smbBrowseState = current.smbBrowseState?.copy(
+                    currentShare = share,
+                    breadcrumb = newBreadcrumb,
+                    isLoading = true,
+                    loadError = false,
+                ),
+            )
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = photoWidgetStorage.listSmbFolders(
+                config = _state.value.smbConfig,
+                share = share,
+                path = path,
+            )
+            _state.update { current ->
+                current.copy(
+                    smbBrowseState = current.smbBrowseState?.copy(
+                        currentFolderContents = result.getOrElse { emptyList() },
+                        isLoading = false,
+                        loadError = result.isFailure,
+                    ),
+                )
+            }
+        }
+    }
+
+    fun navigateUpInBrowser() {
+        val browse = _state.value.smbBrowseState ?: return
+        when {
+            browse.isAtRoot -> return
+            browse.breadcrumb.isEmpty() -> loadSmbShares()
+            else -> {
+                val parentPath = browse.breadcrumb.dropLast(1).joinToString("\\")
+                loadSmbFolders(share = browse.currentShare, path = parentPath)
+            }
+        }
+    }
+
+    fun toggleSmbFolderSelection(folder: SmbFolder) {
+        _state.update { current ->
+            val browse = current.smbBrowseState ?: return@update current
+            val updated = if (folder in browse.selectedFolders) {
+                browse.selectedFolders - folder
+            } else {
+                browse.selectedFolders + folder
+            }
+            current.copy(smbBrowseState = browse.copy(selectedFolders = updated))
+        }
+    }
+
+    fun confirmSmbFolderSelection() {
+        val browse = _state.value.smbBrowseState ?: return
+        val newConfig = _state.value.smbConfig.copy(selectedFolders = browse.selectedFolders.toList())
+        _state.update { it.copy(smbConfig = newConfig, smbBrowseState = null) }
+        photoWidgetStorage.saveSmbConfig(appWidgetId = appWidgetId, config = newConfig)
+    }
+
+    // endregion
+
+    fun scanSmb() {
+        _state.update { it.copy(smbScanStatus = PhotoWidgetConfigureState.SmbScanStatus.Scanning) }
+
+        SmbSyncWorker.enqueue(context = application, appWidgetId = appWidgetId)
+
+        val workName = SmbSyncWorker.uniqueWorkName(appWidgetId)
+        WorkManager.getInstance(application)
+            .getWorkInfosForUniqueWorkFlow(workName)
+            .onEach { workInfos ->
+                val info = workInfos.firstOrNull() ?: return@onEach
+                when (info.state) {
+                    WorkInfo.State.SUCCEEDED -> {
+                        val count = info.outputData.getInt(SmbSyncWorker.KEY_PHOTO_COUNT, 0)
+                        _state.update { it.copy(smbScanStatus = PhotoWidgetConfigureState.SmbScanStatus.Done(count)) }
+                        loadSmbPhotos()
+                    }
+
+                    WorkInfo.State.FAILED -> {
+                        _state.update { it.copy(smbScanStatus = PhotoWidgetConfigureState.SmbScanStatus.Error) }
+                    }
+
+                    else -> Unit
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun loadSmbPhotos() {
+        viewModelScope.launch {
+            photoWidgetStorage.getWidgetPhotos(appWidgetId = appWidgetId)
+                .first()
+                .let { photos ->
+                    _state.update { current ->
+                        current.copy(
+                            photoWidget = current.photoWidget.copy(photos = photos.current),
+                        )
+                    }
+                }
+        }
     }
 
     fun setAspectRatio(photoWidgetAspectRatio: PhotoWidgetAspectRatio) {
@@ -638,16 +815,18 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
     fun addNewWidget() {
         val currentState = _state.value
+        val hasContent = currentState.photoWidget.photos.isNotEmpty() ||
+            (currentState.photoWidget.source == PhotoWidgetSource.SMB && currentState.smbConfig.isConfigured)
 
         when {
             // Without photos there's no widget
-            currentState.photoWidget.photos.isEmpty() && AppWidgetManager.INVALID_APPWIDGET_ID == appWidgetId -> {
+            !hasContent && AppWidgetManager.INVALID_APPWIDGET_ID == appWidgetId -> {
                 _state.update { current ->
                     current.copy(messages = current.messages + PhotoWidgetConfigureState.Message.CancelWidget)
                 }
             }
 
-            currentState.photoWidget.photos.isEmpty() -> {
+            !hasContent -> {
                 _state.update { current ->
                     current.copy(messages = current.messages + PhotoWidgetConfigureState.Message.MissingPhotos)
                 }

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 
 package com.fibelatti.photowidget.configure
 
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,22 +21,30 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +55,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -55,6 +65,7 @@ import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.model.PhotoWidgetColors
 import com.fibelatti.photowidget.model.PhotoWidgetSource
+import com.fibelatti.photowidget.model.SmbConfig
 import com.fibelatti.photowidget.model.canSort
 import com.fibelatti.photowidget.ui.ShapedPhoto
 import com.fibelatti.ui.foundation.AppSheetState
@@ -88,6 +99,8 @@ fun PhotoWidgetConfigureContentTab(
         onResult = viewModel::dirPicked,
     )
 
+    val smbBrowserSheetState: AppSheetState = rememberAppSheetState()
+
     PhotoWidgetConfigureContentTab(
         photoWidget = state.photoWidget,
         onChangeSourceClick = sourceSheetState::showBottomSheet,
@@ -100,8 +113,32 @@ fun PhotoWidgetConfigureContentTab(
         onRemovedPhotoClick = { photo ->
             recentlyDeletedPhotoSheetState.showBottomSheet(data = photo)
         },
+        smbConfig = state.smbConfig,
+        smbScanStatus = state.smbScanStatus,
+        onSmbCredentialsChange = viewModel::updateSmbCredentials,
+        onSmbBrowseClick = {
+            viewModel.openSmbBrowser()
+            smbBrowserSheetState.showBottomSheet()
+        },
+        onSmbScanClick = viewModel::scanSmb,
         modifier = modifier,
     )
+
+    state.smbBrowseState?.let { browseState ->
+        SmbFolderBrowserSheet(
+            sheetState = smbBrowserSheetState,
+            browseState = browseState,
+            serverHost = state.smbConfig.host,
+            onEnterShare = { share -> viewModel.enterSmbShare(share) },
+            onFolderDrillDown = { share, path -> viewModel.loadSmbFolders(share = share, path = path) },
+            onBreadcrumbClick = { share, path -> viewModel.loadSmbFolders(share = share, path = path) },
+            onGoToRoot = viewModel::goToRootInBrowser,
+            onNavigateUp = viewModel::navigateUpInBrowser,
+            onToggleFolder = viewModel::toggleSmbFolderSelection,
+            onConfirm = viewModel::confirmSmbFolderSelection,
+            onCancel = viewModel::closeSmbBrowser,
+        )
+    }
 
     // region Sheets
     PhotoWidgetSourceBottomSheet(
@@ -136,6 +173,11 @@ fun PhotoWidgetConfigureContentTab(
     onPhotoClick: (LocalPhoto) -> Unit,
     onReorderFinished: (List<LocalPhoto>) -> Unit,
     onRemovedPhotoClick: (LocalPhoto) -> Unit,
+    smbConfig: SmbConfig = SmbConfig(),
+    smbScanStatus: PhotoWidgetConfigureState.SmbScanStatus = PhotoWidgetConfigureState.SmbScanStatus.Idle,
+    onSmbCredentialsChange: (SmbConfig) -> Unit = {},
+    onSmbBrowseClick: () -> Unit = {},
+    onSmbScanClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     PhotoPicker(
@@ -153,12 +195,160 @@ fun PhotoWidgetConfigureContentTab(
         onRemovedPhotoClick = onRemovedPhotoClick,
         aspectRatio = photoWidget.aspectRatio,
         shapeId = photoWidget.shapeId,
+        smbConfig = smbConfig,
+        smbScanStatus = smbScanStatus,
+        onSmbCredentialsChange = onSmbCredentialsChange,
+        onSmbBrowseClick = onSmbBrowseClick,
+        onSmbScanClick = onSmbScanClick,
         modifier = modifier.fillMaxSize(),
     )
 }
 
 @Composable
 private fun PhotoPicker(
+    source: PhotoWidgetSource,
+    onChangeSourceClick: () -> Unit,
+    isImportAvailable: Boolean,
+    onImportClick: () -> Unit,
+    photos: List<LocalPhoto>,
+    canSort: Boolean,
+    onPhotoPickerClick: () -> Unit,
+    onDirPickerClick: () -> Unit,
+    onPhotoClick: (LocalPhoto) -> Unit,
+    onReorderFinished: (List<LocalPhoto>) -> Unit,
+    removedPhotos: List<LocalPhoto>,
+    onRemovedPhotoClick: (LocalPhoto) -> Unit,
+    aspectRatio: PhotoWidgetAspectRatio,
+    shapeId: String,
+    smbConfig: SmbConfig = SmbConfig(),
+    smbScanStatus: PhotoWidgetConfigureState.SmbScanStatus = PhotoWidgetConfigureState.SmbScanStatus.Idle,
+    onSmbCredentialsChange: (SmbConfig) -> Unit = {},
+    onSmbBrowseClick: () -> Unit = {},
+    onSmbScanClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    if (source == PhotoWidgetSource.SMB) {
+        SmbPhotoPicker(
+            onChangeSourceClick = onChangeSourceClick,
+            photos = photos,
+            onPhotoClick = onPhotoClick,
+            aspectRatio = aspectRatio,
+            shapeId = shapeId,
+            smbConfig = smbConfig,
+            smbScanStatus = smbScanStatus,
+            onSmbCredentialsChange = onSmbCredentialsChange,
+            onSmbBrowseClick = onSmbBrowseClick,
+            onSmbScanClick = onSmbScanClick,
+            modifier = modifier,
+        )
+    } else {
+        DefaultPhotoPicker(
+            source = source,
+            onChangeSourceClick = onChangeSourceClick,
+            isImportAvailable = isImportAvailable,
+            onImportClick = onImportClick,
+            photos = photos,
+            canSort = canSort,
+            onPhotoPickerClick = onPhotoPickerClick,
+            onDirPickerClick = onDirPickerClick,
+            onPhotoClick = onPhotoClick,
+            onReorderFinished = onReorderFinished,
+            removedPhotos = removedPhotos,
+            onRemovedPhotoClick = onRemovedPhotoClick,
+            aspectRatio = aspectRatio,
+            shapeId = shapeId,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+private fun SmbPhotoPicker(
+    onChangeSourceClick: () -> Unit,
+    photos: List<LocalPhoto>,
+    onPhotoClick: (LocalPhoto) -> Unit,
+    aspectRatio: PhotoWidgetAspectRatio,
+    shapeId: String,
+    smbConfig: SmbConfig,
+    smbScanStatus: PhotoWidgetConfigureState.SmbScanStatus,
+    onSmbCredentialsChange: (SmbConfig) -> Unit,
+    onSmbBrowseClick: () -> Unit,
+    onSmbScanClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(all = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        OutlinedButton(
+            onClick = onChangeSourceClick,
+            shapes = ButtonDefaults.shapes(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 36.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+        ) {
+            AutoSizeText(
+                text = stringResource(R.string.photo_widget_configure_change_source),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+            )
+        }
+
+        SmbConfigSection(
+            config = smbConfig,
+            onCredentialsChange = onSmbCredentialsChange,
+            onBrowseClick = onSmbBrowseClick,
+            scanStatus = smbScanStatus,
+            onScanClick = onSmbScanClick,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        if (photos.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(R.string.photo_widget_smb_todays_photos, photos.size),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(photos, key = { it.photoId }) { photo ->
+                    ShapedPhoto(
+                        photo = photo,
+                        aspectRatio = PhotoWidgetAspectRatio.SQUARE,
+                        shapeId = if (PhotoWidgetAspectRatio.SQUARE == aspectRatio) {
+                            shapeId
+                        } else {
+                            PhotoWidget.DEFAULT_SHAPE_ID
+                        },
+                        cornerRadius = PhotoWidget.DEFAULT_CORNER_RADIUS,
+                        modifier = Modifier
+                            .aspectRatio(ratio = 1f)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                role = Role.Image,
+                                onClick = { onPhotoClick(photo) },
+                            ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DefaultPhotoPicker(
     source: PhotoWidgetSource,
     onChangeSourceClick: () -> Unit,
     isImportAvailable: Boolean,
@@ -265,6 +455,7 @@ private fun PhotoPicker(
                         when (source) {
                             PhotoWidgetSource.PHOTOS -> onPhotoPickerClick()
                             PhotoWidgetSource.DIRECTORY -> onDirPickerClick()
+                            PhotoWidgetSource.SMB -> Unit
                         }
                     },
                     shapes = ButtonDefaults.shapes(),
@@ -279,6 +470,7 @@ private fun PhotoPicker(
                             id = when (source) {
                                 PhotoWidgetSource.PHOTOS -> R.string.photo_widget_configure_pick_photo
                                 PhotoWidgetSource.DIRECTORY -> R.string.photo_widget_configure_pick_folder
+                                PhotoWidgetSource.SMB -> R.string.photo_widget_configure_pick_folder
                             },
                         ),
                         textAlign = TextAlign.Center,
@@ -348,7 +540,9 @@ private fun PhotoPicker(
                         R.string.photo_widget_configure_photos_pending_deletion,
                     )
 
-                    PhotoWidgetSource.DIRECTORY -> stringResource(R.string.photo_widget_configure_photos_excluded)
+                    PhotoWidgetSource.DIRECTORY,
+                    PhotoWidgetSource.SMB,
+                    -> stringResource(R.string.photo_widget_configure_photos_excluded)
                 },
                 photos = removedPhotos,
                 onPhotoClick = onRemovedPhotoClick,
@@ -367,6 +561,114 @@ private fun PhotoPicker(
                     )
                     .padding(top = 32.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun SmbConfigSection(
+    config: SmbConfig,
+    onCredentialsChange: (SmbConfig) -> Unit,
+    onBrowseClick: () -> Unit,
+    scanStatus: PhotoWidgetConfigureState.SmbScanStatus,
+    onScanClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.padding(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        // Credentials
+        OutlinedTextField(
+            value = config.host,
+            onValueChange = { onCredentialsChange(config.copy(host = it)) },
+            label = { Text(stringResource(R.string.photo_widget_smb_host)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = config.username,
+            onValueChange = { onCredentialsChange(config.copy(username = it)) },
+            label = { Text(stringResource(R.string.photo_widget_smb_username)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = config.password,
+            onValueChange = { onCredentialsChange(config.copy(password = it)) },
+            label = { Text(stringResource(R.string.photo_widget_smb_password)) },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Folder selection
+        OutlinedButton(
+            onClick = onBrowseClick,
+            shapes = ButtonDefaults.shapes(),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.photo_widget_smb_browse_folders))
+        }
+
+        Text(
+            text = if (config.selectedFolders.isEmpty()) {
+                stringResource(R.string.photo_widget_smb_no_folders_selected)
+            } else {
+                config.selectedFolders.joinToString(separator = "\n") { "• ${it.displayName}" }
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 4.dp),
+        )
+
+        // Sync button + status
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Button(
+                onClick = onScanClick,
+                enabled = config.isConfigured &&
+                    scanStatus !is PhotoWidgetConfigureState.SmbScanStatus.Scanning,
+                shapes = ButtonDefaults.shapes(),
+            ) {
+                if (scanStatus is PhotoWidgetConfigureState.SmbScanStatus.Scanning) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                    Spacer(Modifier.size(8.dp))
+                }
+                Text(
+                    text = if (scanStatus is PhotoWidgetConfigureState.SmbScanStatus.Scanning) {
+                        stringResource(R.string.photo_widget_smb_scanning)
+                    } else {
+                        stringResource(R.string.photo_widget_smb_scan)
+                    },
+                )
+            }
+
+            val statusText = when (scanStatus) {
+                is PhotoWidgetConfigureState.SmbScanStatus.Done ->
+                    stringResource(R.string.photo_widget_smb_scan_result, scanStatus.count)
+                is PhotoWidgetConfigureState.SmbScanStatus.Error ->
+                    stringResource(R.string.photo_widget_smb_scan_error)
+                else -> null
+            }
+            if (statusText != null) {
+                Text(
+                    text = statusText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (scanStatus is PhotoWidgetConfigureState.SmbScanStatus.Error) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
         }
     }
 }

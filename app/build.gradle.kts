@@ -132,6 +132,9 @@ android {
     packaging {
         resources.excludes.add("META-INF/LICENSE.md")
         resources.excludes.add("META-INF/LICENSE-notice.md")
+        resources.excludes.add("META-INF/BCKEY.DSA")
+        resources.excludes.add("META-INF/BCKEY.SF")
+        resources.excludes.add("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
     }
 
     dependenciesInfo {
@@ -173,6 +176,8 @@ aboutLibraries {
 
 licensee {
     allow("Apache-2.0")
+    allow("MIT")
+    allowUrl("https://www.bouncycastle.org/licence.html")
 }
 
 dependencies {
@@ -191,6 +196,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.graphics.shapes)
     implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.exifinterface)
     implementation(libs.palette)
     implementation(libs.work.runtime.ktx)
 
@@ -225,6 +231,16 @@ dependencies {
     implementation(libs.zoomable)
 
     implementation(libs.about.libraries)
+
+    implementation(libs.security.crypto)
+    implementation(libs.smbj)
+    implementation(libs.dcerpc) {
+        exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
+        // Exclude old guava (embeds ListenableFuture, causing duplicates) and provide
+        // the Android-compatible version explicitly instead.
+        exclude(group = "com.google.guava", module = "guava")
+    }
+    implementation("com.google.guava:guava:33.4.8-android")
 
     implementation(libs.timber)
     debugImplementation(libs.leakcanary)

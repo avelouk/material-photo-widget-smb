@@ -20,11 +20,13 @@ import com.fibelatti.photowidget.R
 import com.fibelatti.photowidget.configure.PhotoWidgetConfigureActivity
 import com.fibelatti.photowidget.configure.aspectRatio
 import com.fibelatti.photowidget.configure.sharedPhotos
+import com.fibelatti.photowidget.help.HintStorage
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.platform.AppTheme
 import com.fibelatti.photowidget.platform.widgetPinningNotAvailable
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -34,22 +36,37 @@ class HomeActivity : AppCompatActivity() {
 
     private val homeViewModel: HomeViewModel by viewModels()
 
+    @Inject
+    lateinit var hintStorage: HintStorage
+
     private var preparedIntent: Intent? by mutableStateOf(null)
+    private var showSetup by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        showSetup = !hintStorage.setupCompleted
+
         setContent {
             AppTheme {
-                HomeScreen(
-                    homeViewModel = homeViewModel,
-                    preparedIntent = preparedIntent,
-                    onIntentConsumed = { preparedIntent = null },
-                    onCreateNewWidgetClick = ::createNewWidget,
-                    onAppLanguageClick = ::showTranslationsDialog,
-                    onShareClick = ::shareApp,
-                )
+                if (showSetup) {
+                    SetupScreen(
+                        onSetupComplete = {
+                            hintStorage.setupCompleted = true
+                            showSetup = false
+                        },
+                    )
+                } else {
+                    HomeScreen(
+                        homeViewModel = homeViewModel,
+                        preparedIntent = preparedIntent,
+                        onIntentConsumed = { preparedIntent = null },
+                        onCreateNewWidgetClick = ::createNewWidget,
+                        onAppLanguageClick = ::showTranslationsDialog,
+                        onShareClick = ::shareApp,
+                    )
+                }
             }
         }
 

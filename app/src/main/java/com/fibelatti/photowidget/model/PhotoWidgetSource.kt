@@ -19,4 +19,9 @@ enum class PhotoWidgetSource(
      * The user selected a directory and all its photos are added automatically.
      */
     DIRECTORY(label = R.string.photo_widget_source_directory),
+
+    /**
+     * Photos are sourced from a network share over SMB and shown as "on this day" memories.
+     */
+    SMB(label = R.string.photo_widget_source_smb),
 }

@@ -61,6 +61,51 @@ class PhotoWidgetAlarmManager @Inject constructor(
         alarmManager.cancel(
             ExactRepeatingAlarmReceiver.pendingIntent(context = context, appWidgetId = appWidgetId),
         )
+        alarmManager.cancel(DailySmbRefreshReceiver.pendingIntent(context = context))
+    }
+
+    /**
+     * Schedules a daily alarm at ~00:05 local time that fires [DailySmbRefreshReceiver], which
+     * enqueues [PhotoWidgetSyncWorker] to refresh today's "on this day" photos for every SMB
+     * widget. The alarm is a single app-wide schedule (not per-widget) and re-arms itself each
+     * time it fires.
+     */
+    fun setupDailySmbRefresh() {
+        Timber.d("Setting up daily SMB refresh alarm")
+
+        val calendar = Calendar.getInstance(TimeZone.getDefault()).apply {
+            add(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 5)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val pendingIntent = DailySmbRefreshReceiver.pendingIntent(context = context)
+
+        if (canScheduleExactAlarms) {
+            try {
+                alarmManager.setExactAndAllowWhileIdle(
+                    /* type = */ AlarmManager.RTC_WAKEUP,
+                    /* triggerAtMillis = */ calendar.timeInMillis,
+                    /* operation = */ pendingIntent,
+                )
+                return
+            } catch (_: SecurityException) {
+                Timber.d("SecurityException scheduling midnight alarm — falling back to inexact")
+            }
+        }
+
+        alarmManager.setAndAllowWhileIdle(
+            /* type = */ AlarmManager.RTC_WAKEUP,
+            /* triggerAtMillis = */ calendar.timeInMillis,
+            /* operation = */ pendingIntent,
+        )
+    }
+
+    fun cancelDailySmbRefresh() {
+        Timber.d("Cancelling daily SMB refresh alarm")
+        alarmManager.cancel(DailySmbRefreshReceiver.pendingIntent(context = context))
     }
 
     private fun setupIntervalAlarm(cycleMode: PhotoWidgetCycleMode.Interval, appWidgetId: Int) {
@@ -203,6 +248,31 @@ class ExactRepeatingAlarmReceiver : EntryPointBroadcastReceiver() {
                 /* requestCode = */ appWidgetId,
                 /* intent = */ intent,
                 /* flags = */ PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+        }
+    }
+}
+
+class DailySmbRefreshReceiver : EntryPointBroadcastReceiver() {
+
+    override suspend fun doWork(context: Context, intent: Intent, entryPoint: PhotoWidgetEntryPoint) {
+        Timber.d("Daily SMB refresh alarm fired")
+
+        PhotoWidgetSyncWorker.enqueueOneShot(context = context)
+        entryPoint.photoWidgetAlarmManager().setupDailySmbRefresh()
+    }
+
+    companion object {
+
+        private const val REQUEST_CODE = 0xDA11
+
+        fun pendingIntent(context: Context): PendingIntent {
+            val intent = Intent(context, DailySmbRefreshReceiver::class.java)
+            return PendingIntent.getBroadcast(
+                /* context = */ context,
+                /* requestCode = */ REQUEST_CODE,
+                /* intent = */ intent,
+                /* flags = */ PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
         }
     }

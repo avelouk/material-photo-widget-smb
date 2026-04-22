@@ -73,6 +73,14 @@ fun PhotoWidgetExport.toPhotoWidget(photos: List<LocalPhoto>): PhotoWidget {
                 hasShadow = textHasShadow ?: widgetText.hasShadow,
             )
         }
+
+        is PhotoWidgetText.OnThisDay -> {
+            PhotoWidgetText.OnThisDay(
+                size = textSize ?: widgetText.size,
+                verticalOffset = textVerticalOffset ?: widgetText.verticalOffset,
+                hasShadow = textHasShadow ?: widgetText.hasShadow,
+            )
+        }
     }
 
     return PhotoWidget(
@@ -128,6 +136,12 @@ fun PhotoWidget.toPhotoWidgetExport(id: Int): PhotoWidgetExport {
 
         is PhotoWidgetText.Label -> {
             textValue = text.value
+            textSize = text.size
+            textVerticalOffset = text.verticalOffset
+            textHasShadow = text.hasShadow
+        }
+
+        is PhotoWidgetText.OnThisDay -> {
             textSize = text.size
             textVerticalOffset = text.verticalOffset
             textHasShadow = text.hasShadow

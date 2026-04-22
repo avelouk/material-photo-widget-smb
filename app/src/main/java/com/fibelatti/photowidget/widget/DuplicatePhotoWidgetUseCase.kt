@@ -37,6 +37,13 @@ class DuplicatePhotoWidgetUseCase @Inject constructor(
                     dirUri = appWidget.syncedDir,
                 )
             }
+
+            PhotoWidgetSource.SMB -> {
+                photoWidgetStorage.saveSmbConfig(
+                    appWidgetId = newAppWidgetId,
+                    config = photoWidgetStorage.getSmbConfig(appWidgetId = originalAppWidgetId),
+                )
+            }
         }
 
         photoWidgetStorage.copyWidgetOrder(

@@ -97,8 +97,36 @@
     <!-- Source -->
     <string name="photo_widget_source_photos">Photos</string>
     <string name="photo_widget_source_directory">Folder</string>
+    <string name="photo_widget_source_smb">NAS / SMB</string>
     <string name="photo_widget_source_photos_description">Choose one or more photos using your default gallery picker.</string>
     <string name="photo_widget_source_directory_description">Choose one or more folders to sync. Photos are added automatically and refreshed at regular intervals.</string>
+    <string name="photo_widget_source_smb_description">Connect to a NAS or SMB share to show "on this day" memories from past years.</string>
+
+    <!-- SMB Config -->
+    <string name="photo_widget_smb_host">Server address (IP or hostname)</string>
+    <string name="photo_widget_smb_username">Username (optional)</string>
+    <string name="photo_widget_smb_password">Password (optional)</string>
+    <string name="photo_widget_smb_browse_folders">Browse &amp; select folders</string>
+    <string name="photo_widget_smb_no_folders_selected">No folders selected — tap Browse to pick folders from your NAS</string>
+    <string name="photo_widget_smb_folders_selected">%1$d folder(s) selected</string>
+    <string name="photo_widget_smb_scan">Sync photos now</string>
+    <string name="photo_widget_smb_scanning">Syncing…</string>
+    <string name="photo_widget_smb_scan_result">%1$d photos indexed</string>
+    <string name="photo_widget_smb_scan_error">Sync failed — check your settings.</string>
+    <string name="photo_widget_smb_todays_photos">Today\'s photos (%1$d)</string>
+    <string name="photo_widget_smb_sync_notification_title">Syncing photos</string>
+    <string name="photo_widget_smb_sync_notification_text">Scanning and downloading photos from NAS…</string>
+    <string name="photo_widget_smb_sync_channel_name">Photo sync</string>
+
+    <!-- SMB Folder Browser -->
+    <string name="photo_widget_smb_browser_title">Select folders</string>
+    <string name="photo_widget_smb_browser_share_hint">Share name (e.g. FamilyPhotos)</string>
+    <string name="photo_widget_smb_browser_open">Open share</string>
+    <string name="photo_widget_smb_browser_back">Back</string>
+    <string name="photo_widget_smb_browser_root">/ root</string>
+    <string name="photo_widget_smb_browser_load_error">Could not list folders — check connection and share name.</string>
+    <string name="photo_widget_smb_browser_confirm">Done (%1$d selected)</string>
+    <string name="photo_widget_smb_browser_empty">No subfolders found</string>
 
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
@@ -274,6 +302,8 @@
     <string name="photo_widget_configure_text_type_none">None</string>
     <string name="photo_widget_configure_text_type_label">Label</string>
     <string name="photo_widget_configure_text_type_label_description">Mimics an app name to match your home screen aesthetic</string>
+    <string name="photo_widget_configure_text_type_on_this_day">On this day</string>
+    <string name="photo_widget_configure_text_type_on_this_day_description">Shows the year the photo was taken, e.g. \"On this day, 2019\"</string>
 
     <string name="photo_widget_configure_text_value">Text</string>
     <string name="photo_widget_configure_text_size">Size</string>
@@ -355,6 +385,18 @@
 
     <!-- Hints -->
     <string name="hint_scroll_to_view_more">Scroll to view more</string>
+
+    <!-- Setup -->
+    <string name="setup_notifications_title">Allow notifications</string>
+    <string name="setup_notifications_body">Get notified when photo syncing is in progress so it can run reliably in the background.</string>
+    <string name="setup_notifications_allow">Allow notifications</string>
+    <string name="setup_battery_title">Unrestricted background</string>
+    <string name="setup_battery_body">Allow the app to run in the background without restrictions so your widget photos stay up to date.</string>
+    <string name="setup_battery_allow">Remove battery restriction</string>
+    <string name="setup_battery_granted">Background usage is unrestricted</string>
+    <string name="setup_battery_denied">Battery optimization is still enabled — you can change this later in Settings.</string>
+    <string name="setup_skip">Skip</string>
+    <string name="setup_done">Done</string>
 
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Material Photo home screen widget</string>

@@ -9,10 +9,12 @@ import com.fibelatti.photowidget.model.PhotoWidgetCycleMode
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.PhotoWidgetTapAction
 import com.fibelatti.photowidget.model.PhotoWidgetText
+import com.fibelatti.photowidget.model.SmbConfig
 import com.fibelatti.photowidget.model.TapActionArea
 import com.fibelatti.photowidget.model.WidgetPhotos
 import com.fibelatti.photowidget.model.allWidgetPhotos
 import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.days
@@ -30,6 +32,7 @@ class PhotoWidgetStorage @Inject constructor(
     private val orderDao: PhotoWidgetOrderDao,
     private val pendingDeletionPhotosDao: PendingDeletionWidgetPhotoDao,
     private val excludedPhotosDao: ExcludedWidgetPhotoDao,
+    private val smbStorage: PhotoWidgetSmbStorage,
 ) {
 
     fun saveWidgetSource(appWidgetId: Int, source: PhotoWidgetSource) {
@@ -279,7 +282,118 @@ class PhotoWidgetStorage @Inject constructor(
                     .map { it.photoId }
                     .toSet()
             }
+
+            PhotoWidgetSource.SMB -> emptySet()
         }
+    }
+
+    fun saveSmbConfig(appWidgetId: Int, config: SmbConfig) {
+        smbStorage.saveSmbConfig(appWidgetId = appWidgetId, config = config)
+    }
+
+    fun getSmbConfig(appWidgetId: Int): SmbConfig {
+        return smbStorage.getSmbConfig(appWidgetId = appWidgetId)
+    }
+
+    suspend fun getIndexCount(widgetId: Int): Int = smbStorage.getIndexCount(widgetId)
+
+    suspend fun listSmbShares(config: SmbConfig): Result<List<String>> {
+        return smbStorage.listShares(config = config)
+    }
+
+    suspend fun listSmbFolders(config: SmbConfig, share: String, path: String): Result<List<String>> {
+        return smbStorage.listFolders(config = config, share = share, path = path)
+    }
+
+    /**
+     * Full SMB sync: walks the NAS folder tree, refreshes the photo index, enriches dates via
+     * EXIF, then refreshes today's cached photos. Expensive — used only on the Scan button and
+     * the weekly background rescan.
+     */
+    suspend fun fullSmbSync(appWidgetId: Int) {
+        val config = smbStorage.getSmbConfig(appWidgetId)
+        if (!config.isConfigured) {
+            Timber.d("SMB not configured for widget $appWidgetId, skipping full sync")
+            return
+        }
+
+        Timber.d("Starting full SMB sync for widget $appWidgetId")
+        smbStorage.scanAndIndex(widgetId = appWidgetId, config = config).getOrElse { e ->
+            Timber.e(e, "SMB scan failed for widget $appWidgetId")
+            return
+        }
+
+        smbStorage.enrichWithExif(widgetId = appWidgetId, config = config)
+
+        refreshTodaysSmbPhotos(appWidgetId = appWidgetId)
+    }
+
+    /**
+     * Daily SMB refresh: queries the existing photo index for today's month/day, downloads any
+     * matching files that aren't cached yet, removes local files that are no longer in the set,
+     * and updates the widget's local photo table. No SMB directory walk.
+     */
+    suspend fun refreshTodaysSmbPhotos(appWidgetId: Int) {
+        val config = smbStorage.getSmbConfig(appWidgetId)
+        if (!config.isConfigured) {
+            Timber.d("SMB not configured for widget $appWidgetId, skipping daily refresh")
+            return
+        }
+
+        val todayPhotos = smbStorage.getPhotosForDay(widgetId = appWidgetId)
+        Timber.d("${todayPhotos.size} SMB photos for today (widget $appWidgetId)")
+
+        val widgetDir = internalFileStorage.getWidgetDir(appWidgetId)
+        val originalDir = File("$widgetDir/original").apply { mkdirs() }
+
+        val newLocalPhotos = mutableListOf<LocalPhotoDto>()
+        for (smbPhoto in todayPhotos) {
+            val ext = smbPhoto.path.substringAfterLast('.').lowercase().ifBlank { "jpg" }
+            val photoId = "${smbPhoto.year}_${UUID.nameUUIDFromBytes(smbPhoto.path.toByteArray(Charsets.UTF_8))}.$ext"
+            val croppedFile = File(widgetDir, photoId)
+            val originalFile = File(originalDir, photoId)
+
+            if (!croppedFile.exists()) {
+                smbStorage.downloadPhoto(smbPhoto.path, config, croppedFile).getOrElse {
+                    Timber.w(it, "Failed to download SMB photo: ${smbPhoto.path}")
+                    continue
+                }
+            }
+            if (!originalFile.exists() && croppedFile.exists()) {
+                croppedFile.copyTo(originalFile, overwrite = false)
+            }
+
+            if (croppedFile.exists()) {
+                newLocalPhotos += LocalPhotoDto(
+                    widgetId = appWidgetId,
+                    photoId = photoId,
+                    croppedPhotoPath = croppedFile.path,
+                    originalPhotoPath = originalFile.path,
+                )
+            }
+        }
+
+        val newPhotoIds = newLocalPhotos.map { it.photoId }.toSet()
+        val oldPhotoIds = localPhotoDao.getLocalPhotoIds(widgetId = appWidgetId).toSet()
+
+        for (staleId in oldPhotoIds - newPhotoIds) {
+            internalFileStorage.deleteWidgetPhoto(appWidgetId = appWidgetId, photoId = staleId)
+        }
+
+        localPhotoDao.replacePhotos(
+            widgetId = appWidgetId,
+            photos = newLocalPhotos,
+            idsToDelete = oldPhotoIds - newPhotoIds,
+        )
+
+        saveWidgetOrder(appWidgetId = appWidgetId, order = newPhotoIds)
+
+        displayedPhotoDao.deletePhotosByPhotoIds(
+            widgetId = appWidgetId,
+            photoIds = displayedPhotoDao.getDisplayedPhotoIds(widgetId = appWidgetId).subtract(newPhotoIds),
+        )
+
+        Timber.d("SMB daily refresh complete: ${newLocalPhotos.size} photos cached for widget $appWidgetId")
     }
 
     suspend fun getCropSources(appWidgetId: Int, localPhoto: LocalPhoto): Pair<Uri, Uri> {
@@ -488,6 +602,7 @@ class PhotoWidgetStorage @Inject constructor(
         orderDao.deletePhotosByWidgetId(widgetId = appWidgetId)
         pendingDeletionPhotosDao.deletePhotosByWidgetId(widgetId = appWidgetId)
         excludedPhotosDao.deletePhotosByWidgetId(widgetId = appWidgetId)
+        smbStorage.deleteByWidgetId(widgetId = appWidgetId)
     }
 
     /**

@@ -98,6 +98,7 @@ fun PhotoWidgetConfigureTextTab(
                 when (photoWidgetText) {
                     is PhotoWidgetText.None -> R.string.photo_widget_configure_text_type_none
                     is PhotoWidgetText.Label -> R.string.photo_widget_configure_text_type_label
+                    is PhotoWidgetText.OnThisDay -> R.string.photo_widget_configure_text_type_on_this_day
                 },
             ),
             onClick = textTypeSheetState::showBottomSheet,
@@ -138,6 +139,8 @@ fun PhotoWidgetConfigureTextTab(
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
+
+            is PhotoWidgetText.OnThisDay -> Unit
         }
     }
 
@@ -155,6 +158,7 @@ fun PhotoWidgetConfigureTextTab(
             when (photoWidgetText) {
                 is PhotoWidgetText.None -> Unit
                 is PhotoWidgetText.Label -> onPhotoWidgetTextChange(photoWidgetText.copy(value = newValue))
+                is PhotoWidgetText.OnThisDay -> Unit
             }
         },
     )
@@ -166,6 +170,7 @@ fun PhotoWidgetConfigureTextTab(
             when (photoWidgetText) {
                 is PhotoWidgetText.None -> Unit
                 is PhotoWidgetText.Label -> onPhotoWidgetTextChange(photoWidgetText.copy(size = newValue))
+                is PhotoWidgetText.OnThisDay -> Unit
             }
         },
     )
@@ -177,6 +182,7 @@ fun PhotoWidgetConfigureTextTab(
             when (photoWidgetText) {
                 is PhotoWidgetText.None -> Unit
                 is PhotoWidgetText.Label -> onPhotoWidgetTextChange(photoWidgetText.copy(verticalOffset = newValue))
+                is PhotoWidgetText.OnThisDay -> Unit
             }
         },
     )
@@ -212,6 +218,7 @@ private fun PhotoWidgetTextTypePicker(
                         when (item) {
                             is PhotoWidgetText.None -> R.string.photo_widget_configure_text_type_none
                             is PhotoWidgetText.Label -> R.string.photo_widget_configure_text_type_label
+                            is PhotoWidgetText.OnThisDay -> R.string.photo_widget_configure_text_type_on_this_day
                         },
                     )
                 },
@@ -220,6 +227,9 @@ private fun PhotoWidgetTextTypePicker(
                         is PhotoWidgetText.None -> null
                         is PhotoWidgetText.Label -> {
                             localResources.getString(R.string.photo_widget_configure_text_type_label_description)
+                        }
+                        is PhotoWidgetText.OnThisDay -> {
+                            localResources.getString(R.string.photo_widget_configure_text_type_on_this_day_description)
                         }
                     }
                 },

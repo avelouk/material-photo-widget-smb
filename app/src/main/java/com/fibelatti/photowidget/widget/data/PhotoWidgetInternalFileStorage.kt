@@ -163,7 +163,9 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
             val originalPhotoNames = originalPhotosDir.list().orEmpty().toSet()
 
             val fileNameFilter = FilenameFilter { _, name ->
-                name != "original" && (name in originalPhotoNames || PhotoWidgetSource.DIRECTORY == source)
+                name != "original" && (name in originalPhotoNames ||
+                    PhotoWidgetSource.DIRECTORY == source ||
+                    PhotoWidgetSource.SMB == source)
             }
 
             widgetDir.list(fileNameFilter)
@@ -251,7 +253,7 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
         }
     }
 
-    private suspend fun getWidgetDir(appWidgetId: Int): File = withContext(Dispatchers.IO) {
+    internal suspend fun getWidgetDir(appWidgetId: Int): File = withContext(Dispatchers.IO) {
         File("$rootDir/$appWidgetId").apply {
             mkdirs()
         }

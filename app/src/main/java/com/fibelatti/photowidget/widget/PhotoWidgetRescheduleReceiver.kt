@@ -9,17 +9,25 @@ import timber.log.Timber
 class PhotoWidgetRescheduleReceiver : EntryPointBroadcastReceiver() {
 
     override suspend fun doWork(context: Context, intent: Intent, entryPoint: PhotoWidgetEntryPoint) {
-        Timber.d("Working...")
+        Timber.d("Working... (action=${intent.action})")
 
         val isBoot = Intent.ACTION_BOOT_COMPLETED == intent.action ||
             Intent.ACTION_LOCKED_BOOT_COMPLETED == intent.action
         val isUpdate = Intent.ACTION_MY_PACKAGE_REPLACED == intent.action ||
             (Intent.ACTION_PACKAGE_REPLACED == intent.action && intent.data?.schemeSpecificPart == context.packageName)
         val isManual = ACTION_RESCHEDULE == intent.action
+        val isDateChanged = Intent.ACTION_DATE_CHANGED == intent.action ||
+            Intent.ACTION_TIME_CHANGED == intent.action ||
+            Intent.ACTION_TIMEZONE_CHANGED == intent.action
 
         if (isBoot || isUpdate || isManual) {
             PhotoWidgetRescheduleWorker.enqueueWork(context = context)
             PhotoWidgetSyncWorker.enqueueWork(context = context)
+        }
+
+        if (isDateChanged) {
+            entryPoint.photoWidgetAlarmManager().setupDailySmbRefresh()
+            PhotoWidgetSyncWorker.enqueueOneShot(context = context)
         }
     }
 

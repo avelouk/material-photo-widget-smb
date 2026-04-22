@@ -10,10 +10,8 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -28,48 +26,41 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
+/**
+ * Weekly background re-index: walks every SMB widget's configured folders and refreshes the
+ * photo index so new NAS uploads eventually get picked up without manually pressing Scan.
+ * Runs as a foreground worker because a full SMB walk can easily exceed the 10-minute limit
+ * that applies to background WorkManager jobs.
+ */
 @HiltWorker
-class PhotoWidgetSyncWorker @AssistedInject constructor(
+class SmbFullScanWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     private val photoWidgetStorage: PhotoWidgetStorage,
 ) : CoroutineWorker(appContext = context, params = workerParams) {
 
     override suspend fun doWork(): Result {
-        Timber.d("Working...")
+        val ids = PhotoWidgetProvider.ids(applicationContext)
+            .filter { photoWidgetStorage.getWidgetSource(appWidgetId = it) == PhotoWidgetSource.SMB }
 
-        val ids: List<Int> = PhotoWidgetProvider.ids(applicationContext).ifEmpty {
-            Timber.d("There are no widgets.")
+        if (ids.isEmpty()) {
+            Timber.d("SmbFullScanWorker: no SMB widgets, skipping")
             return Result.success()
         }
 
-        val hasSmbWidget = ids.any { photoWidgetStorage.getWidgetSource(appWidgetId = it) == PhotoWidgetSource.SMB }
-        if (hasSmbWidget) {
-            setForeground(createForegroundInfo())
-        }
+        setForeground(createForegroundInfo())
 
         var shouldRetry = false
 
         for (id in ids) {
             try {
-                Timber.d("Processing widget (id=$id)")
-
-                val source = photoWidgetStorage.getWidgetSource(appWidgetId = id)
-
-                when (source) {
-                    PhotoWidgetSource.DIRECTORY -> withContext(NonCancellable) {
-                        photoWidgetStorage.syncWidgetPhotos(appWidgetId = id)
-                    }
-
-                    PhotoWidgetSource.SMB -> withContext(NonCancellable) {
-                        photoWidgetStorage.refreshTodaysSmbPhotos(appWidgetId = id)
-                        PhotoWidgetProvider.update(context = applicationContext, appWidgetId = id)
-                    }
-
-                    else -> Unit
+                Timber.d("SmbFullScanWorker: running full sync for widget $id")
+                withContext(NonCancellable) {
+                    photoWidgetStorage.fullSmbSync(appWidgetId = id)
+                    PhotoWidgetProvider.update(context = applicationContext, appWidgetId = id)
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Error processing widget (id=$id). Will retry.")
+                Timber.e(e, "SmbFullScanWorker failed for widget $id")
                 shouldRetry = true
             }
         }
@@ -107,47 +98,29 @@ class PhotoWidgetSyncWorker @AssistedInject constructor(
 
     companion object {
 
-        private const val UNIQUE_WORK_NAME = "PhotoWidgetSyncWorker"
+        private const val UNIQUE_WORK_NAME = "SmbFullScanWorker"
         private const val CHANNEL_ID = "smb_sync"
-        private const val NOTIFICATION_ID = 43
+        private const val NOTIFICATION_ID = 44
 
         fun enqueueWork(context: Context) {
-            Timber.d("Enqueuing work...")
+            Timber.d("Enqueuing weekly SMB full-scan work")
 
             val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiresBatteryNotLow(true)
                 .build()
 
-            val workRequest: PeriodicWorkRequest.Builder = PeriodicWorkRequestBuilder<PhotoWidgetSyncWorker>(
-                repeatInterval = Duration.ofHours(6),
-            ).setConstraints(constraints)
+            val workRequest: PeriodicWorkRequest = PeriodicWorkRequestBuilder<SmbFullScanWorker>(
+                repeatInterval = Duration.ofDays(7),
+            )
+                .setConstraints(constraints)
+                .setInitialDelay(Duration.ofDays(1))
+                .build()
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 uniqueWorkName = UNIQUE_WORK_NAME,
-                existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.UPDATE,
-                request = workRequest.build(),
-            )
-        }
-
-        /**
-         * Expedited one-shot: kicks off a `PhotoWidgetSyncWorker` run immediately, outside the
-         * 6-hour periodic cadence. Used by the midnight alarm and DATE_CHANGED backup trigger.
-         */
-        fun enqueueOneShot(context: Context) {
-            Timber.d("Enqueuing one-shot sync...")
-
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
-
-            val request = OneTimeWorkRequestBuilder<PhotoWidgetSyncWorker>()
-                .setConstraints(constraints)
-                .build()
-
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                "${UNIQUE_WORK_NAME}_oneshot",
-                ExistingWorkPolicy.REPLACE,
-                request,
+                existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
+                request = workRequest,
             )
         }
     }

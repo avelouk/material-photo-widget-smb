@@ -18,7 +18,14 @@ class HintStorage @Inject constructor(@ApplicationContext context: Context) {
             sharedPreferences.edit { putBoolean(Hint.HOME_BACKGROUND_RESTRICTIONS.value, value) }
         }
 
+    var setupCompleted: Boolean
+        get() = sharedPreferences.getBoolean(Hint.SETUP_COMPLETED.value, false)
+        set(value) {
+            sharedPreferences.edit { putBoolean(Hint.SETUP_COMPLETED.value, value) }
+        }
+
     private enum class Hint(val value: String) {
         HOME_BACKGROUND_RESTRICTIONS(value = "hint_home_background_restrictions"),
+        SETUP_COMPLETED(value = "hint_setup_completed"),
     }
 }

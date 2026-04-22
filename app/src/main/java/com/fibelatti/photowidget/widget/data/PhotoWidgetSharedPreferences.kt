@@ -1,9 +1,14 @@
 package com.fibelatti.photowidget.widget.data
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.core.content.edit
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import com.fibelatti.photowidget.model.DirectorySorting
+import com.fibelatti.photowidget.model.SmbConfig
+import com.fibelatti.photowidget.model.SmbFolder
 import com.fibelatti.photowidget.model.LegacyPhotoWidgetLoopingInterval
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.model.PhotoWidgetBorder
@@ -22,6 +27,7 @@ import com.fibelatti.photowidget.preferences.UserPreferencesStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlin.math.roundToInt
+import timber.log.Timber
 
 class PhotoWidgetSharedPreferences @Inject constructor(
     @ApplicationContext context: Context,
@@ -29,6 +35,7 @@ class PhotoWidgetSharedPreferences @Inject constructor(
 ) {
 
     private val sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val encryptedPreferences: SharedPreferences by lazy { createEncryptedPreferences(context) }
     private val density = context.resources.displayMetrics.density
 
     fun saveWidgetSource(appWidgetId: Int, source: PhotoWidgetSource) {
@@ -581,6 +588,12 @@ class PhotoWidgetSharedPreferences @Inject constructor(
                     verticalOffset = getInt("${PreferencePrefix.TEXT_VERTICAL_OFFSET}$appWidgetId", 0),
                     hasShadow = getBoolean("${PreferencePrefix.TEXT_HAS_SHADOW}$appWidgetId", true),
                 )
+
+                is PhotoWidgetText.OnThisDay -> photoWidgetText.copy(
+                    size = getInt("${PreferencePrefix.TEXT_SIZE}$appWidgetId", 12),
+                    verticalOffset = getInt("${PreferencePrefix.TEXT_VERTICAL_OFFSET}$appWidgetId", 0),
+                    hasShadow = getBoolean("${PreferencePrefix.TEXT_HAS_SHADOW}$appWidgetId", true),
+                )
             }
         }
     }
@@ -599,9 +612,80 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         return sharedPreferences.getLong("${PreferencePrefix.DELETION_TIMESTAMP}$appWidgetId", -1)
     }
 
+    fun saveWidgetSmbConfig(appWidgetId: Int, config: SmbConfig) {
+        sharedPreferences.edit {
+            putString("${PreferencePrefix.SMB_HOST}$appWidgetId", config.host)
+            putString("${PreferencePrefix.SMB_DOMAIN}$appWidgetId", config.domain)
+            putString("${PreferencePrefix.SMB_USERNAME}$appWidgetId", config.username)
+            putInt("${PreferencePrefix.SMB_PORT}$appWidgetId", config.port)
+            // Each folder encoded as "share\tpath" joined in a StringSet
+            putStringSet(
+                "${PreferencePrefix.SMB_FOLDERS}$appWidgetId",
+                config.selectedFolders.map { "${it.share}\t${it.path}" }.toSet(),
+            )
+            // Clear legacy single-share keys
+            remove("${PreferencePrefix.SMB_SHARE}$appWidgetId")
+            remove("${PreferencePrefix.SMB_PATH}$appWidgetId")
+            // Migrate plaintext password to encrypted store
+            remove("${PreferencePrefix.SMB_PASSWORD}$appWidgetId")
+        }
+        // Password stored in encrypted preferences
+        try {
+            encryptedPreferences.edit {
+                putString("${PreferencePrefix.SMB_PASSWORD}$appWidgetId", config.password)
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to write to encrypted preferences, falling back to plaintext")
+            sharedPreferences.edit {
+                putString("${PreferencePrefix.SMB_PASSWORD}$appWidgetId", config.password)
+            }
+        }
+    }
+
+    fun getWidgetSmbConfig(appWidgetId: Int): SmbConfig = with(sharedPreferences) {
+        val foldersKey = "${PreferencePrefix.SMB_FOLDERS}$appWidgetId"
+        val folders: List<SmbFolder> = if (contains(foldersKey)) {
+            getStringSet(foldersKey, null).orEmpty().mapNotNull { encoded ->
+                val tab = encoded.indexOf('\t')
+                if (tab < 0) null
+                else SmbFolder(share = encoded.substring(0, tab), path = encoded.substring(tab + 1))
+            }
+        } else {
+            // Migrate from legacy single-share keys
+            val legacyShare = getString("${PreferencePrefix.SMB_SHARE}$appWidgetId", "") ?: ""
+            val legacyPath = getString("${PreferencePrefix.SMB_PATH}$appWidgetId", "") ?: ""
+            if (legacyShare.isNotBlank()) listOf(SmbFolder(share = legacyShare, path = legacyPath))
+            else emptyList()
+        }
+
+        // Read password from encrypted prefs, falling back to plaintext for migration or keystore failure
+        val password = try {
+            encryptedPreferences.getString("${PreferencePrefix.SMB_PASSWORD}$appWidgetId", null)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to read from encrypted preferences")
+            null
+        } ?: getString("${PreferencePrefix.SMB_PASSWORD}$appWidgetId", "") ?: ""
+
+        SmbConfig(
+            host = getString("${PreferencePrefix.SMB_HOST}$appWidgetId", "") ?: "",
+            domain = getString("${PreferencePrefix.SMB_DOMAIN}$appWidgetId", "") ?: "",
+            username = getString("${PreferencePrefix.SMB_USERNAME}$appWidgetId", "") ?: "",
+            password = password,
+            port = getInt("${PreferencePrefix.SMB_PORT}$appWidgetId", 445),
+            selectedFolders = folders,
+        )
+    }
+
     fun deleteWidgetData(appWidgetId: Int) {
         sharedPreferences.edit {
             PreferencePrefix.entries.forEach { prefix -> remove("$prefix$appWidgetId") }
+        }
+        try {
+            encryptedPreferences.edit {
+                remove("${PreferencePrefix.SMB_PASSWORD}$appWidgetId")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to clean encrypted preferences for widget $appWidgetId")
         }
     }
 
@@ -700,6 +784,15 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         TEXT_HAS_SHADOW(value = "appwidget_text_has_shadow_"),
 
         DELETION_TIMESTAMP(value = "appwidget_deletion_timestamp_"),
+
+        SMB_HOST(value = "appwidget_smb_host_"),
+        SMB_SHARE(value = "appwidget_smb_share_"),      // legacy — kept for migration reads
+        SMB_PATH(value = "appwidget_smb_path_"),        // legacy — kept for migration reads
+        SMB_DOMAIN(value = "appwidget_smb_domain_"),
+        SMB_USERNAME(value = "appwidget_smb_username_"),
+        SMB_PASSWORD(value = "appwidget_smb_password_"),
+        SMB_PORT(value = "appwidget_smb_port_"),
+        SMB_FOLDERS(value = "appwidget_smb_folders_"),
         ;
 
         override fun toString(): String = value
@@ -708,5 +801,17 @@ class PhotoWidgetSharedPreferences @Inject constructor(
     private companion object {
 
         const val SHARED_PREFERENCES_NAME = "com.fibelatti.photowidget.PhotoWidget"
+        const val ENCRYPTED_PREFERENCES_NAME = "com.fibelatti.photowidget.SmbSecure"
+
+        fun createEncryptedPreferences(context: Context): SharedPreferences {
+            val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+            return EncryptedSharedPreferences.create(
+                ENCRYPTED_PREFERENCES_NAME,
+                masterKeyAlias,
+                context,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+            )
+        }
     }
 }

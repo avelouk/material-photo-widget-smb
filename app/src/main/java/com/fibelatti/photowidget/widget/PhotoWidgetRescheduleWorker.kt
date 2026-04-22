@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.fibelatti.photowidget.model.PhotoWidgetCycleMode
+import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -43,6 +44,7 @@ class PhotoWidgetRescheduleWorker @AssistedInject constructor(
         }
 
         var shouldRetry = false
+        var hasSmbWidget = false
 
         for (id in ids) {
             try {
@@ -56,11 +58,19 @@ class PhotoWidgetRescheduleWorker @AssistedInject constructor(
                     photoWidgetAlarmManager.setup(appWidgetId = id)
                 }
 
+                if (photoWidgetStorage.getWidgetSource(appWidgetId = id) == PhotoWidgetSource.SMB) {
+                    hasSmbWidget = true
+                }
+
                 PhotoWidgetProvider.update(context = applicationContext, appWidgetId = id)
             } catch (e: Exception) {
                 Timber.e(e, "Error processing widget (id=$id). Will retry.")
                 shouldRetry = true
             }
+        }
+
+        if (hasSmbWidget) {
+            photoWidgetAlarmManager.setupDailySmbRefresh()
         }
 
         // Directly calling `Companion.enqueueWork` at this point would mark this work execution as

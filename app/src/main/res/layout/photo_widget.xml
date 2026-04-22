@@ -65,6 +65,15 @@
         android:scaleType="center"
         android:visibility="gone" />
 
+    <ImageView
+        android:id="@+id/iv_widget_year_peel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="10dp"
+        android:importantForAccessibility="no"
+        android:visibility="gone" />
+
     <LinearLayout
         android:id="@+id/tap_actions_layout"
         android:layout_width="match_parent"

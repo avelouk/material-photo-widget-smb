@@ -13,6 +13,7 @@ import com.fibelatti.photowidget.preferences.UserPreferencesStorage
 import com.fibelatti.photowidget.widget.DeleteStaleDataUseCase
 import com.fibelatti.photowidget.widget.PhotoWidgetRescheduleWorker
 import com.fibelatti.photowidget.widget.PhotoWidgetSyncWorker
+import com.fibelatti.photowidget.widget.SmbFullScanWorker
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import dagger.hilt.android.HiltAndroidApp
@@ -104,5 +105,6 @@ class App : Application(), Configuration.Provider {
 
         PhotoWidgetRescheduleWorker.enqueueWork(context = this)
         PhotoWidgetSyncWorker.enqueueWork(context = this)
+        SmbFullScanWorker.enqueueWork(context = this)
     }
 }

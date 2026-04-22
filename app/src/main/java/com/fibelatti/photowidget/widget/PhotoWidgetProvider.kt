@@ -28,6 +28,8 @@ import com.fibelatti.photowidget.model.PhotoWidgetTapAction
 import com.fibelatti.photowidget.model.PhotoWidgetText
 import com.fibelatti.photowidget.model.tapActionDisableTap
 import com.fibelatti.photowidget.model.textToBitmap
+import com.fibelatti.photowidget.model.yearPeelToBitmap
+import com.fibelatti.photowidget.platform.getDynamicAttributeColor
 import com.fibelatti.photowidget.platform.getInstalledApp
 import com.fibelatti.photowidget.platform.getLaunchIntent
 import com.fibelatti.photowidget.platform.setIdentifierCompat
@@ -244,11 +246,35 @@ class PhotoWidgetProvider : AppWidgetProvider() {
                     setImageViewBitmap(visibleImageViewId, result.fallback)
                 }
 
-                setText(
-                    remoteViews = this,
-                    context = context,
-                    photoWidgetText = photoWidget.text,
-                )
+                setViewVisibility(R.id.iv_widget_year_peel, View.GONE)
+
+                if (photoWidget.text is PhotoWidgetText.OnThisDay) {
+                    val year = photoWidget.currentPhoto?.photoId
+                        ?.substringBefore('_')?.toIntOrNull()
+                    if (year != null) {
+                        val bgColor = context.getDynamicAttributeColor(
+                            com.google.android.material.R.attr.colorTertiaryContainer,
+                        )
+                        val fgColor = context.getDynamicAttributeColor(
+                            com.google.android.material.R.attr.colorOnTertiaryContainer,
+                        )
+                        val peelBitmap = yearPeelToBitmap(
+                            context = context,
+                            year = year.toString(),
+                            backgroundColor = bgColor,
+                            textColor = fgColor,
+                        )
+                        setViewVisibility(R.id.iv_widget_year_peel, View.VISIBLE)
+                        setImageViewBitmap(R.id.iv_widget_year_peel, peelBitmap)
+                    }
+                    setViewVisibility(R.id.iv_widget_label, View.GONE)
+                } else {
+                    setText(
+                        remoteViews = this,
+                        context = context,
+                        photoWidgetText = photoWidget.text,
+                    )
+                }
 
                 setPadding(
                     remoteViews = this,
@@ -286,6 +312,11 @@ class PhotoWidgetProvider : AppWidgetProvider() {
                         /* right = */ 0,
                         /* bottom = */ bottomPadding,
                     )
+                }
+
+                is PhotoWidgetText.OnThisDay -> {
+                    // OnThisDay should be resolved to Label before calling setText
+                    remoteViews.setViewVisibility(R.id.iv_widget_label, View.GONE)
                 }
             }
         }

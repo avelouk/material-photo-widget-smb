@@ -8,6 +8,8 @@ import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import androidx.room.Upsert
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [
@@ -16,8 +18,9 @@ import androidx.room.Upsert
         PhotoWidgetOrderDto::class,
         PendingDeletionWidgetPhotoDto::class,
         ExcludedWidgetPhotoDto::class,
+        SmbPhotoIndexDto::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -26,6 +29,26 @@ import androidx.room.Upsert
     ],
 )
 abstract class PhotoWidgetDatabase : RoomDatabase() {
+
+    companion object {
+        /** v4→v5: Add smb_photo_index table with composite PK and dateSource column. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS smb_photo_index")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS smb_photo_index (" +
+                        "widgetId INTEGER NOT NULL, " +
+                        "path TEXT NOT NULL, " +
+                        "month INTEGER NOT NULL, " +
+                        "day INTEGER NOT NULL, " +
+                        "year INTEGER NOT NULL, " +
+                        "lastSeen INTEGER NOT NULL, " +
+                        "dateSource TEXT NOT NULL DEFAULT 'PATH', " +
+                        "PRIMARY KEY(widgetId, path))",
+                )
+            }
+        }
+    }
 
     abstract fun localPhotoDao(): LocalPhotoDao
 
@@ -36,6 +59,8 @@ abstract class PhotoWidgetDatabase : RoomDatabase() {
     abstract fun pendingDeletionWidgetPhotoDao(): PendingDeletionWidgetPhotoDao
 
     abstract fun excludedWidgetPhotoDao(): ExcludedWidgetPhotoDao
+
+    abstract fun smbPhotoIndexDao(): SmbPhotoIndexDao
 }
 
 @Entity(
@@ -222,4 +247,44 @@ interface ExcludedWidgetPhotoDao {
 
     @Query("delete from excluded_widget_photos where widgetId = :widgetId")
     suspend fun deletePhotosByWidgetId(widgetId: Int)
+}
+
+/**
+ * Index of photos discovered on an SMB share, scoped per widget.
+ * Month and day are extracted from folder/file naming conventions or lastModified.
+ */
+@Entity(
+    tableName = "smb_photo_index",
+    primaryKeys = ["widgetId", "path"],
+)
+data class SmbPhotoIndexDto(
+    val widgetId: Int,
+    val path: String,
+    val month: Int,
+    val day: Int,
+    val year: Int,
+    val lastSeen: Long = System.currentTimeMillis(),
+    val dateSource: String = "PATH",
+)
+
+@Dao
+interface SmbPhotoIndexDao {
+
+    @Query("select * from smb_photo_index where widgetId = :widgetId and month = :month and day = :day order by year desc")
+    suspend fun getPhotosForDay(widgetId: Int, month: Int, day: Int): List<SmbPhotoIndexDto>
+
+    @Query("select * from smb_photo_index where widgetId = :widgetId and dateSource = 'LAST_MODIFIED'")
+    suspend fun getPhotosNeedingExif(widgetId: Int): List<SmbPhotoIndexDto>
+
+    @Upsert
+    suspend fun upsertPhotos(photos: Collection<SmbPhotoIndexDto>)
+
+    @Query("delete from smb_photo_index where widgetId = :widgetId and lastSeen < :threshold")
+    suspend fun deleteStaleEntries(widgetId: Int, threshold: Long)
+
+    @Query("delete from smb_photo_index where widgetId = :widgetId")
+    suspend fun deleteByWidgetId(widgetId: Int)
+
+    @Query("select count(*) from smb_photo_index where widgetId = :widgetId")
+    suspend fun count(widgetId: Int): Int
 }
