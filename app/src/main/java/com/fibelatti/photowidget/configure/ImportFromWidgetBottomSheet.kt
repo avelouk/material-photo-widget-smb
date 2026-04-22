@@ -36,17 +36,18 @@ import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.model.PhotoWidgetStatus
 import com.fibelatti.photowidget.model.isWidgetRemoved
 import com.fibelatti.photowidget.platform.RememberedEffect
+import com.fibelatti.photowidget.platform.letIf
 import com.fibelatti.photowidget.ui.MyWidgetBadge
 import com.fibelatti.photowidget.ui.ShapedPhoto
 import com.fibelatti.ui.foundation.AppBottomSheet
 import com.fibelatti.ui.foundation.AppSheetState
-import com.fibelatti.ui.foundation.conditional
 import com.fibelatti.ui.foundation.hideBottomSheet
 
+@Suppress("ktlint:compose:vm-forwarding-check")
 @Composable
 fun ImportFromWidgetBottomSheet(
     sheetState: AppSheetState,
-    onWidgetSelected: (appWidgetId: Int) -> Unit,
+    onWidgetSelect: (appWidgetId: Int) -> Unit,
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -62,8 +63,8 @@ fun ImportFromWidgetBottomSheet(
 
         ImportFromWidgetContent(
             currentWidgets = currentWidgets,
-            onWidgetSelected = { id ->
-                onWidgetSelected(id)
+            onWidgetSelect = { id ->
+                onWidgetSelect(id)
                 sheetState.hideBottomSheet()
             },
         )
@@ -73,7 +74,7 @@ fun ImportFromWidgetBottomSheet(
 @Composable
 private fun ImportFromWidgetContent(
     currentWidgets: List<Pair<Int, PhotoWidget>>,
-    onWidgetSelected: (widgetId: Int) -> Unit,
+    onWidgetSelect: (widgetId: Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -110,7 +111,7 @@ private fun ImportFromWidgetContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .clickable { onWidgetSelected(id) },
+                        .clickable { onWidgetSelect(id) },
                     contentAlignment = Alignment.BottomCenter,
                 ) {
                     ShapedPhoto(
@@ -120,10 +121,9 @@ private fun ImportFromWidgetContent(
                         cornerRadius = widget.cornerRadius,
                         modifier = Modifier
                             .fillMaxSize()
-                            .conditional(
-                                predicate = widget.aspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET,
-                                ifTrue = { clip(enforcedShape) },
-                            ),
+                            .letIf(widget.aspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET) {
+                                it.clip(enforcedShape)
+                            },
                         colors = widget.colors,
                         border = widget.border,
                         isLoading = widget.isLoading,
@@ -136,7 +136,7 @@ private fun ImportFromWidgetContent(
                             contentColor = MaterialTheme.colorScheme.onErrorContainer,
                             modifier = Modifier.padding(bottom = 8.dp),
                             icon = painterResource(R.drawable.ic_trash_clock)
-                                .takeIf { PhotoWidgetStatus.REMOVED == widget.status },
+                                .takeIf { widget.status == PhotoWidgetStatus.REMOVED },
                         )
                     }
                 }

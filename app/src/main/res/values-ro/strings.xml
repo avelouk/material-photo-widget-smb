@@ -40,6 +40,8 @@
     <!-- My Widgets -->
     <string name="photo_widget_home_empty_widgets">Nu ai adăugat încă nici un widget.\nWidget-urile adăugate pe ecranul de pornire vor apărea aici.</string>
     <string name="photo_widget_home_filter_all">Toate</string>
+    <string name="photo_widget_home_draft_label">Ciornă</string>
+    <string name="photo_widget_home_draft_action_discard">Șterge ciorna</string>
     <string name="photo_widget_home_locked_label">Blocat</string>
     <string name="photo_widget_home_removed_label">Eliminat</string>
     <string name="photo_widget_home_removed_widgets_hint">Widget-urile șterse nu mai sunt pe ecranul de pornire. Ele sunt șterse definitiv din aplicație după 7 zile. Puteți alege „Păstrează”.</string>
@@ -84,7 +86,9 @@
     <string name="photo_widget_source_photos">Fotografii</string>
     <string name="photo_widget_source_directory">Dosar</string>
     <string name="photo_widget_source_photos_description">Alege una sau mai multe fotografii folosind selectorul implicit al galeriei.</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Alege unul sau mai multe foldere pentru sincronizare. Fotografiile sunt adăugate automat și actualizate periodic.</string>
+    <string name="photo_widget_source_gif_description">Alege un GIF animat pentru a-l reda pe ecranul de pornire. Se recomandă GIF-uri mai scurte și mai simple.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
     <string name="photo_widget_aspect_ratio_shape">Forme</string>
@@ -97,6 +101,7 @@
     <string name="photo_widget_aspect_ratio_fill_widget">Umple</string>
     <string name="photo_widget_aspect_ratio_fill_widget_description">Potrivește dimensiunea widget-ului</string>
     <!-- Configure -->
+    <string name="photo_widget_configure_save_draft_prompt">Salvați modificările ca ciornă?</string>
     <string name="photo_widget_configure_navigate_back_warning">Orice modificări se vor pierde, vă întoarceți oricum?</string>
     <string name="photo_widget_configure_navigate_back_warning_restore">Pentru a finaliza restaurarea widget-ului, trebuie să îl adăugați pe ecranul de pornire. Ieșiți fără restaurare?</string>
     <string name="photo_widget_configure_tab_content">Conținut</string>
@@ -113,7 +118,7 @@
     <string name="photo_widget_configure_menu_source">Sursă</string>
     <string name="photo_widget_configure_source_selection_directory_empty">Acest widget nu este încă sincronizat cu niciun dosar.</string>
     <string name="photo_widget_configure_source_selection_directory_non_empty">Acest widget este sincronizat cu aceste dosare:</string>
-    <string name="photo_widget_configure_source_warning">Schimbarea sursei va înlocui fotografiile actuale din acest widget</string>
+    <string name="photo_widget_configure_source_warning">Schimbarea sursei va șterge toate datele de conținut ale acestui widget imediat ce confirmi. Această modificare nu poate fi anulată și va trebui să selectezi din nou fotografii sau foldere.</string>
     <string name="photo_widget_configure_menu_crop">Taie</string>
     <string name="photo_widget_configure_menu_remove">Șterge</string>
     <string name="photo_widget_configure_menu_move_left">Mută la stânga</string>
@@ -122,6 +127,8 @@
     <string name="photo_widget_configure_photos_excluded">Exclus din widget</string>
     <string name="photo_widget_configure_pick_photo">Alege fotografiile</string>
     <string name="photo_widget_configure_pick_folder">Alege dosarul</string>
+    <string name="photo_widget_configure_pick_gif">Alege GIF</string>
+    <string name="photo_widget_configure_pick_gif_replace">Alegerea altui GIF îl va înlocui pe cel existent, continui?</string>
     <string name="photo_widget_configure_change_source">Schimbă sursa</string>
     <string name="photo_widget_configure_select_cycling_mode">Temporizator poză</string>
     <string name="photo_widget_configure_cycling_mode_interval">Interval</string>
@@ -155,9 +162,9 @@
     <string name="photo_widget_configure_interval_minutes_label">Minute</string>
     <string name="photo_widget_configure_interval_hours_label">Ore</string>
     <string name="photo_widget_configure_interval_days_label">Zile</string>
-    <string name="photo_widget_configure_schedule_placeholder">Programează până la 4 ori pentru a schimba automat fotografiile.</string>
+    <string name="photo_widget_configure_schedule_placeholder">Programează până la %d ori pentru a schimba automat fotografiile.</string>
     <string name="photo_widget_configure_schedule_add_new">Adaugă nou</string>
-    <string name="photo_widget_configure_schedule_limit_reached">Maxim de 4 ori atins</string>
+    <string name="photo_widget_configure_schedule_limit_reached">Maxim de %d ori atins</string>
     <plurals name="photo_widget_configure_schedule_times">
         <item quantity="one">1 dată selectată</item>
         <item quantity="few">%d dăți selectate</item>
@@ -206,20 +213,32 @@
     <string name="photo_widget_configure_tap_action_app_folder">Folder de aplicații</string>
     <string name="photo_widget_configure_tap_action_app_folder_description">Alege până la 12 aplicații</string>
     <string name="photo_widget_configure_tap_action_url_shortcut">Deschide un link</string>
+    <string name="photo_widget_configure_tap_action_file_shortcut">Deschide un fișier</string>
+    <string name="photo_widget_configure_tap_action_choose_file">Alege fișierul</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling">Activează/dezactivează temporizatorul</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling_description">Atinge pentru a întrerupe temporizatorul foto. Apasă din nou pentru a relua. Această acțiune va fi dezactivată în timp ce widget-ul este blocat.</string>
+    <string name="photo_widget_configure_tap_action_toggle_gif_playback">Activează/dezactivează redarea GIF</string>
     <string name="photo_widget_configure_tap_action_share_photo">Distribuie fotografia</string>
+    <string name="photo_widget_configure_tap_action_set_wallpaper">Setează ca fundal</string>
+    <string name="photo_widget_configure_tap_action_remove_photo">Elimină fotografia</string>
+    <string name="photo_widget_configure_tap_action_remove_photo_description">Exclude-o din widget. Fotografia originală nu este eliminată de pe telefon.</string>
+
+    <string name="photo_widget_remove_action_feedback_positive">Fotografie eliminată!</string>
+    <string name="photo_widget_remove_action_feedback_negative">A rămas doar o fotografie, nu se poate elimina.</string>
+
     <string name="photo_widget_configure_tap_action_increase_brightness">Crește automat luminozitatea</string>
     <string name="photo_widget_configure_tap_action_view_original_photo">Vezi fotografia originală (fără tăiere sau rotație)</string>
     <string name="photo_widget_configure_tap_action_do_not_shuffle">Nu amesteca fotografiile la schimbarea lor în vizualizator</string>
     <string name="photo_widget_configure_tap_action_keep_current_photo">Nu schimba fotografia curentă la schimbarea fotografiilor în vizualizator</string>
-    <string name="photo_widget_configure_tap_action_gallery_description_compatibility">Compatibil cu widget-urile bazate pe dosar, widget-urile bazate pe fotografii vor utiliza în schimb \"Vezi fotografia în ecran complet\".</string>
     <string name="photo_widget_configure_tap_action_gallery_description_warning">Această acțiune deschide fotografia curentă folosind aplicația galerie. Nu va fi posibil să vezi sau să navighezi la alte fotografii.</string>
     <string name="photo_widget_configure_tap_action_gallery_description_app_selection">De asemenea, puteți alege ce aplicație galerie să o utilizați.</string>
     <string name="photo_widget_configure_tap_action_choose_app">Alege aplicația</string>
     <string name="photo_widget_configure_tap_action_disable_tap">Dezactivează alte zone de atingere în timp ce cronometrul este întrerupt</string>
     <string name="photo_widget_configure_tap_action_shared_preferences">Aceste preferințe sunt folosite de toate zonele care folosesc această acțiune la atingere.</string>
     <string name="photo_widget_configure_tap_action_shared_selected_app">Aplicația selectată este folosită de toate zonele care folosesc această acțiune la atingere.</string>
+    <string name="photo_widget_configure_gif_frame_interval">Intervalul cadrelor</string>
+    <string name="photo_widget_configure_gif_frame_interval_description">Controlați viteza de redare a GIF-ului animat. Cu cât valoarea este mai mică, cu atât GIF-ul este mai rapid.</string>
+    <string name="photo_widget_configure_gif_frame_interval_presets">Presetări</string>
     <string name="photo_widget_configure_add_to_home">Adaugă pe ecranul de pornire</string>
     <string name="photo_widget_configure_save_changes">Salvează modificările</string>
     <string name="photo_widget_configure_widget_pinned">Widget adăugat! Verifică ecranul de pornire…</string>
@@ -253,10 +272,10 @@
     <string name="restriction_warning_hint">Activitatea de fundal este restricționată. Este posibil ca widget-urile să nu funcționeze corect. Atingeți pentru a afla mai multe.</string>
     <string name="restriction_warning_dialog_title">Restricții de lucru în fundal și optimizarea bateriei</string>
     <string name="restriction_warning_dialog_body_1">Material Photo Widget trebuie să ruleze în fundal pentru a vă actualiza widgeturile. Dacă utilizarea bateriei este setată pe \"Optimizat\", Android poate opri aplicația, ceea ce previne actualizarea corectă a widgeturilor.</string>
-    <string name="restriction_warning_dialog_body_2">Mergeți la setările aplicației, apoi la \"Utilizarea bateriei de către aplicație\". Faceți clic pe \"Permiteți utilizarea pe fundal\" și selectați \"Fără restricții\" pentru a asigura actualizări constante. Dacă această opțiune nu este vizibilă, verificați setările de alimentare ale telefonului.</string>
+    <string name="restriction_warning_dialog_body_2">Puteți acorda permisiunea folosind butonul de mai jos sau deschideți setările aplicației și accesați \"Utilizarea bateriei de către aplicație\". Apăsați pe \"Permiteți utilizarea pe fundal\" și selectați \"Fără restricții\" pentru a asigura actualizări constante.</string>
     <string name="restriction_warning_dialog_body_3">Unele dispozitive pot, de asemenea, să blocheze pornirea aplicației după o repornire. Căutați în setări \"pornire automată\" sau vizitați https://dontkillmyapp.com pentru instrucțiuni specifice mărcii telefonului dumneavoastră.</string>
+    <string name="restriction_warning_grant_battery_permission">Acordați permisiunea</string>
     <string name="restriction_warning_open_app_settings">Deschide aplicația setări</string>
-    <string name="restriction_warning_open_power_settings">Deschide setările de putere</string>
     <!-- Translations -->
     <string name="translations_dialog_title">Ajută la traducerea în limba ta!</string>
     <string name="translations_dialog_body">Această aplicație folosește o abordare bazată pe comunitate pentru traduceri, iar ajutorul dvs. poate să o facă mai bună. Puteți contribui dacă doriți să vedeți o nouă limbă disponibilă sau dacă ați găsit ceva care nu arată corect.</string>
@@ -276,11 +295,20 @@
     <!-- Viewer -->
     <string name="photo_widget_viewer_all_photos">Toate fotografiile</string>
     <!-- Cycling feedback -->
-    <string name="photo_widget_cycling_feedback_paused">Temporizator întrerupt</string>
-    <string name="photo_widget_cycling_feedback_resumed">Temporizator reluat</string>
+    <string name="photo_widget_cycling_feedback_paused">Widget întrerupt</string>
+    <string name="photo_widget_cycling_feedback_resumed">Widget reluat</string>
     <!-- Folder -->
     <string name="photo_widget_app_folder_empty">Nu ai adăugat încă aplicații în acest folder. Apasă pe Continuare pentru a deschide editorul de widgeturi.</string>
     <string name="photo_widget_app_folder_add_app">Adaugă aplicație</string>
+    <!-- Keep-alive service -->
+    <string name="photo_widget_keep_alive_service_dialog_title">Serviciu de fundal</string>
+    <string name="photo_widget_keep_alive_service_dialog_toggle">Activează serviciul de fundal</string>
+    <string name="photo_widget_keep_alive_service_dialog_body">Poți activa serviciul de fundal pentru a informa Android că aplicația este importantă și că nu trebuie oprită. Nu-ți face griji, aplicația face doar ce este necesar pentru ca widget-urile tale să afișeze fotografii conform programului, fără consum suplimentar de baterie.&lt;br/>&lt;br/>Widget-urile de pe ecranul de pornire sunt gestionate de lansatorul de aplicații, nu direct de aplicație. Deoarece aplicația rulează rar în prim-plan, &lt;b>sistemul poate presupune că nu este importantă și o poate opri&lt;/b>. Când se întâmplă acest lucru, &lt;b>și widget-urile sunt oprite, ceea ce face ca fotografiile să nu mai apară&lt;/b>. Acest lucru este deosebit de frecvent pe &lt;b>dispozitivele Samsung&lt;/b>.</string>
+    <string name="photo_widget_keep_alive_service_required_for_gif">Widget-urile GIF necesită serviciul de fundal pentru a reda animații. Puteți găsi mai multe informații în fila de setări. Doriți să îl activați?</string>
+    <string name="photo_widget_keep_alive_service_gif_widgets_warning">Există widget-uri GIF active care depind de serviciul de fundal. Dezactivarea acestuia poate face ca ele să nu mai redea animații.</string>
+    <!-- Notifications -->
+    <string name="notification_channel_name_keep_alive">Serviciu de fundal</string>
+    <string name="notification_channel_description_keep_alive">Menține aplicația activă, chiar dacă este în fundal pentru o perioadă lungă de timp. Asigură că widget-urile pot fi actualizate după cum se așteaptă.</string>
     <!-- Common Actions -->
     <string name="photo_widget_action_yes">Da</string>
     <string name="photo_widget_action_no">Nu</string>
@@ -298,6 +326,8 @@
     <string name="photo_widget_action_reset">Resetează</string>
     <!-- Hints -->
     <string name="hint_scroll_to_view_more">Derulează pentru a vedea mai mult</string>
+    <string name="warning_experimental">Experimental</string>
+    <string name="warning_gif_widget_battery_usage">Widgeturile GIF pot consuma mai multă baterie! Aplicația trebuie să efectueze lucrări constante pentru a reda animația. Lucrările sunt întrerupte când ecranul este stins pentru a economisi resurse, dar aplicația nu poate detecta când ecranul de pornire nu este vizibil în timp ce utilizezi alte aplicații.</string>
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Widget ecranul de pornire Material Photo</string>
 </resources>

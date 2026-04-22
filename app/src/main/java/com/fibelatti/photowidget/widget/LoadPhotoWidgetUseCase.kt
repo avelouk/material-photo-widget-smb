@@ -8,9 +8,11 @@ import com.fibelatti.photowidget.model.PhotoWidgetTapActions
 import com.fibelatti.photowidget.model.TapActionArea
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
 
@@ -19,15 +21,14 @@ class LoadPhotoWidgetUseCase @Inject constructor(
 ) {
 
     operator fun invoke(appWidgetId: Int): Flow<PhotoWidget> = with(photoWidgetStorage) {
-        Timber.d("Loading widget data (appWidgetId=$appWidgetId)")
-
-        val widget = loadWidgetData(appWidgetId = appWidgetId)
+        Timber.i("Loading widget data (appWidgetId=$appWidgetId)")
 
         return flow {
+            val widget = loadWidgetData(appWidgetId = appWidgetId)
             emit(widget.copy(isLoading = true))
 
             val currentPhotoId: String? = getCurrentPhotoId(appWidgetId = appWidgetId)
-            val widgetPhotosFlow: Flow<PhotoWidget> = getWidgetPhotos(appWidgetId = appWidgetId)
+            val widgetPhotosFlow: Flow<PhotoWidget> = loadWidgetPhotos(appWidgetId = appWidgetId)
                 .map { widgetPhotos ->
                     val currentPhoto = widgetPhotos.current.run {
                         firstOrNull { it.photoId == currentPhotoId }
@@ -44,7 +45,7 @@ class LoadPhotoWidgetUseCase @Inject constructor(
                 }
 
             emitAll(widgetPhotosFlow)
-        }
+        }.flowOn(Dispatchers.IO)
     }
 
     private fun loadWidgetData(appWidgetId: Int): PhotoWidget = with(photoWidgetStorage) {
@@ -55,7 +56,7 @@ class LoadPhotoWidgetUseCase @Inject constructor(
         val verticalOffset: Int
         val padding: Int
 
-        if (PhotoWidgetAspectRatio.FILL_WIDGET == aspectRatio) {
+        if (aspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET) {
             cornerRadius = PhotoWidget.DEFAULT_CORNER_RADIUS
             border = PhotoWidgetBorder.None
             horizontalOffset = 0
@@ -67,8 +68,8 @@ class LoadPhotoWidgetUseCase @Inject constructor(
 
             val offset = getWidgetOffset(appWidgetId = appWidgetId)
 
-            horizontalOffset = offset.first
-            verticalOffset = offset.second
+            horizontalOffset = offset.horizontal
+            verticalOffset = offset.vertical
             padding = getWidgetPadding(appWidgetId = appWidgetId)
         }
 
@@ -96,6 +97,7 @@ class LoadPhotoWidgetUseCase @Inject constructor(
             verticalOffset = verticalOffset,
             padding = padding,
             text = getWidgetText(appWidgetId = appWidgetId),
+            gifInterval = getWidgetGifInterval(appWidgetId = appWidgetId),
             deletionTimestamp = getWidgetDeletionTimestamp(appWidgetId = appWidgetId),
         )
     }

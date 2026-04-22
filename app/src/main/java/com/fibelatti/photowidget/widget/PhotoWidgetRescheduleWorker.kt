@@ -13,19 +13,22 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.fibelatti.photowidget.model.PhotoWidgetCycleMode
 import com.fibelatti.photowidget.model.PhotoWidgetSource
+import com.fibelatti.photowidget.platform.KeepAliveService
+import com.fibelatti.photowidget.preferences.UserPreferencesStorage
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.time.Duration
+import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 
 /**
- * This worker ensures that widgets will be updated and their alarms set following a device
+ * This worker ensures that widgets will be updated and their alarms set, following a device
  * reboot or app update.
  *
- * It run periodically to restore any alarms that might have been killed by the system, and luckily
- * it will work better with OEMs that prevent apps from auto-starting. Any previously scheduled
- * worker would still run, restoring expected widget functionality.
+ * It runs periodically to restore any alarms that might have been killed by the system, and
+ * luckily it will work better with OEMs that prevent apps from auto-starting. Any previously
+ * scheduled worker would still run, restoring expected widget functionality.
  */
 @HiltWorker
 class PhotoWidgetRescheduleWorker @AssistedInject constructor(
@@ -33,19 +36,20 @@ class PhotoWidgetRescheduleWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val photoWidgetStorage: PhotoWidgetStorage,
     private val photoWidgetAlarmManager: PhotoWidgetAlarmManager,
+    private val userPreferencesStorage: UserPreferencesStorage,
 ) : CoroutineWorker(appContext = context, params = workerParams) {
 
     override suspend fun doWork(): Result {
-        Timber.d("Working...")
+        Timber.i("Working...")
 
-        val ids: List<Int> = PhotoWidgetProvider.ids(applicationContext).ifEmpty {
-            Timber.d("There are no widgets.")
-            return Result.success()
+        if (userPreferencesStorage.keepAlive) {
+            KeepAliveService.tryStart(context = applicationContext)
         }
 
         var shouldRetry = false
         var hasSmbWidget = false
 
+        val ids: List<Int> = PhotoWidgetProvider.ids(applicationContext)
         for (id in ids) {
             try {
                 val cycleMode: PhotoWidgetCycleMode = photoWidgetStorage.getWidgetCycleMode(appWidgetId = id)
@@ -63,6 +67,8 @@ class PhotoWidgetRescheduleWorker @AssistedInject constructor(
                 }
 
                 PhotoWidgetProvider.update(context = applicationContext, appWidgetId = id)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Timber.e(e, "Error processing widget (id=$id). Will retry.")
                 shouldRetry = true
@@ -73,13 +79,18 @@ class PhotoWidgetRescheduleWorker @AssistedInject constructor(
             photoWidgetAlarmManager.setupDailySmbRefresh()
         }
 
+        if (shouldRetry) {
+            return Result.retry()
+        }
+
+        Timber.d("Enqueueing RecurringWorker...")
         // Directly calling `Companion.enqueueWork` at this point would mark this work execution as
-        // cancelled. The work itself would be finished by now, so that would be fine although not
+        // canceled. The work itself would be finished by now, so that would be fine although not
         // healthy. Using another worker to reschedule ensures a successful completion of the run.
         WorkManager.getInstance(applicationContext)
             .enqueue(request = OneTimeWorkRequestBuilder<RecurringWorker>().build())
 
-        return if (shouldRetry) Result.retry() else Result.success()
+        return Result.success()
     }
 
     companion object {
@@ -87,7 +98,7 @@ class PhotoWidgetRescheduleWorker @AssistedInject constructor(
         private const val UNIQUE_WORK_NAME = "PhotoWidgetRescheduleWorker"
 
         fun enqueueWork(context: Context, delay: Duration? = null) {
-            Timber.d("Enqueuing work...")
+            Timber.i("Enqueuing work...")
 
             val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequestBuilder<PhotoWidgetRescheduleWorker>()
 
@@ -122,6 +133,7 @@ class RecurringWorker(
 ) : Worker(context = context, workerParams = workerParams) {
 
     override fun doWork(): Result {
+        Timber.i("Working...")
         PhotoWidgetRescheduleWorker.enqueueWork(context = applicationContext, delay = Duration.ofHours(1))
         return Result.success()
     }

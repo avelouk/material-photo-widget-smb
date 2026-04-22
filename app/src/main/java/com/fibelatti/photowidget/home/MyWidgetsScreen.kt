@@ -28,7 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -56,12 +56,14 @@ import com.fibelatti.photowidget.model.PhotoWidgetColors
 import com.fibelatti.photowidget.model.PhotoWidgetShapeBuilder
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.PhotoWidgetStatus
+import com.fibelatti.photowidget.model.canLock
+import com.fibelatti.photowidget.model.canSync
 import com.fibelatti.photowidget.model.isWidgetRemoved
+import com.fibelatti.photowidget.platform.letIf
 import com.fibelatti.photowidget.ui.ColoredShape
 import com.fibelatti.photowidget.ui.MyWidgetBadge
 import com.fibelatti.photowidget.ui.ShapedPhoto
-import com.fibelatti.ui.foundation.conditional
-import com.fibelatti.ui.preview.AllPreviews
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.text.AutoSizeText
 import com.fibelatti.ui.theme.ExtendedTheme
 
@@ -72,13 +74,14 @@ fun MyWidgetsScreen(
     onCurrentWidgetClick: (appWidgetId: Int, canSync: Boolean, canLock: Boolean, isLocked: Boolean) -> Unit,
     onRemovedWidgetClick: (appWidgetId: Int, PhotoWidgetStatus) -> Unit,
     onInvalidWidgetClick: (appWidgetId: Int) -> Unit,
+    onDraftWidgetClick: (appWidgetId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter,
     ) {
-        val options: List<PhotoWidgetSource?> = listOf(null, PhotoWidgetSource.PHOTOS, PhotoWidgetSource.DIRECTORY)
+        val options: List<PhotoWidgetSource?> = listOf(null) + PhotoWidgetSource.entries
         var selectedSource: PhotoWidgetSource? by remember { mutableStateOf(null) }
         val filteredWidgets: List<Pair<Int, PhotoWidget>> by remember(widgets) {
             derivedStateOf {
@@ -88,7 +91,7 @@ fun MyWidgetsScreen(
 
         val enforcedShape: Shape = RoundedCornerShape(28.dp)
 
-        val isAtLeastMediumWidth: Boolean = currentWindowAdaptiveInfo().windowSizeClass
+        val isAtLeastMediumWidth: Boolean = currentWindowAdaptiveInfoV2().windowSizeClass
             .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         AnimatedContent(
@@ -118,20 +121,24 @@ fun MyWidgetsScreen(
                                 .aspectRatio(1f)
                                 .clickable {
                                     when {
+                                        widget.status == PhotoWidgetStatus.DRAFT -> {
+                                            onDraftWidgetClick(id)
+                                        }
+
                                         widget.status.isWidgetRemoved -> {
                                             onRemovedWidgetClick(id, widget.status)
                                         }
 
-                                        PhotoWidgetStatus.INVALID == widget.status -> {
+                                        widget.status == PhotoWidgetStatus.INVALID -> {
                                             onInvalidWidgetClick(id)
                                         }
 
                                         else -> {
                                             onCurrentWidgetClick(
                                                 /* appWidgetId = */ id,
-                                                /* canSync = */ widget.source == PhotoWidgetSource.DIRECTORY,
-                                                /* canLock = */ widget.photos.isNotEmpty(),
-                                                /* isLocked = */ PhotoWidgetStatus.LOCKED == widget.status,
+                                                /* canSync = */ widget.canSync,
+                                                /* canLock = */ widget.canLock,
+                                                /* isLocked = */ widget.status == PhotoWidgetStatus.LOCKED,
                                             )
                                         }
                                     }
@@ -145,17 +152,25 @@ fun MyWidgetsScreen(
                                 cornerRadius = widget.cornerRadius,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .conditional(
-                                        predicate = widget.aspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET,
-                                        ifTrue = { clip(enforcedShape) },
-                                    ),
+                                    .letIf(widget.aspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET) {
+                                        it.clip(enforcedShape)
+                                    },
                                 colors = widget.colors,
                                 border = widget.border,
                                 isLoading = widget.isLoading,
                             )
 
                             when {
-                                PhotoWidgetStatus.LOCKED == widget.status -> {
+                                widget.status == PhotoWidgetStatus.DRAFT -> {
+                                    MyWidgetBadge(
+                                        text = stringResource(R.string.photo_widget_home_draft_label),
+                                        backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        modifier = Modifier.padding(bottom = 8.dp),
+                                    )
+                                }
+
+                                widget.status == PhotoWidgetStatus.LOCKED -> {
                                     MyWidgetBadge(
                                         text = stringResource(R.string.photo_widget_home_locked_label),
                                         backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -171,11 +186,11 @@ fun MyWidgetsScreen(
                                         contentColor = MaterialTheme.colorScheme.onErrorContainer,
                                         modifier = Modifier.padding(bottom = 8.dp),
                                         icon = painterResource(R.drawable.ic_trash_clock)
-                                            .takeIf { PhotoWidgetStatus.REMOVED == widget.status },
+                                            .takeIf { widget.status == PhotoWidgetStatus.REMOVED },
                                     )
                                 }
 
-                                PhotoWidgetStatus.INVALID == widget.status -> {
+                                widget.status == PhotoWidgetStatus.INVALID -> {
                                     MyWidgetBadge(
                                         text = stringResource(R.string.photo_widget_home_invalid_label),
                                         backgroundColor = Color(0xFFFF8A65),
@@ -246,7 +261,7 @@ fun MyWidgetsScreen(
 
 // region Previews
 @Composable
-@AllPreviews
+@PreviewAll
 private fun MyWidgetsScreenPreview() {
     ExtendedTheme {
         val allShapeIds = PhotoWidgetShapeBuilder.shapes.map { it.id }
@@ -271,18 +286,19 @@ private fun MyWidgetsScreenPreview() {
                     shapeId = allShapeIds.random(),
                     colors = PhotoWidgetColors(opacity = opacities.random()),
                     status = status,
-                    deletionTimestamp = if (PhotoWidgetStatus.REMOVED == status) 1 else -1,
+                    deletionTimestamp = if (status == PhotoWidgetStatus.REMOVED) 1 else -1,
                 )
             },
             onCurrentWidgetClick = { _, _, _, _ -> },
             onRemovedWidgetClick = { _, _ -> },
             onInvalidWidgetClick = {},
+            onDraftWidgetClick = {},
         )
     }
 }
 
 @Composable
-@AllPreviews
+@PreviewAll
 private fun MyWidgetsScreenEmptyPreview() {
     ExtendedTheme {
         MyWidgetsScreen(
@@ -290,6 +306,7 @@ private fun MyWidgetsScreenEmptyPreview() {
             onCurrentWidgetClick = { _, _, _, _ -> },
             onRemovedWidgetClick = { _, _ -> },
             onInvalidWidgetClick = {},
+            onDraftWidgetClick = {},
         )
     }
 }

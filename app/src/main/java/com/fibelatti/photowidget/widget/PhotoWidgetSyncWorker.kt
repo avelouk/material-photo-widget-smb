@@ -24,7 +24,10 @@ import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.time.Duration
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -33,10 +36,11 @@ class PhotoWidgetSyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     private val photoWidgetStorage: PhotoWidgetStorage,
+    private val coroutineScope: CoroutineScope,
 ) : CoroutineWorker(appContext = context, params = workerParams) {
 
     override suspend fun doWork(): Result {
-        Timber.d("Working...")
+        Timber.i("Working...")
 
         val ids: List<Int> = PhotoWidgetProvider.ids(applicationContext).ifEmpty {
             Timber.d("There are no widgets.")
@@ -57,8 +61,12 @@ class PhotoWidgetSyncWorker @AssistedInject constructor(
                 val source = photoWidgetStorage.getWidgetSource(appWidgetId = id)
 
                 when (source) {
-                    PhotoWidgetSource.DIRECTORY -> withContext(NonCancellable) {
-                        photoWidgetStorage.syncWidgetPhotos(appWidgetId = id)
+                    PhotoWidgetSource.DIRECTORY -> {
+                        coroutineScope.launch {
+                            withContext(NonCancellable) {
+                                photoWidgetStorage.syncWidgetPhotos(appWidgetId = id)
+                            }
+                        }
                     }
 
                     PhotoWidgetSource.SMB -> withContext(NonCancellable) {
@@ -68,6 +76,8 @@ class PhotoWidgetSyncWorker @AssistedInject constructor(
 
                     else -> Unit
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Timber.e(e, "Error processing widget (id=$id). Will retry.")
                 shouldRetry = true
@@ -112,7 +122,7 @@ class PhotoWidgetSyncWorker @AssistedInject constructor(
         private const val NOTIFICATION_ID = 43
 
         fun enqueueWork(context: Context) {
-            Timber.d("Enqueuing work...")
+            Timber.i("Enqueuing work...")
 
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)

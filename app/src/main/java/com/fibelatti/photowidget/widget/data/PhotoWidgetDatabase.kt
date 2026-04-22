@@ -4,12 +4,14 @@ import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
+import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import androidx.room.Upsert
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import kotlinx.coroutines.flow.Flow
 
 @Database(
     entities = [
@@ -19,8 +21,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PendingDeletionWidgetPhotoDto::class,
         ExcludedWidgetPhotoDto::class,
         SmbPhotoIndexDto::class,
+        WidgetDirectoryDto::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -48,6 +51,18 @@ abstract class PhotoWidgetDatabase : RoomDatabase() {
                 )
             }
         }
+
+        /** v5→v6: Add widget_directories table (upstream's addition, needed by WidgetDirectoryDao). */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS widget_directories (" +
+                        "directoryName TEXT NOT NULL, " +
+                        "widgetId INTEGER NOT NULL, " +
+                        "PRIMARY KEY(directoryName))",
+                )
+            }
+        }
     }
 
     abstract fun localPhotoDao(): LocalPhotoDao
@@ -61,6 +76,8 @@ abstract class PhotoWidgetDatabase : RoomDatabase() {
     abstract fun excludedWidgetPhotoDao(): ExcludedWidgetPhotoDao
 
     abstract fun smbPhotoIndexDao(): SmbPhotoIndexDao
+
+    abstract fun widgetDirectoryDao(): WidgetDirectoryDao
 }
 
 @Entity(
@@ -100,6 +117,9 @@ interface LocalPhotoDao {
 
     @Query("delete from local_widget_photos where widgetId = :widgetId")
     suspend fun deletePhotosByWidgetId(widgetId: Int)
+
+    @Query("update local_widget_photos set widgetId = :newWidgetId where widgetId = :oldWidgetId")
+    suspend fun updateWidgetId(oldWidgetId: Int, newWidgetId: Int)
 
     @Transaction
     suspend fun replacePhotos(
@@ -142,6 +162,9 @@ interface DisplayedPhotoDao {
     @Query("delete from displayed_widget_photos where widgetId = :widgetId")
     suspend fun deletePhotosByWidgetId(widgetId: Int)
 
+    @Query("update displayed_widget_photos set widgetId = :newWidgetId where widgetId = :oldWidgetId")
+    suspend fun updateWidgetId(oldWidgetId: Int, newWidgetId: Int)
+
     @Query(
         "delete from displayed_widget_photos " +
             "where widgetId = :widgetId " +
@@ -178,6 +201,9 @@ interface PhotoWidgetOrderDao {
 
     @Query("delete from photo_widget_order where widgetId = :widgetId")
     suspend fun deletePhotosByWidgetId(widgetId: Int)
+
+    @Query("update photo_widget_order set widgetId = :newWidgetId where widgetId = :oldWidgetId")
+    suspend fun updateWidgetId(oldWidgetId: Int, newWidgetId: Int)
 
     @Transaction
     suspend fun replaceWidgetOrder(
@@ -220,6 +246,9 @@ interface PendingDeletionWidgetPhotoDao {
     @Query("delete from pending_deletion_widget_photos where widgetId = :widgetId")
     suspend fun deletePhotosByWidgetId(widgetId: Int)
 
+    @Query("update pending_deletion_widget_photos set widgetId = :newWidgetId where widgetId = :oldWidgetId")
+    suspend fun updateWidgetId(oldWidgetId: Int, newWidgetId: Int)
+
     @Query("select * from pending_deletion_widget_photos where deletionTimestamp <= :timestamp")
     suspend fun getPhotosToDelete(timestamp: Long): List<PendingDeletionWidgetPhotoDto>
 
@@ -247,6 +276,43 @@ interface ExcludedWidgetPhotoDao {
 
     @Query("delete from excluded_widget_photos where widgetId = :widgetId")
     suspend fun deletePhotosByWidgetId(widgetId: Int)
+
+    @Query("update excluded_widget_photos set widgetId = :newWidgetId where widgetId = :oldWidgetId")
+    suspend fun updateWidgetId(oldWidgetId: Int, newWidgetId: Int)
+}
+
+@Entity(tableName = "widget_directories")
+data class WidgetDirectoryDto(
+    @PrimaryKey val directoryName: String,
+    val widgetId: Int,
+)
+
+@Dao
+interface WidgetDirectoryDao {
+
+    @Query("select directoryName from widget_directories where widgetId = :widgetId")
+    suspend fun getDirectoryName(widgetId: Int): String?
+
+    @Query("select distinct widgetId from widget_directories")
+    fun getAllWidgetIds(): Flow<List<Int>>
+
+    @Query("select distinct widgetId from widget_directories where widgetId < 0")
+    fun getDraftWidgetIds(): Flow<List<Int>>
+
+    @Query("select min(widgetId) from widget_directories")
+    suspend fun getMinWidgetId(): Int?
+
+    @Query("update widget_directories set widgetId = :newWidgetId where widgetId = :oldWidgetId")
+    suspend fun updateWidgetId(oldWidgetId: Int, newWidgetId: Int)
+
+    @Upsert
+    suspend fun insert(directory: WidgetDirectoryDto)
+
+    @Upsert
+    suspend fun insert(directories: List<WidgetDirectoryDto>)
+
+    @Query("delete from widget_directories where widgetId = :widgetId")
+    suspend fun deleteByWidgetId(widgetId: Int)
 }
 
 /**

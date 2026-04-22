@@ -9,6 +9,7 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -31,7 +32,7 @@ class ZipUtils @Inject constructor() {
             error("No files found in $sourceDir.")
         }
 
-        Timber.i("Successfully zipped $count files to $zipFile ($size bytes total)")
+        Timber.d("Successfully zipped $count files to $zipFile ($size bytes total)")
 
         return@withContext zipFile
     }
@@ -73,6 +74,7 @@ class ZipUtils @Inject constructor() {
         try {
             var zipEntry: ZipEntry?
             while (zipInputStream.nextEntry.also { zipEntry = it } != null) {
+                ensureActive()
                 val currentEntry: ZipEntry = zipEntry ?: continue
                 val sanitizedName: String = sanitizeFileName(fileName = currentEntry.name)
                 val destFile = File(destinationDir, sanitizedName)
@@ -119,7 +121,7 @@ class ZipUtils @Inject constructor() {
             throw e
         }
 
-        Timber.i("Successfully extracted ${extractedFiles.size} files to $parentDir ($totalSize bytes total)")
+        Timber.d("Successfully extracted ${extractedFiles.size} files to $parentDir ($totalSize bytes total)")
 
         return@withContext parentDir
     }

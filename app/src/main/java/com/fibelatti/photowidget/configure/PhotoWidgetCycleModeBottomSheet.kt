@@ -16,6 +16,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,8 +24,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroupDefaults
@@ -78,7 +77,7 @@ import com.fibelatti.ui.foundation.AppBottomSheet
 import com.fibelatti.ui.foundation.AppSheetState
 import com.fibelatti.ui.foundation.ConnectedButtonRowItem
 import com.fibelatti.ui.foundation.hideBottomSheet
-import com.fibelatti.ui.preview.AllPreviews
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.text.AutoSizeText
 import com.fibelatti.ui.theme.ExtendedTheme
 import java.util.Calendar
@@ -411,45 +410,33 @@ private fun PhotoCycleModeScheduleContent(
                 style = MaterialTheme.typography.bodyMedium,
             )
 
-            Column(
+            FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(1.dp, alignment = Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
-                triggers.forEachIndexed { index, time ->
+                triggers.forEach { time ->
                     SelectedTimeItem(
                         item = time,
                         onClick = { triggers.remove(time) },
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        backgroundShape = when (index) {
-                            0 if triggers.size == 1 -> MaterialTheme.shapes.medium
-
-                            0 if triggers.size > 1 -> MaterialTheme.shapes.medium.copy(
-                                bottomStart = CornerSize(2.dp),
-                                bottomEnd = CornerSize(2.dp),
-                            )
-
-                            triggers.lastIndex if triggers.size > 1 -> MaterialTheme.shapes.medium.copy(
-                                topStart = CornerSize(2.dp),
-                                topEnd = CornerSize(2.dp),
-                            )
-
-                            else -> RoundedCornerShape(2.dp)
-                        },
                     )
                 }
             }
         } else {
             Text(
-                text = stringResource(R.string.photo_widget_configure_schedule_placeholder),
+                text = stringResource(
+                    R.string.photo_widget_configure_schedule_placeholder,
+                    PhotoWidgetCycleMode.MAX_SCHEDULE_AMOUNT,
+                ),
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
 
-        if (triggers.size < 4) {
+        if (triggers.size < PhotoWidgetCycleMode.MAX_SCHEDULE_AMOUNT) {
             TextButton(
                 onClick = { showTimePickerDialog = true },
                 shapes = ButtonDefaults.shapes(),
@@ -461,7 +448,10 @@ private fun PhotoCycleModeScheduleContent(
             }
         } else {
             Text(
-                text = stringResource(R.string.photo_widget_configure_schedule_limit_reached),
+                text = stringResource(
+                    R.string.photo_widget_configure_schedule_limit_reached,
+                    PhotoWidgetCycleMode.MAX_SCHEDULE_AMOUNT,
+                ),
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .align(Alignment.CenterHorizontally),
@@ -507,23 +497,23 @@ private fun SelectedTimeItem(
 ) {
     Row(
         modifier = modifier
-            .clickable(onClick = onClick)
             .background(color = backgroundColor, shape = backgroundShape)
+            .clickable(onClick = onClick)
             .padding(all = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = item.asString(),
-            modifier = Modifier.padding(horizontal = 24.dp),
+            modifier = Modifier.padding(horizontal = 12.dp),
             color = contentColorFor(backgroundColor),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyLarge,
         )
 
         Icon(
             painter = painterResource(R.drawable.ic_trash),
             contentDescription = null,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(20.dp),
             tint = contentColorFor(backgroundColor),
         )
     }
@@ -639,7 +629,7 @@ fun TimePickerDialog(
 
 // region Previews
 @Composable
-@AllPreviews
+@PreviewAll
 private fun IntervalPreview() {
     ExtendedTheme {
         PhotoCycleModePickerContent(
@@ -657,7 +647,7 @@ private fun IntervalPreview() {
 }
 
 @Composable
-@AllPreviews
+@PreviewAll
 private fun ScheduleEmptyPreview() {
     ExtendedTheme {
         PhotoCycleModePickerContent(
@@ -672,7 +662,7 @@ private fun ScheduleEmptyPreview() {
 }
 
 @Composable
-@AllPreviews
+@PreviewAll
 private fun SchedulePreview() {
     ExtendedTheme {
         PhotoCycleModePickerContent(
@@ -682,6 +672,8 @@ private fun SchedulePreview() {
                     Time(hour = 12, minute = 0),
                     Time(hour = 16, minute = 0),
                     Time(hour = 20, minute = 0),
+                    Time(hour = 21, minute = 0),
+                    Time(hour = 22, minute = 0),
                 ),
             ),
             canScheduleExactAlarms = false,
@@ -692,7 +684,7 @@ private fun SchedulePreview() {
 }
 
 @Composable
-@AllPreviews
+@PreviewAll
 private fun DisabledPreview() {
     ExtendedTheme {
         PhotoCycleModePickerContent(

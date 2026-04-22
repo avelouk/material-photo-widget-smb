@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [v1.41.0] - 2026-04-18
+[v1.41.0]: https://github.com/fibelatti/photo-widget/releases/tag/v1.41.0
+
+### Added
+
+* Add support for animated GIFs
+* Add flip horizontally/vertically buttons to the crop tool
+* New tap action: file shortcut
+
+### Changed
+
+* Changing an existing widget source now permanently removes its content
+
+### Fixed
+
+* Fix import from another widget flow
+
+## [v1.40.0] - 2026-03-30
+[v1.40.0]: https://github.com/fibelatti/photo-widget/releases/tag/v1.40.0
+
+### Added
+
+* Added support for widget drafts
+* Opt-in Foreground Service to increasing widget reliability
+
+### Changed
+
+* Increase the amount of max scheduled times to 12
+* Added direct button to disable battery optimization
+
+## [v1.39.1] - 2026-03-15
+[v1.39.1]: https://github.com/fibelatti/photo-widget/releases/tag/v1.39.1
+
+### Fixed
+
+* Fix set wallpaper tap action
+
+## [v1.39.0] - 2026-03-15
+[v1.39.0]: https://github.com/fibelatti/photo-widget/releases/tag/v1.39.0
+
+### Added
+
+* New tap action: remove photo
+* New tap action: set as wallpaper
+* 4 new shapes
+
+### Fixed
+
+* Fix dialog appearance when using dynamic colors
+
 ## [v1.38.3] - 2026-03-05
 [v1.38.3]: https://github.com/fibelatti/photo-widget/releases/tag/v1.38.3
 

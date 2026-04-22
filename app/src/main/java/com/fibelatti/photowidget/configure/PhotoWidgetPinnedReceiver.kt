@@ -6,8 +6,10 @@ import android.content.Context
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.fibelatti.photowidget.di.PhotoWidgetEntryPoint
+import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.platform.EntryPointBroadcastReceiver
 import com.fibelatti.photowidget.widget.PhotoWidgetProvider
+import com.fibelatti.photowidget.widget.SavePhotoWidgetUseCase
 import timber.log.Timber
 
 /**
@@ -16,26 +18,26 @@ import timber.log.Timber
 class PhotoWidgetPinnedReceiver : EntryPointBroadcastReceiver() {
 
     override suspend fun doWork(context: Context, intent: Intent, entryPoint: PhotoWidgetEntryPoint) {
-        Timber.d("Working... (appWidgetId=${intent.appWidgetId})")
+        Timber.i("Working... (appWidgetId=${intent.appWidgetId})")
 
-        val widgetId = intent.appWidgetId
+        val widgetId: Int = intent.appWidgetId
             .takeUnless { it == AppWidgetManager.INVALID_APPWIDGET_ID }
             // Workaround Samsung devices that fail to update the intent with the actual ID
             ?: PhotoWidgetProvider.ids(context = context).lastOrNull()
             // Exit early if the widget was not placed
             ?: return
 
-        val pinningCache = entryPoint.photoWidgetPinningCache()
+        val pinningCache: PhotoWidgetPinningCache = entryPoint.photoWidgetPinningCache()
 
         // The widget data is missing, it's impossible to continue
-        val photoWidget = pinningCache.consume() ?: return
+        val (photoWidget: PhotoWidget, draftWidgetId: Int) = pinningCache.consume() ?: return
 
-        Timber.d("New widget ID: $widgetId")
+        Timber.d("New widget (widgetId=$widgetId,draftWidgetId=$draftWidgetId)")
 
-        val saveUseCase = entryPoint.savePhotoWidgetUseCase()
+        val saveUseCase: SavePhotoWidgetUseCase = entryPoint.savePhotoWidgetUseCase()
 
         // Persist the widget data since it was placed on the home screen
-        saveUseCase(appWidgetId = widgetId, photoWidget = photoWidget)
+        saveUseCase(draftWidgetId = draftWidgetId, appWidgetId = widgetId, photoWidget = photoWidget)
 
         // Update the widget UI using the updated storage data
         PhotoWidgetProvider.update(context = context, appWidgetId = widgetId)

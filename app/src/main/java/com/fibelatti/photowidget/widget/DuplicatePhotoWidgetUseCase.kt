@@ -24,7 +24,7 @@ class DuplicatePhotoWidgetUseCase @Inject constructor(
         )
 
         when (appWidget.source) {
-            PhotoWidgetSource.PHOTOS -> {
+            PhotoWidgetSource.PHOTOS, PhotoWidgetSource.GIF -> {
                 photoWidgetStorage.duplicateWidgetDir(
                     originalAppWidgetId = originalAppWidgetId,
                     newAppWidgetId = newAppWidgetId,
@@ -56,7 +56,7 @@ class DuplicatePhotoWidgetUseCase @Inject constructor(
             photoIds = photoWidgetStorage.getExcludedPhotoIds(appWidgetId = originalAppWidgetId),
         )
 
-        val photos = photoWidgetStorage.getWidgetPhotos(appWidgetId = newAppWidgetId)
+        val photos = photoWidgetStorage.loadWidgetPhotos(appWidgetId = newAppWidgetId)
             .last()
             .current
 

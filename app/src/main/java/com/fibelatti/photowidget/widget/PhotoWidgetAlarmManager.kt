@@ -32,7 +32,7 @@ class PhotoWidgetAlarmManager @Inject constructor(
             .also { Timber.d("Schedule exact alarms permission granted: $it") }
 
     fun setup(appWidgetId: Int) {
-        Timber.d("Setting alarm for widget (appWidgetId=$appWidgetId)")
+        Timber.i("Setting alarm for widget (appWidgetId=$appWidgetId)")
 
         if (photoWidgetStorage.getWidgetLockedInApp(appWidgetId = appWidgetId)) {
             Timber.d("Widget locked in-app. Skipping alarm setup.")
@@ -53,10 +53,10 @@ class PhotoWidgetAlarmManager @Inject constructor(
     }
 
     fun cancel(appWidgetId: Int) {
-        Timber.d("Cancelling existing alarms for widget (appWidgetId=$appWidgetId)")
+        Timber.i("Cancelling existing alarms for widget (appWidgetId=$appWidgetId)")
 
         alarmManager.cancel(
-            PhotoWidgetProvider.getChangePhotoPendingIntent(context = context, appWidgetId = appWidgetId),
+            TapActionPendingIntentFactory.getChangePhotoPendingIntent(context = context, appWidgetId = appWidgetId),
         )
         alarmManager.cancel(
             ExactRepeatingAlarmReceiver.pendingIntent(context = context, appWidgetId = appWidgetId),
@@ -129,7 +129,7 @@ class PhotoWidgetAlarmManager @Inject constructor(
                     ExactRepeatingAlarmReceiver.pendingIntent(context = context, appWidgetId = appWidgetId),
                 )
             } catch (_: SecurityException) {
-                Timber.d("SecurityException: fallback to inexact alarm")
+                Timber.w("SecurityException: fallback to inexact alarm")
 
                 setRepeatingAlarm(
                     triggerAtMillis = triggerAtMillis,
@@ -152,7 +152,7 @@ class PhotoWidgetAlarmManager @Inject constructor(
             /* triggerAtMillis = */ triggerAtMillis,
             /* intervalMillis = */ intervalMillis,
             /* operation = */
-            PhotoWidgetProvider.getChangePhotoPendingIntent(context = context, appWidgetId = appWidgetId),
+            TapActionPendingIntentFactory.getChangePhotoPendingIntent(context = context, appWidgetId = appWidgetId),
         )
     }
 
@@ -204,7 +204,7 @@ class PhotoWidgetAlarmManager @Inject constructor(
                     ExactRepeatingAlarmReceiver.pendingIntent(context = context, appWidgetId = appWidgetId),
                 )
             } catch (_: SecurityException) {
-                Timber.d("SecurityException: fallback to inexact alarm")
+                Timber.w("SecurityException: fallback to inexact alarm")
                 setAlarm(triggerAtMillis = calendar.timeInMillis, appWidgetId = appWidgetId)
             }
         } else {
@@ -224,7 +224,7 @@ class PhotoWidgetAlarmManager @Inject constructor(
 class ExactRepeatingAlarmReceiver : EntryPointBroadcastReceiver() {
 
     override suspend fun doWork(context: Context, intent: Intent, entryPoint: PhotoWidgetEntryPoint) {
-        Timber.d("Working... (appWidgetId=${intent.appWidgetId})")
+        Timber.i("Working... (appWidgetId=${intent.appWidgetId})")
 
         entryPoint.run {
             cyclePhotoUseCase().invoke(appWidgetId = intent.appWidgetId)

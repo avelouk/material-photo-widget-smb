@@ -19,6 +19,7 @@ import com.fibelatti.photowidget.model.PhotoWidgetTapAction
 import com.fibelatti.photowidget.model.PhotoWidgetText
 import com.fibelatti.photowidget.model.TapActionArea
 import com.fibelatti.photowidget.model.Time
+import com.fibelatti.photowidget.model.WidgetOffset
 import com.fibelatti.photowidget.model.minutesToLoopingInterval
 import com.fibelatti.photowidget.model.repeatIntervalAsSeconds
 import com.fibelatti.photowidget.model.secondsToLoopingInterval
@@ -392,13 +393,10 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         }
     }
 
-    fun getWidgetOffset(appWidgetId: Int): Pair<Int, Int> {
-        return sharedPreferences.getInt(
-            "${PreferencePrefix.HORIZONTAL_OFFSET}$appWidgetId",
-            0,
-        ) to sharedPreferences.getInt(
-            "${PreferencePrefix.VERTICAL_OFFSET}$appWidgetId",
-            0,
+    fun getWidgetOffset(appWidgetId: Int): WidgetOffset {
+        return WidgetOffset(
+            horizontal = sharedPreferences.getInt("${PreferencePrefix.HORIZONTAL_OFFSET}$appWidgetId", 0),
+            vertical = sharedPreferences.getInt("${PreferencePrefix.VERTICAL_OFFSET}$appWidgetId", 0),
         )
     }
 
@@ -417,36 +415,15 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         tapAction: PhotoWidgetTapAction,
         tapActionArea: TapActionArea,
     ) {
-        val mainPrefKey = when (tapActionArea) {
-            TapActionArea.LEFT -> "${PreferencePrefix.TAP_ACTION_LEFT}$appWidgetId"
-            TapActionArea.CENTER -> "${PreferencePrefix.TAP_ACTION_CENTER}$appWidgetId"
-            TapActionArea.RIGHT -> "${PreferencePrefix.TAP_ACTION_RIGHT}$appWidgetId"
-        }
-
-        val appShortcutKey = when (tapActionArea) {
-            TapActionArea.LEFT -> "${PreferencePrefix.APP_SHORTCUT_LEFT}$appWidgetId"
-            TapActionArea.CENTER -> "${PreferencePrefix.APP_SHORTCUT_CENTER}$appWidgetId"
-            TapActionArea.RIGHT -> "${PreferencePrefix.APP_SHORTCUT_RIGHT}$appWidgetId"
-        }
-
-        val appFolderKey = when (tapActionArea) {
-            TapActionArea.LEFT -> "${PreferencePrefix.APP_FOLDER_LEFT}$appWidgetId"
-            TapActionArea.CENTER -> "${PreferencePrefix.APP_FOLDER_CENTER}$appWidgetId"
-            TapActionArea.RIGHT -> "${PreferencePrefix.APP_FOLDER_RIGHT}$appWidgetId"
-        }
-
-        val urlShortcutKey = when (tapActionArea) {
-            TapActionArea.LEFT -> "${PreferencePrefix.URL_SHORTCUT_LEFT}$appWidgetId"
-            TapActionArea.CENTER -> "${PreferencePrefix.URL_SHORTCUT_CENTER}$appWidgetId"
-            TapActionArea.RIGHT -> "${PreferencePrefix.URL_SHORTCUT_RIGHT}$appWidgetId"
-        }
+        val keys = tapActionKeys(tapActionArea, appWidgetId)
 
         sharedPreferences.edit {
-            putString(mainPrefKey, tapAction.serializedName)
+            putString(keys.mainKey, tapAction.serializedName)
 
-            remove(appShortcutKey)
-            remove(appFolderKey)
-            remove(urlShortcutKey)
+            remove(keys.appShortcutKey)
+            remove(keys.appFolderKey)
+            remove(keys.urlShortcutKey)
+            remove(keys.fileShortcutUriKey)
 
             when (tapAction) {
                 is PhotoWidgetTapAction.ViewFullScreen -> {
@@ -461,15 +438,19 @@ class PhotoWidgetSharedPreferences @Inject constructor(
                 }
 
                 is PhotoWidgetTapAction.AppShortcut -> {
-                    putString(appShortcutKey, tapAction.appShortcut)
+                    putString(keys.appShortcutKey, tapAction.appShortcut)
                 }
 
                 is PhotoWidgetTapAction.AppFolder -> {
-                    putString(appFolderKey, tapAction.shortcuts.joinToString(separator = ",").ifEmpty { null })
+                    putString(keys.appFolderKey, tapAction.shortcuts.joinToString(separator = ",").ifEmpty { null })
                 }
 
                 is PhotoWidgetTapAction.UrlShortcut -> {
-                    putString(urlShortcutKey, tapAction.url)
+                    putString(keys.urlShortcutKey, tapAction.url)
+                }
+
+                is PhotoWidgetTapAction.FileShortcut -> {
+                    putString(keys.fileShortcutUriKey, tapAction.fileUri)
                 }
 
                 is PhotoWidgetTapAction.ToggleCycling -> {
@@ -485,31 +466,9 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         appWidgetId: Int,
         tapActionArea: TapActionArea,
     ): PhotoWidgetTapAction = with(sharedPreferences) {
-        val mainPrefKey = when (tapActionArea) {
-            TapActionArea.LEFT -> "${PreferencePrefix.TAP_ACTION_LEFT}$appWidgetId"
-            TapActionArea.CENTER -> "${PreferencePrefix.TAP_ACTION_CENTER}$appWidgetId"
-            TapActionArea.RIGHT -> "${PreferencePrefix.TAP_ACTION_RIGHT}$appWidgetId"
-        }
+        val keys = tapActionKeys(tapActionArea, appWidgetId)
 
-        val appShortcutKey = when (tapActionArea) {
-            TapActionArea.LEFT -> "${PreferencePrefix.APP_SHORTCUT_LEFT}$appWidgetId"
-            TapActionArea.CENTER -> "${PreferencePrefix.APP_SHORTCUT_CENTER}$appWidgetId"
-            TapActionArea.RIGHT -> "${PreferencePrefix.APP_SHORTCUT_RIGHT}$appWidgetId"
-        }
-
-        val appFolderKey = when (tapActionArea) {
-            TapActionArea.LEFT -> "${PreferencePrefix.APP_FOLDER_LEFT}$appWidgetId"
-            TapActionArea.CENTER -> "${PreferencePrefix.APP_FOLDER_CENTER}$appWidgetId"
-            TapActionArea.RIGHT -> "${PreferencePrefix.APP_FOLDER_RIGHT}$appWidgetId"
-        }
-
-        val urlShortcutKey = when (tapActionArea) {
-            TapActionArea.LEFT -> "${PreferencePrefix.URL_SHORTCUT_LEFT}$appWidgetId"
-            TapActionArea.CENTER -> "${PreferencePrefix.URL_SHORTCUT_CENTER}$appWidgetId"
-            TapActionArea.RIGHT -> "${PreferencePrefix.URL_SHORTCUT_RIGHT}$appWidgetId"
-        }
-
-        val name = getString(mainPrefKey, null) ?: return when (tapActionArea) {
+        val name = getString(keys.mainKey, null) ?: return when (tapActionArea) {
             TapActionArea.LEFT -> PhotoWidgetTapAction.ViewPreviousPhoto
             TapActionArea.CENTER -> PhotoWidgetTapAction.ViewFullScreen()
             TapActionArea.RIGHT -> PhotoWidgetTapAction.ViewNextPhoto
@@ -529,11 +488,11 @@ class PhotoWidgetSharedPreferences @Inject constructor(
                 )
 
                 is PhotoWidgetTapAction.AppShortcut -> tapAction.copy(
-                    appShortcut = getString(appShortcutKey, null),
+                    appShortcut = getString(keys.appShortcutKey, null),
                 )
 
                 is PhotoWidgetTapAction.AppFolder -> {
-                    val shortcuts: List<String> = getString(appFolderKey, null)
+                    val shortcuts: List<String> = getString(keys.appFolderKey, null)
                         ?.split(",")
                         ?.filter { it.isNotEmpty() }
                         .orEmpty()
@@ -542,7 +501,11 @@ class PhotoWidgetSharedPreferences @Inject constructor(
                 }
 
                 is PhotoWidgetTapAction.UrlShortcut -> tapAction.copy(
-                    url = getString(urlShortcutKey, null),
+                    url = getString(keys.urlShortcutKey, null),
+                )
+
+                is PhotoWidgetTapAction.FileShortcut -> tapAction.copy(
+                    fileUri = getString(keys.fileShortcutUriKey, null),
                 )
 
                 is PhotoWidgetTapAction.ToggleCycling -> tapAction.copy(
@@ -551,6 +514,37 @@ class PhotoWidgetSharedPreferences @Inject constructor(
 
                 else -> tapAction
             }
+        }
+    }
+
+    private fun tapActionKeys(
+        tapActionArea: TapActionArea,
+        appWidgetId: Int,
+    ): TapActionKeys {
+        return when (tapActionArea) {
+            TapActionArea.LEFT -> TapActionKeys(
+                mainKey = "${PreferencePrefix.TAP_ACTION_LEFT}$appWidgetId",
+                appShortcutKey = "${PreferencePrefix.APP_SHORTCUT_LEFT}$appWidgetId",
+                appFolderKey = "${PreferencePrefix.APP_FOLDER_LEFT}$appWidgetId",
+                urlShortcutKey = "${PreferencePrefix.URL_SHORTCUT_LEFT}$appWidgetId",
+                fileShortcutUriKey = "${PreferencePrefix.FILE_SHORTCUT_URI_LEFT}$appWidgetId",
+            )
+
+            TapActionArea.CENTER -> TapActionKeys(
+                mainKey = "${PreferencePrefix.TAP_ACTION_CENTER}$appWidgetId",
+                appShortcutKey = "${PreferencePrefix.APP_SHORTCUT_CENTER}$appWidgetId",
+                appFolderKey = "${PreferencePrefix.APP_FOLDER_CENTER}$appWidgetId",
+                urlShortcutKey = "${PreferencePrefix.URL_SHORTCUT_CENTER}$appWidgetId",
+                fileShortcutUriKey = "${PreferencePrefix.FILE_SHORTCUT_URI_CENTER}$appWidgetId",
+            )
+
+            TapActionArea.RIGHT -> TapActionKeys(
+                mainKey = "${PreferencePrefix.TAP_ACTION_RIGHT}$appWidgetId",
+                appShortcutKey = "${PreferencePrefix.APP_SHORTCUT_RIGHT}$appWidgetId",
+                appFolderKey = "${PreferencePrefix.APP_FOLDER_RIGHT}$appWidgetId",
+                urlShortcutKey = "${PreferencePrefix.URL_SHORTCUT_RIGHT}$appWidgetId",
+                fileShortcutUriKey = "${PreferencePrefix.FILE_SHORTCUT_URI_RIGHT}$appWidgetId",
+            )
         }
     }
 
@@ -596,6 +590,20 @@ class PhotoWidgetSharedPreferences @Inject constructor(
                 )
             }
         }
+    }
+
+    fun saveWidgetGifInterval(appWidgetId: Int, interval: Long?) {
+        sharedPreferences.edit {
+            if (interval != null) {
+                putLong("${PreferencePrefix.GIF_INTERVAL}$appWidgetId", interval)
+            } else {
+                remove("${PreferencePrefix.GIF_INTERVAL}$appWidgetId")
+            }
+        }
+    }
+
+    fun getWidgetGifInterval(appWidgetId: Int): Long {
+        return sharedPreferences.getLong("${PreferencePrefix.GIF_INTERVAL}$appWidgetId", 0)
     }
 
     fun saveWidgetDeletionTimestamp(appWidgetId: Int, timestamp: Long?) {
@@ -689,12 +697,50 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         }
     }
 
+    fun migrateWidgetData(oldWidgetId: Int, newWidgetId: Int) {
+        sharedPreferences.edit {
+            for (prefix in PreferencePrefix.entries) {
+                val oldKey = "$prefix$oldWidgetId"
+                val newKey = "$prefix$newWidgetId"
+
+                if (!sharedPreferences.contains(oldKey)) continue
+
+                when (val value = sharedPreferences.all[oldKey]) {
+                    is String -> putString(newKey, value)
+
+                    is Int -> putInt(newKey, value)
+
+                    is Long -> putLong(newKey, value)
+
+                    is Float -> putFloat(newKey, value)
+
+                    is Boolean -> putBoolean(newKey, value)
+
+                    is Set<*> -> {
+                        @Suppress("UNCHECKED_CAST")
+                        putStringSet(newKey, value as Set<String>)
+                    }
+                }
+
+                remove(oldKey)
+            }
+        }
+    }
+
     fun getKnownWidgetIds(): List<Int> {
         return sharedPreferences.all
             .filter { (key, _) -> key.startsWith(PreferencePrefix.SOURCE.value) }
-            .mapNotNull { (key, _) -> key.substringAfterLast("_").toIntOrNull()?.takeIf { it > 0 } }
+            .mapNotNull { (key, _) -> key.removePrefix(PreferencePrefix.SOURCE.value).toIntOrNull()?.takeIf { it > 0 } }
             .distinct()
     }
+
+    private data class TapActionKeys(
+        val mainKey: String,
+        val appShortcutKey: String,
+        val appFolderKey: String,
+        val urlShortcutKey: String,
+        val fileShortcutUriKey: String,
+    )
 
     private enum class PreferencePrefix(val value: String) {
         SOURCE(value = "appwidget_source_"),
@@ -774,6 +820,9 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         URL_SHORTCUT_LEFT(value = "appwidget_url_shortcut_left_"),
         URL_SHORTCUT_CENTER(value = "appwidget_url_shortcut_"),
         URL_SHORTCUT_RIGHT(value = "appwidget_url_shortcut_right_"),
+        FILE_SHORTCUT_URI_LEFT(value = "appwidget_file_shortcut_uri_left_"),
+        FILE_SHORTCUT_URI_CENTER(value = "appwidget_file_shortcut_uri_"),
+        FILE_SHORTCUT_URI_RIGHT(value = "appwidget_file_shortcut_uri_right_"),
         PREFERRED_GALLERY_APP(value = "appwidget_preferred_gallery_app_"),
         DISABLE_TAP(value = "appwidget_disable_tap_"),
 
@@ -782,6 +831,8 @@ class PhotoWidgetSharedPreferences @Inject constructor(
         TEXT_SIZE(value = "appwidget_text_size_"),
         TEXT_VERTICAL_OFFSET(value = "appwidget_text_vertical_offset_"),
         TEXT_HAS_SHADOW(value = "appwidget_text_has_shadow_"),
+
+        GIF_INTERVAL(value = "appwidget_gif_interval_"),
 
         DELETION_TIMESTAMP(value = "appwidget_deletion_timestamp_"),
 

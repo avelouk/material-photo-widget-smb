@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 9.2.0" type="baseline" client="gradle" dependencies="false" name="AGP (9.2.0)" variant="all" version="9.2.0">
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.exifinterface:exifinterface than 1.3.7 is available: 1.4.2"
+        errorLine1="exifinterface = { module = &quot;androidx.exifinterface:exifinterface&quot;, version = &quot;1.3.7&quot; }"
+        errorLine2="                                                                             ~~~~~~~">
+        <location
+            file="$HOME/code/material-photo-widget-smb/gradle/libs.versions.toml"
+            line="26"
+            column="78"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.security:security-crypto than 1.0.0 is available: 1.1.0"
+        errorLine1="security-crypto = { module = &quot;androidx.security:security-crypto&quot;, version = &quot;1.0.0&quot; }"
+        errorLine2="                                                                            ~~~~~~~">
+        <location
+            file="$HOME/code/material-photo-widget-smb/gradle/libs.versions.toml"
+            line="62"
+            column="77"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.google.guava:guava than 33.4.8-android is available: 33.6.0-android"
+        errorLine1="    implementation(&quot;com.google.guava:guava:33.4.8-android&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="231"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.hierynomus:smbj than 0.13.0 is available: 0.14.0"
+        errorLine1="smbj = { module = &quot;com.hierynomus:smbj&quot;, version = &quot;0.13.0&quot; }"
+        errorLine2="                                                   ~~~~~~~~">
+        <location
+            file="$HOME/code/material-photo-widget-smb/gradle/libs.versions.toml"
+            line="63"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.rapid7.client:dcerpc than 0.12.0 is available: 0.12.13"
+        errorLine1="dcerpc = { module = &quot;com.rapid7.client:dcerpc&quot;, version = &quot;0.12.0&quot; }"
+        errorLine2="                                                          ~~~~~~~~">
+        <location
+            file="$HOME/code/material-photo-widget-smb/gradle/libs.versions.toml"
+            line="64"
+            column="59"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier,"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/fibelatti/photowidget/configure/PhotoWidgetConfigureContentTab.kt"
+            line="228"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier,"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/fibelatti/photowidget/configure/PhotoWidgetConfigureContentTab.kt"
+            line="277"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_source_smb&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_source_smb&quot;>NAS / SMB&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="102"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_source_smb_description&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_source_smb_description&quot;>Connect to a NAS or SMB share to show &quot;on this day&quot; memories from past years.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="106"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_host&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_host&quot;>Server address (IP or hostname)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="110"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_username&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_username&quot;>Username (optional)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="111"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_password&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_password&quot;>Password (optional)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="112"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_browse_folders&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browse_folders&quot;>Browse &amp;amp; select folders&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="113"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_no_folders_selected&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_no_folders_selected&quot;>No folders selected — tap Browse to pick folders from your NAS&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="114"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_folders_selected&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_folders_selected&quot;>%1$d folder(s) selected&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="115"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_scan&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_scan&quot;>Sync photos now&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="116"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_scanning&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_scanning&quot;>Syncing…&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="117"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_scan_result&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_scan_result&quot;>%1$d photos indexed&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="118"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_scan_error&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_scan_error&quot;>Sync failed — check your settings.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="119"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_todays_photos&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_todays_photos&quot;>Today\&apos;s photos (%1$d)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="120"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_sync_notification_title&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_sync_notification_title&quot;>Syncing photos&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="121"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_sync_notification_text&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_sync_notification_text&quot;>Scanning and downloading photos from NAS…&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="122"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_sync_channel_name&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_sync_channel_name&quot;>Photo sync&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="123"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_browser_title&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_title&quot;>Select folders&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="126"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_browser_share_hint&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_share_hint&quot;>Share name (e.g. FamilyPhotos)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="127"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_browser_open&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_open&quot;>Open share&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="128"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_browser_back&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_back&quot;>Back&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="129"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_browser_root&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_root&quot;>/ root&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="130"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_browser_load_error&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_load_error&quot;>Could not list folders — check connection and share name.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="131"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_browser_confirm&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_confirm&quot;>Done (%1$d selected)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="132"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_smb_browser_empty&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_empty&quot;>No subfolders found&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="133"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_configure_text_type_on_this_day&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_configure_text_type_on_this_day&quot;>On this day&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="324"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;photo_widget_configure_text_type_on_this_day_description&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;photo_widget_configure_text_type_on_this_day_description&quot;>Shows the year the photo was taken, e.g. \&quot;On this day, 2019\&quot;&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="325"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_notifications_title&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_notifications_title&quot;>Allow notifications&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="420"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_notifications_body&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_notifications_body&quot;>Get notified when photo syncing is in progress so it can run reliably in the background.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="421"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_notifications_allow&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_notifications_allow&quot;>Allow notifications&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="422"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_battery_title&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_battery_title&quot;>Unrestricted background&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="423"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_battery_body&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_battery_body&quot;>Allow the app to run in the background without restrictions so your widget photos stay up to date.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="424"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_battery_allow&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_battery_allow&quot;>Remove battery restriction&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="425"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_battery_granted&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_battery_granted&quot;>Background usage is unrestricted&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="426"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_battery_denied&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_battery_denied&quot;>Battery optimization is still enabled — you can change this later in Settings.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="427"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_skip&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_skip&quot;>Skip&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="428"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;setup_done&quot; is not translated in &quot;de&quot; (German), &quot;ru&quot; (Russian), &quot;pt&quot; (Portuguese), &quot;ja&quot; (Japanese), &quot;fil&quot; (Filipino; Pilipino), &quot;it&quot; (Italian), &quot;fr&quot; (French), &quot;ro&quot; (Romanian), &quot;es&quot; (Spanish), &quot;iw&quot; (Hebrew), &quot;tr&quot; (Turkish)"
+        errorLine1="    &lt;string name=&quot;setup_done&quot;>Done&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="429"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;folder&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_folders_selected&quot;>%1$d folder(s) selected&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="115"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;photos&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_scan_result&quot;>%1$d photos indexed&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="118"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;selected&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_confirm&quot;>Done (%1$d selected)&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="132"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.photo_widget_smb_folders_selected` appears to be unused"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_folders_selected&quot;>%1$d folder(s) selected&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="115"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.photo_widget_smb_browser_share_hint` appears to be unused"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_share_hint&quot;>Share name (e.g. FamilyPhotos)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="127"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.photo_widget_smb_browser_open` appears to be unused"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_open&quot;>Open share&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="128"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.photo_widget_smb_browser_root` appears to be unused"
+        errorLine1="    &lt;string name=&quot;photo_widget_smb_browser_root&quot;>/ root&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="130"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                    data = Uri.parse(&quot;package:${context.packageName}&quot;)"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/fibelatti/photowidget/home/SetupScreen.kt"
+            line="179"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                    data = Uri.parse(&quot;package:${context.packageName}&quot;)"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/fibelatti/photowidget/home/SetupScreen.kt"
+            line="179"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UseTomlInstead"
+        message="Use version catalog instead"
+        errorLine1="    implementation(&quot;com.google.guava:guava:33.4.8-android&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="231"
+            column="20"/>
+    </issue>
+
+</issues>

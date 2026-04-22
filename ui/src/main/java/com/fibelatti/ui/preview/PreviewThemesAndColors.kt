@@ -7,6 +7,8 @@ import android.os.Build
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
 
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
 @Preview(
     name = "Theme — Light",
     group = "Themes",
@@ -47,4 +49,4 @@ import androidx.compose.ui.tooling.preview.Wallpapers
     showBackground = true,
     wallpaper = Wallpapers.YELLOW_DOMINATED_EXAMPLE,
 )
-annotation class ThemePreviews
+annotation class PreviewThemesAndColors

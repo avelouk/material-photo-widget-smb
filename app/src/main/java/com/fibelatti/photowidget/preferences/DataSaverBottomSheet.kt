@@ -21,8 +21,8 @@ import com.fibelatti.photowidget.di.entryPoint
 import com.fibelatti.photowidget.ui.Toggle
 import com.fibelatti.ui.foundation.AppBottomSheet
 import com.fibelatti.ui.foundation.AppSheetState
-import com.fibelatti.ui.preview.LocalePreviews
-import com.fibelatti.ui.preview.ThemePreviews
+import com.fibelatti.ui.preview.PreviewLocales
+import com.fibelatti.ui.preview.PreviewThemesAndColors
 import com.fibelatti.ui.theme.ExtendedTheme
 
 @Composable
@@ -81,8 +81,8 @@ private fun DataSaverPickerContent(
 }
 
 @Composable
-@ThemePreviews
-@LocalePreviews
+@PreviewThemesAndColors
+@PreviewLocales
 private fun DataSaverPickerContentPreview() {
     ExtendedTheme {
         DataSaverPickerContent(

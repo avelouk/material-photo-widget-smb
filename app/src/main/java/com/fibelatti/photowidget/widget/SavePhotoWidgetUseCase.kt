@@ -5,9 +5,10 @@ import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.model.PhotoWidgetBorder
 import com.fibelatti.photowidget.model.PhotoWidgetCycleMode
 import com.fibelatti.photowidget.model.PhotoWidgetSource
-import com.fibelatti.photowidget.model.PhotoWidgetTapAction
+import com.fibelatti.photowidget.model.PhotoWidgetTapActions
 import com.fibelatti.photowidget.model.TapActionArea
 import com.fibelatti.photowidget.model.canShuffle
+import com.fibelatti.photowidget.model.coerceTapActions
 import com.fibelatti.photowidget.model.photoCycleEnabled
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
 import javax.inject.Inject
@@ -19,16 +20,22 @@ class SavePhotoWidgetUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
+        draftWidgetId: Int,
         appWidgetId: Int,
         photoWidget: PhotoWidget,
     ) {
-        Timber.d("Saving widget data (appWidgetId=$appWidgetId)")
+        Timber.i("Saving widget data (draftWidgetId=$draftWidgetId, appWidgetId=$appWidgetId)")
 
-        saveWidgetContent(appWidgetId = appWidgetId, photoWidget = photoWidget)
+        saveWidgetContent(draftWidgetId = draftWidgetId, appWidgetId = appWidgetId, photoWidget = photoWidget)
         saveWidgetAppearance(appWidgetId = appWidgetId, photoWidget = photoWidget)
         saveWidgetBehavior(appWidgetId = appWidgetId, photoWidget = photoWidget)
 
         photoWidgetStorage.saveWidgetText(appWidgetId = appWidgetId, text = photoWidget.text)
+
+        photoWidgetStorage.saveWidgetGifInterval(appWidgetId = appWidgetId, interval = photoWidget.gifInterval)
+
+        // Draft widgets won't have alarms yet...
+        if (PhotoWidget.isDraftWidgetId(appWidgetId)) return
 
         val smbCycleEnabled = photoWidget.source == PhotoWidgetSource.SMB &&
             photoWidget.cycleMode !is PhotoWidgetCycleMode.Disabled
@@ -45,18 +52,22 @@ class SavePhotoWidgetUseCase @Inject constructor(
     }
 
     private suspend fun saveWidgetContent(
+        draftWidgetId: Int,
         appWidgetId: Int,
         photoWidget: PhotoWidget,
     ) {
-        photoWidgetStorage.renameTemporaryWidgetDir(appWidgetId = appWidgetId)
+        if (draftWidgetId != appWidgetId) {
+            photoWidgetStorage.migrateDraftToWidget(draftWidgetId = draftWidgetId, appWidgetId = appWidgetId)
+        }
 
         photoWidgetStorage.saveWidgetSource(appWidgetId = appWidgetId, source = photoWidget.source)
 
-        if (PhotoWidgetSource.DIRECTORY == photoWidget.source) {
+        if (photoWidget.source == PhotoWidgetSource.DIRECTORY) {
             photoWidgetStorage.saveWidgetSyncedDir(appWidgetId = appWidgetId, dirUri = photoWidget.syncedDir)
         }
 
-        val removedPhotos = photoWidget.removedPhotos.map { it.photoId }
+        val isDraftWidget: Boolean = PhotoWidget.isDraftWidgetId(appWidgetId)
+        val removedPhotoIds: List<String> = photoWidget.removedPhotos.map { it.photoId }
 
         // SMB photos are managed by the sync worker — skip local photo sync and displayed-photo
         // tracking here to avoid wiping the already-cached files.
@@ -67,17 +78,17 @@ class SavePhotoWidgetUseCase @Inject constructor(
                 removedPhotos = photoWidget.removedPhotos,
             )
 
-            val currentPhotoId = photoWidgetStorage.getCurrentPhotoId(appWidgetId = appWidgetId)
+            val currentPhotoId: String? = photoWidgetStorage.getCurrentPhotoId(appWidgetId = appWidgetId)
 
             when (currentPhotoId) {
-                null -> {
+                null if !isDraftWidget -> {
                     photoWidgetStorage.saveDisplayedPhoto(
                         appWidgetId = appWidgetId,
                         photoId = photoWidget.photos.first().photoId,
                     )
                 }
 
-                in removedPhotos if photoWidget.currentPhoto?.photoId != null -> {
+                in removedPhotoIds if photoWidget.currentPhoto?.photoId != null && !isDraftWidget -> {
                     photoWidgetStorage.saveDisplayedPhoto(
                         appWidgetId = appWidgetId,
                         photoId = photoWidget.currentPhoto.photoId,
@@ -86,18 +97,25 @@ class SavePhotoWidgetUseCase @Inject constructor(
             }
         }
 
-        when (photoWidget.source) {
-            PhotoWidgetSource.PHOTOS -> {
-                photoWidgetStorage.markPhotosForDeletion(
+        when {
+            isDraftWidget -> {
+                photoWidgetStorage.deletePhotos(
                     appWidgetId = appWidgetId,
-                    photoIds = removedPhotos,
+                    photoIds = removedPhotoIds,
                 )
             }
 
-            PhotoWidgetSource.DIRECTORY, PhotoWidgetSource.SMB -> {
-                photoWidgetStorage.saveExcludedPhotos(
+            photoWidget.source == PhotoWidgetSource.PHOTOS -> {
+                photoWidgetStorage.replacePhotosForDeletion(
                     appWidgetId = appWidgetId,
-                    photoIds = removedPhotos,
+                    photoIds = removedPhotoIds,
+                )
+            }
+
+            photoWidget.source == PhotoWidgetSource.DIRECTORY -> {
+                photoWidgetStorage.replaceExcludedPhotos(
+                    appWidgetId = appWidgetId,
+                    photoIds = removedPhotoIds,
                 )
             }
         }
@@ -119,7 +137,7 @@ class SavePhotoWidgetUseCase @Inject constructor(
 
         photoWidgetStorage.saveWidgetCornerRadius(
             appWidgetId = appWidgetId,
-            cornerRadius = if (PhotoWidgetAspectRatio.FILL_WIDGET != photoWidget.aspectRatio) {
+            cornerRadius = if (photoWidget.aspectRatio != PhotoWidgetAspectRatio.FILL_WIDGET) {
                 photoWidget.cornerRadius
             } else {
                 PhotoWidget.DEFAULT_CORNER_RADIUS
@@ -128,7 +146,7 @@ class SavePhotoWidgetUseCase @Inject constructor(
 
         photoWidgetStorage.saveWidgetBorder(
             appWidgetId = appWidgetId,
-            border = if (PhotoWidgetAspectRatio.FILL_WIDGET != photoWidget.aspectRatio) {
+            border = if (photoWidget.aspectRatio != PhotoWidgetAspectRatio.FILL_WIDGET) {
                 photoWidget.border
             } else {
                 PhotoWidgetBorder.None
@@ -150,7 +168,7 @@ class SavePhotoWidgetUseCase @Inject constructor(
             brightness = photoWidget.colors.brightness,
         )
 
-        if (PhotoWidgetAspectRatio.FILL_WIDGET != photoWidget.aspectRatio) {
+        if (photoWidget.aspectRatio != PhotoWidgetAspectRatio.FILL_WIDGET) {
             photoWidgetStorage.saveWidgetOffset(
                 appWidgetId = appWidgetId,
                 horizontalOffset = photoWidget.horizontalOffset,
@@ -181,7 +199,7 @@ class SavePhotoWidgetUseCase @Inject constructor(
             sorting = photoWidget.directorySorting,
         )
 
-        val currentCycleMode = photoWidgetStorage.getWidgetCycleMode(appWidgetId = appWidgetId)
+        val currentCycleMode: PhotoWidgetCycleMode = photoWidgetStorage.getWidgetCycleMode(appWidgetId = appWidgetId)
         if (photoWidget.cycleMode != currentCycleMode) {
             photoWidgetStorage.saveWidgetNextCycleTime(appWidgetId = appWidgetId, nextCycleTime = null)
         }
@@ -191,33 +209,22 @@ class SavePhotoWidgetUseCase @Inject constructor(
             cycleMode = photoWidget.cycleMode,
         )
 
+        val tapActions: PhotoWidgetTapActions = photoWidget.tapActions.coerceTapActions(source = photoWidget.source)
+
         photoWidgetStorage.saveWidgetTapAction(
             appWidgetId = appWidgetId,
-            tapAction = coerceTapAction(tapAction = photoWidget.tapActions.left, source = photoWidget.source),
+            tapAction = tapActions.left,
             tapActionArea = TapActionArea.LEFT,
         )
         photoWidgetStorage.saveWidgetTapAction(
             appWidgetId = appWidgetId,
-            tapAction = coerceTapAction(tapAction = photoWidget.tapActions.center, source = photoWidget.source),
+            tapAction = tapActions.center,
             tapActionArea = TapActionArea.CENTER,
         )
         photoWidgetStorage.saveWidgetTapAction(
             appWidgetId = appWidgetId,
-            tapAction = coerceTapAction(tapAction = photoWidget.tapActions.right, source = photoWidget.source),
+            tapAction = tapActions.right,
             tapActionArea = TapActionArea.RIGHT,
         )
-    }
-
-    private fun coerceTapAction(
-        tapAction: PhotoWidgetTapAction,
-        source: PhotoWidgetSource,
-    ): PhotoWidgetTapAction {
-        return when {
-            tapAction is PhotoWidgetTapAction.ViewInGallery && PhotoWidgetSource.PHOTOS == source -> {
-                PhotoWidgetTapAction.ViewFullScreen()
-            }
-
-            else -> tapAction
-        }
     }
 }

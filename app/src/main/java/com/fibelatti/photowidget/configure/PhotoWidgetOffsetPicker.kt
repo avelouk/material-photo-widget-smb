@@ -25,7 +25,7 @@ import com.fibelatti.photowidget.ui.DefaultSheetFooterButtons
 import com.fibelatti.photowidget.ui.LocalSamplePhoto
 import com.fibelatti.photowidget.ui.NumberSpinner
 import com.fibelatti.photowidget.ui.WidgetPositionViewer
-import com.fibelatti.ui.preview.AllPreviews
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.theme.ExtendedTheme
 
 @Composable
@@ -122,7 +122,7 @@ private fun PhotoWidgetOffsetViewer(
 }
 
 @Composable
-@AllPreviews
+@PreviewAll
 private fun OffsetPickerPreview() {
     ExtendedTheme {
         PhotoWidgetOffsetPicker(

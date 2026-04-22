@@ -14,11 +14,14 @@ java {
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_21
+        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
     }
 }
 
 dependencies {
     compileOnly(libs.android.gradle.plugin)
+    compileOnly(libs.compose.gradle.plugin)
+    compileOnly(libs.spotless.gradle.plugin)
 }
 
 tasks {
@@ -30,9 +33,19 @@ tasks {
 
 gradlePlugin {
     plugins {
+        register("androidCommon") {
+            id = libs.plugins.fibelatti.android.common.get().pluginId
+            implementationClass = "AndroidCommonPlugin"
+        }
+
         register("manifestPermissionValidation") {
             id = libs.plugins.fibelatti.manifest.permission.validation.get().pluginId
             implementationClass = "ManifestPermissionValidationPlugin"
+        }
+
+        register("spotless") {
+            id = libs.plugins.fibelatti.spotless.get().pluginId
+            implementationClass = "SpotlessPlugin"
         }
     }
 }

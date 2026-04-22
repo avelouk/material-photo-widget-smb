@@ -51,18 +51,19 @@ import com.fibelatti.photowidget.model.PhotoWidgetStatus
 import com.fibelatti.photowidget.preferences.AppAppearanceBottomSheet
 import com.fibelatti.photowidget.preferences.AppColorsBottomSheet
 import com.fibelatti.photowidget.preferences.DataSaverBottomSheet
+import com.fibelatti.photowidget.preferences.KeepAliveServiceBottomSheet
 import com.fibelatti.photowidget.preferences.WidgetDefaultsActivity
 import com.fibelatti.ui.foundation.hideBottomSheet
 import com.fibelatti.ui.foundation.rememberAppSheetState
 import com.fibelatti.ui.foundation.showBottomSheet
-import com.fibelatti.ui.preview.AllPreviews
+import com.fibelatti.ui.preview.PreviewAll
 import com.fibelatti.ui.theme.ExtendedTheme
 
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel,
     preparedIntent: Intent?,
-    onIntentConsumed: () -> Unit,
+    onIntentConsume: () -> Unit,
     onCreateNewWidgetClick: (PhotoWidgetAspectRatio) -> Unit,
     onAppLanguageClick: () -> Unit,
     onShareClick: () -> Unit,
@@ -72,6 +73,7 @@ fun HomeScreen(
     val existingWidgetMenuSheetState = rememberAppSheetState()
     val removedWidgetSheetState = rememberAppSheetState()
     val invalidWidgetSheetState = rememberAppSheetState()
+    val draftWidgetSheetState = rememberAppSheetState()
     val appAppearanceSheetState = rememberAppSheetState()
     val appColorsSheetState = rememberAppSheetState()
 
@@ -92,7 +94,7 @@ fun HomeScreen(
             preparedIntent?.let { intent ->
                 intent.appWidgetId = appWidgetId
 
-                onIntentConsumed()
+                onIntentConsume()
 
                 localContext.startActivity(intent)
 
@@ -118,6 +120,11 @@ fun HomeScreen(
         },
         onInvalidWidgetClick = { appWidgetId ->
             invalidWidgetSheetState.showBottomSheet(
+                data = appWidgetId,
+            )
+        },
+        onDraftWidgetClick = { appWidgetId ->
+            draftWidgetSheetState.showBottomSheet(
                 data = appWidgetId,
             )
         },
@@ -166,6 +173,11 @@ fun HomeScreen(
         onDelete = homeViewModel::deleteWidget,
     )
 
+    DraftWidgetBottomSheet(
+        sheetState = draftWidgetSheetState,
+        onDelete = homeViewModel::deleteWidget,
+    )
+
     AppAppearanceBottomSheet(
         sheetState = appAppearanceSheetState,
     )
@@ -183,6 +195,7 @@ fun HomeScreen(
     onCurrentWidgetClick: (appWidgetId: Int, canSync: Boolean, canLock: Boolean, isLocked: Boolean) -> Unit,
     onRemovedWidgetClick: (appWidgetId: Int, PhotoWidgetStatus) -> Unit,
     onInvalidWidgetClick: (appWidgetId: Int) -> Unit,
+    onDraftWidgetClick: (appWidgetId: Int) -> Unit,
     onDefaultsClick: () -> Unit,
     onAppearanceClick: () -> Unit,
     onColorsClick: () -> Unit,
@@ -203,6 +216,7 @@ fun HomeScreen(
     val helpSheetState = rememberAppSheetState()
     val backgroundRestrictionSheetState = rememberAppSheetState()
     val dataSaverSheetState = rememberAppSheetState()
+    val keepAliveSheetState = rememberAppSheetState()
 
     Scaffold(
         modifier = modifier,
@@ -245,6 +259,7 @@ fun HomeScreen(
                         onCurrentWidgetClick = onCurrentWidgetClick,
                         onRemovedWidgetClick = onRemovedWidgetClick,
                         onInvalidWidgetClick = onInvalidWidgetClick,
+                        onDraftWidgetClick = onDraftWidgetClick,
                     )
                 }
 
@@ -252,6 +267,7 @@ fun HomeScreen(
                     SettingsScreen(
                         onDefaultsClick = onDefaultsClick,
                         onDataSaverClick = dataSaverSheetState::showBottomSheet,
+                        onKeepAliveClick = keepAliveSheetState::showBottomSheet,
                         onAppearanceClick = onAppearanceClick,
                         onColorsClick = onColorsClick,
                         onAppLanguageClick = onAppLanguageClick,
@@ -281,6 +297,10 @@ fun HomeScreen(
 
     DataSaverBottomSheet(
         sheetState = dataSaverSheetState,
+    )
+
+    KeepAliveServiceBottomSheet(
+        sheetState = keepAliveSheetState,
     )
 }
 
@@ -355,7 +375,7 @@ private enum class HomeNavigationDestination(
 
 // region Previews
 @Composable
-@AllPreviews
+@PreviewAll
 private fun HomeScreenPreview() {
     ExtendedTheme {
         HomeScreen(
@@ -364,6 +384,7 @@ private fun HomeScreenPreview() {
             onCurrentWidgetClick = { _, _, _, _ -> },
             onRemovedWidgetClick = { _, _ -> },
             onInvalidWidgetClick = {},
+            onDraftWidgetClick = {},
             onDefaultsClick = {},
             onAppearanceClick = {},
             onColorsClick = {},

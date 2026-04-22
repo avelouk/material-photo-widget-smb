@@ -24,4 +24,9 @@ enum class PhotoWidgetSource(
      * Photos are sourced from a network share over SMB and shown as "on this day" memories.
      */
     SMB(label = R.string.photo_widget_source_smb),
+
+    /**
+     * The user selected one or more GIF files and the extracted frames are used as photos.
+     */
+    GIF(label = R.string.photo_widget_source_gif),
 }

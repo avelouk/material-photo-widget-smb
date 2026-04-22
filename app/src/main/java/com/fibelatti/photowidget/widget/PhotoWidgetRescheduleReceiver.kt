@@ -9,16 +9,16 @@ import timber.log.Timber
 class PhotoWidgetRescheduleReceiver : EntryPointBroadcastReceiver() {
 
     override suspend fun doWork(context: Context, intent: Intent, entryPoint: PhotoWidgetEntryPoint) {
-        Timber.d("Working... (action=${intent.action})")
+        Timber.i("Working... (action=${intent.action})")
 
-        val isBoot = Intent.ACTION_BOOT_COMPLETED == intent.action ||
-            Intent.ACTION_LOCKED_BOOT_COMPLETED == intent.action
-        val isUpdate = Intent.ACTION_MY_PACKAGE_REPLACED == intent.action ||
-            (Intent.ACTION_PACKAGE_REPLACED == intent.action && intent.data?.schemeSpecificPart == context.packageName)
-        val isManual = ACTION_RESCHEDULE == intent.action
-        val isDateChanged = Intent.ACTION_DATE_CHANGED == intent.action ||
-            Intent.ACTION_TIME_CHANGED == intent.action ||
-            Intent.ACTION_TIMEZONE_CHANGED == intent.action
+        val isBoot: Boolean = intent.action == Intent.ACTION_BOOT_COMPLETED ||
+            intent.action == Intent.ACTION_LOCKED_BOOT_COMPLETED
+        val isUpdate: Boolean = intent.action == Intent.ACTION_MY_PACKAGE_REPLACED ||
+            (intent.action == Intent.ACTION_PACKAGE_REPLACED && intent.data?.schemeSpecificPart == context.packageName)
+        val isManual: Boolean = ACTION_RESCHEDULE == intent.action
+        val isDateChanged: Boolean = intent.action == Intent.ACTION_DATE_CHANGED ||
+            intent.action == Intent.ACTION_TIME_CHANGED ||
+            intent.action == Intent.ACTION_TIMEZONE_CHANGED
 
         if (isBoot || isUpdate || isManual) {
             PhotoWidgetRescheduleWorker.enqueueWork(context = context)

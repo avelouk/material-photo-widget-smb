@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fibelatti.photowidget.model.DirectorySorting
+import com.fibelatti.photowidget.model.GifFrames
 import com.fibelatti.photowidget.model.LocalPhoto
 import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
@@ -17,10 +18,12 @@ import com.fibelatti.photowidget.model.PhotoWidgetTapActions
 import com.fibelatti.photowidget.model.PhotoWidgetText
 import com.fibelatti.photowidget.model.SmbConfig
 import com.fibelatti.photowidget.model.SmbFolder
+import com.fibelatti.photowidget.model.coerceTapActions
 import com.fibelatti.photowidget.platform.savedState
-import com.fibelatti.photowidget.widget.DeleteStaleDataUseCase
+import com.fibelatti.photowidget.preferences.UserPreferencesStorage
 import com.fibelatti.photowidget.widget.DuplicatePhotoWidgetUseCase
 import com.fibelatti.photowidget.widget.LoadPhotoWidgetUseCase
+import com.fibelatti.photowidget.widget.PrepareGifPhotosUseCase
 import com.fibelatti.photowidget.widget.RestoreWidgetUseCase
 import com.fibelatti.photowidget.widget.SanitizeTapActionsUseCase
 import com.fibelatti.photowidget.widget.SavePhotoWidgetUseCase
@@ -30,11 +33,11 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,14 +56,16 @@ import timber.log.Timber
 class PhotoWidgetConfigureViewModel @Inject constructor(
     private val application: Application,
     savedStateHandle: SavedStateHandle,
+    private val userPreferencesStorage: UserPreferencesStorage,
     private val photoWidgetStorage: PhotoWidgetStorage,
     loadPhotoWidgetUseCase: LoadPhotoWidgetUseCase,
     private val sanitizeTapActionsUseCase: SanitizeTapActionsUseCase,
     private val duplicatePhotoWidgetUseCase: DuplicatePhotoWidgetUseCase,
     private val restoreWidgetUseCase: RestoreWidgetUseCase,
     private val savePhotoWidgetUseCase: SavePhotoWidgetUseCase,
-    deleteStaleDataUseCase: DeleteStaleDataUseCase,
+    private val prepareGifPhotosUseCase: PrepareGifPhotosUseCase,
     private val pinningCache: PhotoWidgetPinningCache,
+    private val scope: CoroutineScope,
 ) : ViewModel() {
 
     private val appWidgetId: Int by savedStateHandle.savedState(
@@ -72,21 +77,30 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
     private val backupWidget: PhotoWidget? by savedStateHandle.savedState()
     private val aspectRatio: PhotoWidgetAspectRatio? by savedStateHandle.savedState()
 
-    private val _state = MutableStateFlow(
-        PhotoWidgetConfigureState(
-            isImportAvailable = photoWidgetStorage.getKnownWidgetIds().isNotEmpty(),
-        ),
-    )
+    /**
+     * The actual widget ID used for all storage operations. For new widgets, this is a unique
+     * negative draft ID. For existing widgets (or drafts being continued), it matches [appWidgetId].
+     */
+    private var effectiveWidgetId: Int = appWidgetId
+
+    private val _state: MutableStateFlow<PhotoWidgetConfigureState> = MutableStateFlow(PhotoWidgetConfigureState())
     val state: StateFlow<PhotoWidgetConfigureState> = _state.asStateFlow()
 
     init {
-        Timber.d("Configuring widget (appWidgetId=$appWidgetId)")
+        Timber.i("Configuring widget (appWidgetId=$appWidgetId)")
 
         // Load SMB config eagerly
         _state.update { it.copy(smbConfig = photoWidgetStorage.getSmbConfig(appWidgetId)) }
 
         viewModelScope.launch {
-            deleteStaleDataUseCase()
+            if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+                effectiveWidgetId = photoWidgetStorage.createNewDraftId()
+                Timber.d("Assigned draft ID: $effectiveWidgetId")
+            }
+
+            if (photoWidgetStorage.getKnownWidgetIds().first().isNotEmpty()) {
+                _state.update { current -> current.copy(isImportAvailable = true) }
+            }
 
             val sourceWidget: PhotoWidget? = checkForSourceWidget(
                 duplicateFromId = duplicateFromId,
@@ -96,19 +110,19 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
             if (sourceWidget != null) {
                 val sanitized: PhotoWidget = sanitizeTapActionsUseCase(
-                    appWidgetId = appWidgetId,
+                    appWidgetId = effectiveWidgetId,
                     photoWidget = sourceWidget,
                 )
 
                 updateState(photoWidget = sanitized, hasEdits = true)
             } else {
-                loadPhotoWidgetUseCase(appWidgetId = appWidgetId)
+                loadPhotoWidgetUseCase(appWidgetId = effectiveWidgetId)
                     .onEach { photoWidget -> updateState(photoWidget = photoWidget, hasEdits = false) }
                     .onCompletion { throwable ->
                         if (throwable != null) return@onCompletion
 
                         val sanitized: PhotoWidget = sanitizeTapActionsUseCase(
-                            appWidgetId = appWidgetId,
+                            appWidgetId = effectiveWidgetId,
                             photoWidget = state.value.photoWidget,
                         )
                         updateState(photoWidget = sanitized, hasEdits = false)
@@ -132,24 +146,20 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
         return when {
             duplicateFromId != null -> {
                 Timber.d("Duplicating widget (duplicateFromId=$duplicateFromId)")
-                duplicatePhotoWidgetUseCase(originalAppWidgetId = duplicateFromId, newAppWidgetId = appWidgetId)
+                duplicatePhotoWidgetUseCase(originalAppWidgetId = duplicateFromId, newAppWidgetId = effectiveWidgetId)
             }
 
             restoreFromId != null -> {
                 Timber.d("Restoring widget (restoreFromId=$restoreFromId)")
-                duplicatePhotoWidgetUseCase(originalAppWidgetId = restoreFromId, newAppWidgetId = appWidgetId)
+                duplicatePhotoWidgetUseCase(originalAppWidgetId = restoreFromId, newAppWidgetId = effectiveWidgetId)
             }
 
             backupWidget != null -> {
                 Timber.d("Restoring widget from backup (backupWidget=$backupWidget)")
-                runCatching { restoreWidgetUseCase(originalWidget = backupWidget, newAppWidgetId = appWidgetId) }
+                runCatching { restoreWidgetUseCase(originalWidget = backupWidget, newAppWidgetId = effectiveWidgetId) }
                     .onFailure {
                         Timber.e(it, "Failed to restore widget from backup.")
-                        _state.update { current ->
-                            current.copy(
-                                messages = current.messages + PhotoWidgetConfigureState.Message.MissingBackupData,
-                            )
-                        }
+                        _state += PhotoWidgetConfigureState.Message.MissingBackupData
                     }
                     .getOrNull()
             }
@@ -159,7 +169,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
     }
 
     private fun updateState(photoWidget: PhotoWidget, hasEdits: Boolean) {
-        val resolvedAspectRatio = aspectRatio ?: photoWidget.aspectRatio
+        val resolvedAspectRatio: PhotoWidgetAspectRatio = aspectRatio ?: photoWidget.aspectRatio
         _state.getAndUpdate { current ->
             current.copy(
                 photoWidget = photoWidget.copy(
@@ -169,6 +179,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
                 selectedPhoto = photoWidget.currentPhoto ?: photoWidget.photos.firstOrNull(),
                 isProcessing = photoWidget.isLoading,
                 hasEdits = hasEdits,
+                isDraft = PhotoWidget.isDraftWidgetId(effectiveWidgetId),
             )
         }
     }
@@ -186,7 +197,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
             val photoWidget = duplicatePhotoWidgetUseCase(
                 originalAppWidgetId = widgetId,
-                newAppWidgetId = appWidgetId,
+                newAppWidgetId = effectiveWidgetId,
             )
 
             updateState(photoWidget = photoWidget, hasEdits = true)
@@ -194,7 +205,10 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
     }
 
     fun changeSource(newSource: PhotoWidgetSource) {
-        photoWidgetStorage.saveWidgetSource(appWidgetId = appWidgetId, source = newSource)
+        if (newSource == PhotoWidgetSource.GIF && !userPreferencesStorage.keepAlive) {
+            _state += PhotoWidgetConfigureState.Message.KeepAliveRequired
+            return
+        }
 
         // Auto-set "On this day" text for SMB widgets when text is currently None
         if (newSource == PhotoWidgetSource.SMB && _state.value.photoWidget.text is PhotoWidgetText.None) {
@@ -205,22 +219,31 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             }
         }
 
-        photoWidgetStorage.getWidgetPhotos(appWidgetId = appWidgetId)
-            .onEach { widgetPhotos ->
-                _state.update { current ->
-                    current.copy(
-                        photoWidget = current.photoWidget.copy(
-                            source = newSource,
-                            photos = widgetPhotos.current,
-                            currentPhoto = widgetPhotos.current.firstOrNull(),
-                            removedPhotos = widgetPhotos.excluded,
-                        ),
-                        selectedPhoto = widgetPhotos.current.firstOrNull(),
-                        cropQueue = emptyList(),
-                    )
+        viewModelScope.launch {
+            photoWidgetStorage.saveWidgetSource(appWidgetId = effectiveWidgetId, source = newSource)
+            photoWidgetStorage.loadWidgetPhotos(appWidgetId = effectiveWidgetId)
+                .onEach { widgetPhotos ->
+                    _state.getAndUpdate { current ->
+                        current.copy(
+                            photoWidget = current.photoWidget.copy(
+                                source = newSource,
+                                photos = widgetPhotos.current,
+                                currentPhoto = widgetPhotos.current.firstOrNull(),
+                                tapActions = current.photoWidget.tapActions.coerceTapActions(source = newSource),
+                                removedPhotos = widgetPhotos.excluded,
+                            ),
+                            selectedPhoto = widgetPhotos.current.firstOrNull(),
+                            cropQueue = emptyList(),
+                        )
+                    }
                 }
-            }
-            .launchIn(viewModelScope)
+                .launchIn(this)
+        }
+    }
+
+    fun confirmKeepAliveForGif() {
+        userPreferencesStorage.keepAlive = true
+        changeSource(PhotoWidgetSource.GIF)
     }
 
     /** Save credential-level changes (host, username, password, port, domain). */
@@ -368,7 +391,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
     private fun loadSmbPhotos() {
         viewModelScope.launch {
-            photoWidgetStorage.getWidgetPhotos(appWidgetId = appWidgetId)
+            photoWidgetStorage.loadWidgetPhotos(appWidgetId = effectiveWidgetId)
                 .first()
                 .let { photos ->
                     _state.update { current ->
@@ -385,19 +408,19 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             current.copy(
                 photoWidget = current.photoWidget.copy(
                     aspectRatio = photoWidgetAspectRatio,
-                    shapeId = if (PhotoWidgetAspectRatio.SQUARE == photoWidgetAspectRatio) {
+                    shapeId = if (photoWidgetAspectRatio == PhotoWidgetAspectRatio.SQUARE) {
                         current.photoWidget.shapeId
                     } else {
                         PhotoWidget.DEFAULT_SHAPE_ID
                     },
-                    cornerRadius = if (PhotoWidgetAspectRatio.SQUARE == photoWidgetAspectRatio ||
-                        PhotoWidgetAspectRatio.FILL_WIDGET == photoWidgetAspectRatio
+                    cornerRadius = if (photoWidgetAspectRatio == PhotoWidgetAspectRatio.SQUARE ||
+                        photoWidgetAspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET
                     ) {
                         PhotoWidget.DEFAULT_CORNER_RADIUS
                     } else {
                         current.photoWidget.cornerRadius
                     },
-                    border = if (PhotoWidgetAspectRatio.FILL_WIDGET == photoWidgetAspectRatio) {
+                    border = if (photoWidgetAspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET) {
                         PhotoWidgetBorder.None
                     } else {
                         current.photoWidget.border
@@ -411,14 +434,14 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
         if (source.isEmpty()) return
 
         viewModelScope.launch {
-            while (_state.value.isProcessing) delay(timeMillis = 100L)
+            state.first { !it.isProcessing }
 
             _state.update { current -> current.copy(isProcessing = true) }
 
             val newPhotos = source.map { uri ->
                 async {
                     photoWidgetStorage.newWidgetPhoto(
-                        appWidgetId = appWidgetId,
+                        appWidgetId = effectiveWidgetId,
                         source = uri,
                     )
                 }
@@ -432,23 +455,51 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
             val shouldTriggerCrop = newPhotos.isNotEmpty() && newPhotos.size <= 5
 
-            _state.update { current ->
-                val updatedPhotos = current.photoWidget.photos + newPhotos
-
+            _state.getAndUpdate { current ->
                 current.copy(
-                    photoWidget = current.photoWidget.copy(
-                        photos = updatedPhotos,
-                        currentPhoto = current.photoWidget.currentPhoto ?: updatedPhotos.firstOrNull(),
-                    ),
-                    selectedPhoto = current.selectedPhoto ?: updatedPhotos.firstOrNull(),
                     isProcessing = false,
                     cropQueue = if (shouldTriggerCrop) newPhotos else emptyList(),
-                    messages = current.messages.plus(message).filterNotNull(),
-                )
+                ) + newPhotos + message
             }
 
             if (shouldTriggerCrop) {
                 requestCrop(photo = newPhotos.first())
+            }
+        }
+    }
+
+    fun gifPicked(source: Uri?) {
+        if (source == null) return
+
+        viewModelScope.launch {
+            state.first { !it.isProcessing }
+
+            _state.update { current -> current.copy(isProcessing = true) }
+
+            val existingPhotos = _state.value.photoWidget.photos
+            if (existingPhotos.isNotEmpty()) {
+                photoWidgetStorage.deletePhotos(
+                    appWidgetId = effectiveWidgetId,
+                    photoIds = existingPhotos.map { it.photoId },
+                )
+            }
+
+            val gifFrames: GifFrames = photoWidgetStorage.newWidgetPhotosFromGif(
+                appWidgetId = effectiveWidgetId,
+                source = source,
+            )
+
+            val message = if (gifFrames.frames.isEmpty()) {
+                PhotoWidgetConfigureState.Message.ImportFailed
+            } else {
+                null
+            }
+
+            _state.getAndUpdate { current ->
+                current.copy(
+                    photoWidget = current.photoWidget.copy(gifInterval = gifFrames.interval),
+                    isProcessing = false,
+                ) + gifFrames.frames + message
             }
         }
     }
@@ -465,47 +516,32 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             )
             if (newDirPhotos == null) {
                 _state.update { current ->
-                    current.copy(
-                        isProcessing = false,
-                        messages = current.messages + PhotoWidgetConfigureState.Message.TooManyPhotos,
-                    )
+                    current.copy(isProcessing = false) + PhotoWidgetConfigureState.Message.TooManyPhotos
                 }
 
                 return@launch
             }
 
-            val syncedDir = _state.value.photoWidget.syncedDir + source
-
-            photoWidgetStorage.saveWidgetSyncedDir(appWidgetId = appWidgetId, dirUri = syncedDir)
-
-            _state.update { current ->
-                val updatedPhotos = current.photoWidget.photos + newDirPhotos
-
-                current.copy(
-                    photoWidget = current.photoWidget.copy(
-                        photos = updatedPhotos,
-                        currentPhoto = current.photoWidget.currentPhoto ?: updatedPhotos.firstOrNull(),
-                        syncedDir = syncedDir.toSet(),
-                        removedPhotos = current.photoWidget.removedPhotos,
-                    ),
-                    selectedPhoto = current.selectedPhoto ?: updatedPhotos.firstOrNull(),
-                    isProcessing = false,
-                    cropQueue = emptyList(),
-                )
+            val updatedState = _state.getAndUpdate { current ->
+                current.copy(isProcessing = false, cropQueue = emptyList()) + source + newDirPhotos
             }
+            photoWidgetStorage.saveWidgetSyncedDir(
+                appWidgetId = effectiveWidgetId,
+                dirUri = updatedState.photoWidget.syncedDir,
+            )
         }
     }
 
     fun removeDir(source: Uri) {
         viewModelScope.launch {
-            photoWidgetStorage.removeSyncedDir(appWidgetId = appWidgetId, dirUri = source)
+            photoWidgetStorage.removeSyncedDir(appWidgetId = effectiveWidgetId, dirUri = source)
 
             reloadDirPhotos(syncedDir = _state.value.photoWidget.syncedDir - source)
         }
     }
 
     private fun reloadDirPhotos(syncedDir: Collection<Uri>) {
-        photoWidgetStorage.getWidgetPhotos(appWidgetId = appWidgetId)
+        photoWidgetStorage.loadWidgetPhotos(appWidgetId = effectiveWidgetId)
             .onEach { widgetPhotos ->
                 _state.getAndUpdate { current ->
                     current.copy(
@@ -531,7 +567,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
     fun requestCrop(photo: LocalPhoto) {
         viewModelScope.launch {
             val (source, destination) = photoWidgetStorage.getCropSources(
-                appWidgetId = appWidgetId,
+                appWidgetId = effectiveWidgetId,
                 localPhoto = photo,
             )
 
@@ -540,11 +576,10 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
                     photoWidget = current.photoWidget.copy(
                         photos = current.photoWidget.photos.map { it.copy(cropping = it.photoId == photo.photoId) },
                     ),
-                    messages = current.messages + PhotoWidgetConfigureState.Message.LaunchCrop(
-                        source = source,
-                        destination = destination,
-                        aspectRatio = current.photoWidget.aspectRatio,
-                    ),
+                ) + PhotoWidgetConfigureState.Message.LaunchCrop(
+                    source = source,
+                    destination = destination,
+                    aspectRatio = current.photoWidget.aspectRatio,
                 )
             }
         }
@@ -615,25 +650,7 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
     }
 
     fun restorePhoto(photo: LocalPhoto) {
-        _state.getAndUpdate { current ->
-            val updatedPhotos = current.photoWidget.photos + photo
-            current.copy(
-                photoWidget = current.photoWidget.copy(
-                    photos = updatedPhotos,
-                    currentPhoto = if (updatedPhotos.size == 1) {
-                        updatedPhotos.firstOrNull()
-                    } else {
-                        current.photoWidget.currentPhoto
-                    },
-                    removedPhotos = current.photoWidget.removedPhotos.filterNot { it.photoId == photo.photoId },
-                ),
-                selectedPhoto = if (updatedPhotos.size == 1) {
-                    updatedPhotos.firstOrNull()
-                } else {
-                    current.selectedPhoto
-                },
-            )
-        }
+        _state.getAndUpdate { current -> current + photo }
     }
 
     fun deletePhotoPermanently(photo: LocalPhoto) {
@@ -690,11 +707,15 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
         }
     }
 
+    fun saveGifFrameInterval(interval: Long) {
+        _state.update { current ->
+            current.copy(photoWidget = current.photoWidget.copy(gifInterval = interval))
+        }
+    }
+
     fun saveShuffle(value: Boolean) {
         _state.update { current ->
-            current.copy(
-                photoWidget = current.photoWidget.copy(shuffle = value),
-            )
+            current.copy(photoWidget = current.photoWidget.copy(shuffle = value))
         }
     }
 
@@ -722,33 +743,25 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
 
     fun tapActionSelected(tapActions: PhotoWidgetTapActions) {
         _state.update { current ->
-            current.copy(
-                photoWidget = current.photoWidget.copy(tapActions = tapActions),
-            )
+            current.copy(photoWidget = current.photoWidget.copy(tapActions = tapActions))
         }
     }
 
     fun shapeSelected(shapeId: String) {
         _state.update { current ->
-            current.copy(
-                photoWidget = current.photoWidget.copy(shapeId = shapeId),
-            )
+            current.copy(photoWidget = current.photoWidget.copy(shapeId = shapeId))
         }
     }
 
     fun cornerRadiusSelected(cornerRadius: Int) {
         _state.update { current ->
-            current.copy(
-                photoWidget = current.photoWidget.copy(cornerRadius = cornerRadius),
-            )
+            current.copy(photoWidget = current.photoWidget.copy(cornerRadius = cornerRadius))
         }
     }
 
     fun borderSelected(border: PhotoWidgetBorder) {
         _state.update { current ->
-            current.copy(
-                photoWidget = current.photoWidget.copy(border = border),
-            )
+            current.copy(photoWidget = current.photoWidget.copy(border = border))
         }
     }
 
@@ -819,44 +832,52 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
             (currentState.photoWidget.source == PhotoWidgetSource.SMB && currentState.smbConfig.isConfigured)
 
         when {
-            // Without photos there's no widget
-            !hasContent && AppWidgetManager.INVALID_APPWIDGET_ID == appWidgetId -> {
-                _state.update { current ->
-                    current.copy(messages = current.messages + PhotoWidgetConfigureState.Message.CancelWidget)
-                }
+            // Without content there's no widget
+            !hasContent && currentState.isDraft -> {
+                _state += PhotoWidgetConfigureState.Message.CancelWidget
             }
 
             !hasContent -> {
-                _state.update { current ->
-                    current.copy(messages = current.messages + PhotoWidgetConfigureState.Message.MissingPhotos)
+                _state += PhotoWidgetConfigureState.Message.MissingPhotos
+            }
+
+            // The user started configuring from within the app, request to pin, but they might cancel
+            currentState.isDraft -> {
+                scope.launch {
+                    if (currentState.photoWidget.source == PhotoWidgetSource.GIF) {
+                        _state.update { current -> current.copy(isProcessing = true) }
+
+                        prepareGifPhotosUseCase(appWidgetId = effectiveWidgetId, photoWidget = currentState.photoWidget)
+                    }
+
+                    pinningCache.populate(pendingWidget = currentState.photoWidget, draftWidgetId = effectiveWidgetId)
+
+                    _state.getAndUpdate { current ->
+                        current.copy(isProcessing = false) + PhotoWidgetConfigureState.Message.RequestPin
+                    }
                 }
             }
 
-            // The user started configuring from within the app, request to pin but they might cancel
-            AppWidgetManager.INVALID_APPWIDGET_ID == appWidgetId -> {
-                pinningCache.populate(currentState.photoWidget)
-
-                _state.update { current ->
-                    current.copy(
-                        messages = current.messages + PhotoWidgetConfigureState.Message.RequestPin,
-                    )
-                }
-            }
-
-            // The user start configuring from the home screen, it will be added automatically
+            // The user started configuring from the home screen, it will be added automatically
             else -> {
-                viewModelScope.launch {
-                    savePhotoWidgetUseCase(
-                        appWidgetId = appWidgetId,
-                        photoWidget = currentState.photoWidget,
-                    )
+                scope.launch {
+                    _state.update { current -> current.copy(isProcessing = true) }
 
-                    _state.update { current ->
-                        current.copy(
-                            messages = current.messages + PhotoWidgetConfigureState.Message.AddWidget(
-                                appWidgetId = appWidgetId,
-                            ),
+                    if (currentState.photoWidget.source == PhotoWidgetSource.GIF) {
+                        prepareGifPhotosUseCase(appWidgetId = appWidgetId, photoWidget = currentState.photoWidget)
+                    }
+
+                    withContext(NonCancellable) {
+                        savePhotoWidgetUseCase(
+                            draftWidgetId = effectiveWidgetId,
+                            appWidgetId = appWidgetId,
+                            photoWidget = currentState.photoWidget,
                         )
+                    }
+
+                    _state.getAndUpdate { current ->
+                        current.copy(isProcessing = false) +
+                            PhotoWidgetConfigureState.Message.AddWidget(appWidgetId = appWidgetId)
                     }
                 }
             }
@@ -864,14 +885,40 @@ class PhotoWidgetConfigureViewModel @Inject constructor(
     }
 
     fun widgetAdded() {
-        viewModelScope.launch {
+        scope.launch {
             withContext(NonCancellable) {
                 restoreFromId?.let { photoWidgetStorage.deleteWidgetData(appWidgetId = it) }
             }
         }
     }
 
+    fun saveDraft() {
+        scope.launch {
+            _state.update { current -> current.copy(isProcessing = true) }
+
+            withContext(NonCancellable) {
+                savePhotoWidgetUseCase(
+                    draftWidgetId = effectiveWidgetId,
+                    appWidgetId = effectiveWidgetId,
+                    photoWidget = state.value.photoWidget,
+                )
+            }
+
+            _state.getAndUpdate { current ->
+                current.copy(isProcessing = false) + PhotoWidgetConfigureState.Message.DraftSaved
+            }
+        }
+    }
+
+    fun discardDraft() {
+        scope.launch {
+            withContext(NonCancellable) {
+                photoWidgetStorage.deleteWidgetData(appWidgetId = effectiveWidgetId)
+            }
+        }
+    }
+
     fun messageHandled(message: PhotoWidgetConfigureState.Message) {
-        _state.update { current -> current.copy(messages = current.messages - message) }
+        _state -= message
     }
 }

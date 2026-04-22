@@ -29,7 +29,7 @@ class CyclePhotoUseCase @Inject constructor(
         skipSaving: Boolean = false,
         currentPhoto: String? = null,
     ): String {
-        Timber.d(
+        Timber.i(
             "Cycling photo (" +
                 "appWidgetId=$appWidgetId," +
                 "direction=$direction," +
@@ -39,20 +39,22 @@ class CyclePhotoUseCase @Inject constructor(
                 ")",
         )
 
-        val widgetPhotoIds: List<String> = photoWidgetStorage.getWidgetPhotos(appWidgetId = appWidgetId)
+        val widgetPhotoIds: List<String> = photoWidgetStorage.loadWidgetPhotos(appWidgetId = appWidgetId)
             .first()
             .current
             .map { it.photoId }
+            .ifEmpty { return "" }
 
-        when {
-            widgetPhotoIds.isEmpty() -> return ""
-            widgetPhotoIds.size == 1 -> return widgetPhotoIds.first()
+        if (widgetPhotoIds.size == 1) {
+            // Cannot cycle, but if a photo was recently removed the widget still needs to be updated
+            PhotoWidgetProvider.update(context = context, appWidgetId = appWidgetId)
+            return widgetPhotoIds.first()
         }
 
         val displayedPhotos = photoWidgetStorage.getDisplayedPhotoIds(appWidgetId = appWidgetId).toMutableSet()
 
         var didClear = false
-        if (Direction.NEXT == direction && displayedPhotos.size >= widgetPhotoIds.size && !skipSaving) {
+        if (direction == Direction.NEXT && displayedPhotos.size >= widgetPhotoIds.size && !skipSaving) {
             Timber.d("All photos displayed, starting over")
             photoWidgetStorage.clearDisplayedPhotos(appWidgetId = appWidgetId)
             displayedPhotos.clear()
@@ -72,7 +74,7 @@ class CyclePhotoUseCase @Inject constructor(
         val newPhotoId: String = when {
             didClear || currentPhotoId() == null -> widgetPhotoIds.first()
 
-            shuffle && Direction.PREVIOUS == direction -> {
+            shuffle && direction == Direction.PREVIOUS -> {
                 if (!skipSaving) {
                     photoWidgetStorage.clearMostRecentPhoto(appWidgetId = appWidgetId)
                 }
@@ -84,8 +86,8 @@ class CyclePhotoUseCase @Inject constructor(
             else -> {
                 val currentIndex: Int = widgetPhotoIds.indexOfFirst { it == currentPhotoId() }
                 val newIndex: Int = when {
-                    Direction.PREVIOUS == direction && currentIndex <= 0 -> widgetPhotoIds.size - 1
-                    Direction.PREVIOUS == direction -> currentIndex - 1
+                    direction == Direction.PREVIOUS && currentIndex <= 0 -> widgetPhotoIds.size - 1
+                    direction == Direction.PREVIOUS -> currentIndex - 1
                     currentIndex == widgetPhotoIds.size - 1 -> 0
                     else -> currentIndex + 1
                 }.coerceIn(0, widgetPhotoIds.size - 1)
@@ -98,8 +100,9 @@ class CyclePhotoUseCase @Inject constructor(
 
         if (!skipSaving) {
             photoWidgetStorage.saveDisplayedPhoto(appWidgetId = appWidgetId, photoId = newPhotoId)
-            PhotoWidgetProvider.update(context = context, appWidgetId = appWidgetId)
         }
+
+        PhotoWidgetProvider.update(context = context, appWidgetId = appWidgetId)
 
         return newPhotoId
     }

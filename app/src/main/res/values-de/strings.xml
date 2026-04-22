@@ -39,6 +39,8 @@
     <!-- My Widgets -->
     <string name="photo_widget_home_empty_widgets">Sie haben noch keine Widgets hinzugefügt.\nHier erscheinen Widgets, die Ihrem Startbildschirm hinzugefügt wurden.</string>
     <string name="photo_widget_home_filter_all">Alle</string>
+    <string name="photo_widget_home_draft_label">Entwurf</string>
+    <string name="photo_widget_home_draft_action_discard">Entwurf verwerfen</string>
     <string name="photo_widget_home_locked_label">Gesperrt</string>
     <string name="photo_widget_home_removed_label">Entfernt</string>
     <string name="photo_widget_home_removed_widgets_hint">Entfernte Widgets befinden sich nicht mehr auf Ihrem Startbildschirm. Sie werden nach 7 Tagen endgültig aus der App gelöscht. Sie können sie \"Behalten\".</string>
@@ -83,7 +85,9 @@
     <string name="photo_widget_source_photos">Fotos</string>
     <string name="photo_widget_source_directory">Ordner</string>
     <string name="photo_widget_source_photos_description">Wähle ein oder mehrere Fotos über den standardmäßigen Galerie-Auswahlbildschirm aus.</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">Wähle einen oder mehrere Ordner zum Synchronisieren aus. Fotos werden automatisch hinzugefügt und regelmäßig aktualisiert.</string>
+    <string name="photo_widget_source_gif_description">Wähle ein animiertes GIF, das auf deinem Startbildschirm abgespielt wird. Kürzere, einfachere GIFs werden empfohlen.</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">Format</string>
     <string name="photo_widget_aspect_ratio_shape">Formen</string>
@@ -96,6 +100,7 @@
     <string name="photo_widget_aspect_ratio_fill_widget">Ausfüllen</string>
     <string name="photo_widget_aspect_ratio_fill_widget_description">Widget-Größe anpassen</string>
     <!-- Configure -->
+    <string name="photo_widget_configure_save_draft_prompt">Änderungen als Entwurf speichern?</string>
     <string name="photo_widget_configure_navigate_back_warning">Alle Änderungen gehen verloren. Trotzdem zurückgehen?</string>
     <string name="photo_widget_configure_navigate_back_warning_restore">Um die Wiederherstellung des Widgets abzuschließen, müssen Sie es zum Startbildschirm hinzufügen. Ohne Wiederherstellung beenden?</string>
     <string name="photo_widget_configure_tab_content">Inhalt</string>
@@ -112,7 +117,7 @@
     <string name="photo_widget_configure_menu_source">Quelle</string>
     <string name="photo_widget_configure_source_selection_directory_empty">Dieses Widget ist noch nicht mit einem Ordner synchronisiert.</string>
     <string name="photo_widget_configure_source_selection_directory_non_empty">Dieses Widget ist mit diesen Ordnern synchronisiert:</string>
-    <string name="photo_widget_configure_source_warning">Das Ändern der Quelle ersetzt die aktuellen Fotos aus diesem Widget</string>
+    <string name="photo_widget_configure_source_warning">Das Ändern der Quelle löscht alle Inhaltsdaten dieses Widgets, sobald du bestätigst. Diese Änderung kann nicht rückgängig gemacht werden und du musst Fotos oder Ordner erneut auswählen.</string>
     <string name="photo_widget_configure_menu_crop">Zuschneiden</string>
     <string name="photo_widget_configure_menu_remove">Entfernen</string>
     <string name="photo_widget_configure_menu_move_left">Nach links verschieben</string>
@@ -121,6 +126,8 @@
     <string name="photo_widget_configure_photos_excluded">Vom Widget ausgeschlossen</string>
     <string name="photo_widget_configure_pick_photo">Fotos auswählen</string>
     <string name="photo_widget_configure_pick_folder">Ordner auswählen</string>
+    <string name="photo_widget_configure_pick_gif">GIF auswählen</string>
+    <string name="photo_widget_configure_pick_gif_replace">Ein anderes GIF auszuwählen ersetzt das vorhandene. Fortfahren?</string>
     <string name="photo_widget_configure_change_source">Quelle ändern</string>
     <string name="photo_widget_configure_select_cycling_mode">Foto-Timer</string>
     <string name="photo_widget_configure_cycling_mode_interval">Intervall</string>
@@ -150,9 +157,9 @@
     <string name="photo_widget_configure_interval_minutes_label">Minuten</string>
     <string name="photo_widget_configure_interval_hours_label">Stunden</string>
     <string name="photo_widget_configure_interval_days_label">Tage</string>
-    <string name="photo_widget_configure_schedule_placeholder">Planen Sie bis zu 4 Zeiten ein, um Ihre Fotos automatisch zu wechseln.</string>
+    <string name="photo_widget_configure_schedule_placeholder">Planen Sie bis zu %d Zeiten ein, um Ihre Fotos automatisch zu wechseln.</string>
     <string name="photo_widget_configure_schedule_add_new">Neu hinzufügen</string>
-    <string name="photo_widget_configure_schedule_limit_reached">Maximum von 4 Zeiten erreicht</string>
+    <string name="photo_widget_configure_schedule_limit_reached">Maximum von %d Zeiten erreicht</string>
     <plurals name="photo_widget_configure_schedule_times">
         <item quantity="one">1 Zeit ausgewählt</item>
         <item quantity="other">%d Zeiten ausgewählt</item>
@@ -200,20 +207,32 @@
     <string name="photo_widget_configure_tap_action_app_folder">App-Ordner</string>
     <string name="photo_widget_configure_tap_action_app_folder_description">Wähle bis zu 12 Apps</string>
     <string name="photo_widget_configure_tap_action_url_shortcut">Einen Link öffnen</string>
+    <string name="photo_widget_configure_tap_action_file_shortcut">Eine Datei öffnen</string>
+    <string name="photo_widget_configure_tap_action_choose_file">Datei auswählen</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling">Timer aktivieren/deaktivieren</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling_description">Tippen, um den Foto-Timer zu pausieren. Nochmals tippen, um fortzusetzen. Diese Aktion ist deaktiviert, wenn das Widget gesperrt ist.</string>
+    <string name="photo_widget_configure_tap_action_toggle_gif_playback">GIF-Wiedergabe aktivieren/deaktivieren</string>
     <string name="photo_widget_configure_tap_action_share_photo">Foto teilen</string>
+    <string name="photo_widget_configure_tap_action_set_wallpaper">Als Hintergrundbild festlegen</string>
+    <string name="photo_widget_configure_tap_action_remove_photo">Foto entfernen</string>
+    <string name="photo_widget_configure_tap_action_remove_photo_description">Vom Widget ausschließen. Das Originalfoto wird nicht von Ihrem Telefon entfernt.</string>
+
+    <string name="photo_widget_remove_action_feedback_positive">Foto entfernt!</string>
+    <string name="photo_widget_remove_action_feedback_negative">Nur noch ein Foto übrig, kann nicht entfernt werden.</string>
+
     <string name="photo_widget_configure_tap_action_increase_brightness">Helligkeit automatisch erhöhen</string>
     <string name="photo_widget_configure_tap_action_view_original_photo">Originalfoto anzeigen (kein Zuschnitt oder Drehung)</string>
     <string name="photo_widget_configure_tap_action_do_not_shuffle">Fotos im Viewer beim Wechseln nicht mischen</string>
     <string name="photo_widget_configure_tap_action_keep_current_photo">Beim Wechseln im Viewer das aktuelle Foto nicht ändern</string>
-    <string name="photo_widget_configure_tap_action_gallery_description_compatibility">Kompatibel mit ordnerbasierten Widgets, fotobasierte Widgets verwenden stattdessen „Foto im Vollbildmodus anzeigen“.</string>
     <string name="photo_widget_configure_tap_action_gallery_description_warning">Diese Aktion öffnet das aktuelle Foto mit der Galerie-App. Es ist nicht möglich, andere Fotos anzuzeigen oder zu ihnen zu navigieren.</string>
     <string name="photo_widget_configure_tap_action_gallery_description_app_selection">Sie können auch auswählen, welche Galerie-App verwendet werden soll.</string>
     <string name="photo_widget_configure_tap_action_choose_app">App auswählen</string>
     <string name="photo_widget_configure_tap_action_disable_tap">Andere Tippbereiche deaktivieren, während der Timer pausiert ist</string>
     <string name="photo_widget_configure_tap_action_shared_preferences">Diese Einstellungen werden von allen Bereichen verwendet, die diese Tipp-Aktion nutzen.</string>
     <string name="photo_widget_configure_tap_action_shared_selected_app">Die ausgewählte App wird von allen Bereichen verwendet, die diese Tipp-Aktion nutzen.</string>
+    <string name="photo_widget_configure_gif_frame_interval">Frame-Intervall</string>
+    <string name="photo_widget_configure_gif_frame_interval_description">Steuere die Wiedergabegeschwindigkeit des animierten GIFs. Je kleiner der Wert, desto schneller das GIF.</string>
+    <string name="photo_widget_configure_gif_frame_interval_presets">Voreinstellungen</string>
     <string name="photo_widget_configure_add_to_home">Zum Startbildschirm hinzufügen</string>
     <string name="photo_widget_configure_save_changes">Änderungen speichern</string>
     <string name="photo_widget_configure_widget_pinned">Widget hinzugefügt! Überprüfen Sie Ihren Startbildschirm…</string>
@@ -247,10 +266,10 @@
     <string name="restriction_warning_hint">Hintergrundaktivität ist eingeschränkt. Widgets funktionieren möglicherweise nicht korrekt. Tippen Sie hier, um mehr zu erfahren.</string>
     <string name="restriction_warning_dialog_title">Hintergrundarbeitsbeschränkungen und Akkuoptimierung</string>
     <string name="restriction_warning_dialog_body_1">Material Photo Widget muss im Hintergrund ausgeführt werden, um Ihre Widgets zu aktualisieren. Wenn die Akkunutzung auf \"Optimiert\" eingestellt ist, beendet Android die App möglicherweise, was eine korrekte Aktualisierung der Widgets verhindert.</string>
-    <string name="restriction_warning_dialog_body_2">Gehen Sie zu den App-Einstellungen und dann zu \"App-Akkunutzung\". Klicken Sie auf \"Hintergrundnutzung zulassen\" und wählen Sie \"Nicht eingeschränkt\", um zuverlässige Updates zu gewährleisten. Wenn diese Option nicht sichtbar ist, prüfen Sie die Energieeinstellungen des Telefons.</string>
+    <string name="restriction_warning_dialog_body_2">Sie können die Berechtigung über die Schaltfläche unten erteilen oder zu den App-Einstellungen gehen und \"App-Akkunutzung\" öffnen. Tippen Sie auf \"Hintergrundnutzung zulassen\" und wählen Sie \"Nicht eingeschränkt\", um zuverlässige Updates zu gewährleisten.</string>
     <string name="restriction_warning_dialog_body_3">Einige Geräte blockieren möglicherweise auch den automatischen Start der App nach einem Neustart. Suchen Sie in Ihren Einstellungen nach \"Autostart\" oder besuchen Sie https://dontkillmyapp.com für gerätespezifische Anweisungen.</string>
+    <string name="restriction_warning_grant_battery_permission">Berechtigung erteilen</string>
     <string name="restriction_warning_open_app_settings">App-Einstellungen öffnen</string>
-    <string name="restriction_warning_open_power_settings">Energieeinstellungen öffnen</string>
     <!-- Translations -->
     <string name="translations_dialog_title">Helfen Sie beim Übersetzen in Ihre Sprache!</string>
     <string name="translations_dialog_body">Diese App verwendet einen Community-basierten Ansatz für Übersetzungen, und Ihre Hilfe kann sie verbessern. Sie können dazu beitragen, wenn Sie eine neue Sprache verfügbar sehen möchten oder etwas entdeckt haben, das nicht richtig aussieht.</string>
@@ -270,11 +289,20 @@
     <!-- Viewer -->
     <string name="photo_widget_viewer_all_photos">Alle Fotos</string>
     <!-- Cycling feedback -->
-    <string name="photo_widget_cycling_feedback_paused">Timer pausiert</string>
-    <string name="photo_widget_cycling_feedback_resumed">Timer fortgesetzt</string>
+    <string name="photo_widget_cycling_feedback_paused">Widget pausiert</string>
+    <string name="photo_widget_cycling_feedback_resumed">Widget fortgesetzt</string>
     <!-- Folder -->
     <string name="photo_widget_app_folder_empty">Du hast diesem Ordner noch keine Apps hinzugefügt. Tippe auf „Weiter“, um den Widget-Editor zu öffnen.</string>
     <string name="photo_widget_app_folder_add_app">App hinzufügen</string>
+    <!-- Keep-alive service -->
+    <string name="photo_widget_keep_alive_service_dialog_title">Hintergrunddienst</string>
+    <string name="photo_widget_keep_alive_service_dialog_toggle">Hintergrunddienst aktivieren</string>
+    <string name="photo_widget_keep_alive_service_dialog_body">Du kannst den Hintergrunddienst aktivieren, um Android mitzuteilen, dass die App wichtig ist und nicht beendet werden soll. Keine Sorge, die App macht nur das Nötigste, damit deine Widgets Fotos nach Zeitplan anzeigen, ohne den Akku zusätzlich zu belasten.&lt;br/>&lt;br/>Widgets auf deinem Startbildschirm werden von deinem App-Launcher verwaltet, nicht direkt von der App. Da die App selten im Vordergrund läuft, &lt;b>könnte das System annehmen, dass sie nicht wichtig ist, und sie beenden&lt;/b>. Wenn das passiert, &lt;b>werden auch die Widgets beendet, sodass keine Fotos mehr angezeigt werden&lt;/b>. Dies tritt besonders häufig auf &lt;b>Samsung-Geräten&lt;/b> auf.</string>
+    <string name="photo_widget_keep_alive_service_required_for_gif">GIF-Widgets benötigen den Hintergrunddienst zur Wiedergabe von Animationen. Weitere Informationen dazu findest du im Einstellungen-Tab. Möchtest du ihn aktivieren?</string>
+    <string name="photo_widget_keep_alive_service_gif_widgets_warning">Es gibt aktive GIF-Widgets, die auf den Hintergrunddienst angewiesen sind. Das Deaktivieren kann dazu führen, dass sie keine Animationen mehr abspielen.</string>
+    <!-- Notifications -->
+    <string name="notification_channel_name_keep_alive">Hintergrunddienst</string>
+    <string name="notification_channel_description_keep_alive">Hält die App am Leben, auch wenn sie lange im Hintergrund ist. Stellt sicher, dass Widgets wie erwartet aktualisiert werden können.</string>
     <!-- Common Actions -->
     <string name="photo_widget_action_yes">Ja</string>
     <string name="photo_widget_action_no">Nein</string>
@@ -292,6 +320,8 @@
     <string name="photo_widget_action_reset">Zurücksetzen</string>
     <!-- Hints -->
     <string name="hint_scroll_to_view_more">Scrollen, um mehr anzuzeigen</string>
+    <string name="warning_experimental">Experimentell</string>
+    <string name="warning_gif_widget_battery_usage">GIF-Widgets können mehr Akku verbrauchen! Die App muss ständig arbeiten, um die Animation abzuspielen. Die Arbeit wird unterbrochen, wenn der Bildschirm ausgeschaltet ist, um Ressourcen zu sparen, aber die App kann nicht erkennen, wenn dein Startbildschirm nicht sichtbar ist, während du andere Apps verwendest.</string>
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Material Photo Startbildschirm-Widget</string>
 </resources>

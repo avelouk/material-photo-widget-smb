@@ -17,12 +17,14 @@ import com.fibelatti.photowidget.platform.getMaxBitmapWidgetDimension
 import com.fibelatti.photowidget.platform.withPolygonalShape
 import com.fibelatti.photowidget.platform.withRoundedCorners
 import com.fibelatti.photowidget.widget.data.PhotoWidgetInternalFileStorage
+import com.fibelatti.photowidget.widget.data.WidgetDirectoryDao
 import javax.inject.Inject
 import timber.log.Timber
 
 class PrepareCurrentPhotoUseCase @Inject constructor(
     private val decoder: PhotoDecoder,
     private val photoWidgetInternalFileStorage: PhotoWidgetInternalFileStorage,
+    private val widgetDirectoryDao: WidgetDirectoryDao,
 ) {
 
     suspend operator fun invoke(
@@ -33,7 +35,7 @@ class PrepareCurrentPhotoUseCase @Inject constructor(
     ): Result? {
         val currentPhotoPath: String = photoWidget.currentPhoto?.getPhotoPath() ?: return null
 
-        Timber.d(
+        Timber.i(
             "Preparing current photo (" +
                 "appWidgetId=$appWidgetId," +
                 "recoveryMode=$recoveryMode," +
@@ -53,7 +55,9 @@ class PrepareCurrentPhotoUseCase @Inject constructor(
 
         val borderColor = when (photoWidget.border) {
             is PhotoWidgetBorder.None -> null
+
             is PhotoWidgetBorder.Color -> "#${photoWidget.border.colorHex}".toColorInt()
+
             is PhotoWidgetBorder.Dynamic -> context.getDynamicAttributeColor(
                 photoWidget.border.type.colorAttr,
             )
@@ -63,7 +67,7 @@ class PrepareCurrentPhotoUseCase @Inject constructor(
         val borderPercent = photoWidget.border.borderPercent()
 
         Timber.d("Transforming the bitmap")
-        val transformedBitmap: Bitmap = if (PhotoWidgetAspectRatio.SQUARE == photoWidget.aspectRatio) {
+        val transformedBitmap: Bitmap = if (photoWidget.aspectRatio == PhotoWidgetAspectRatio.SQUARE) {
             bitmap.withPolygonalShape(
                 context = context,
                 shapeId = photoWidget.shapeId,
@@ -82,8 +86,14 @@ class PrepareCurrentPhotoUseCase @Inject constructor(
         }
 
         val uri: Uri? = if (recoveryMode) {
+            val directoryName: String? = widgetDirectoryDao.getDirectoryName(appWidgetId)
+            if (directoryName == null) {
+                Timber.w("Unable to find the directory of widget with ID = $appWidgetId.")
+                return null
+            }
+
             photoWidgetInternalFileStorage.prepareCurrentWidgetPhoto(
-                appWidgetId = appWidgetId,
+                directoryName = directoryName,
                 currentPhoto = transformedBitmap,
             )
         } else {

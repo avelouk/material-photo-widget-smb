@@ -5,13 +5,17 @@ import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
 import com.fibelatti.photowidget.model.PhotoWidgetBorder
 import com.fibelatti.photowidget.model.PhotoWidgetColors
+import com.fibelatti.photowidget.model.PhotoWidgetSource
+import com.fibelatti.photowidget.model.PhotoWidgetTapActions
 import com.fibelatti.photowidget.model.PhotoWidgetText
+import com.fibelatti.photowidget.model.coerceTapActions
 import com.fibelatti.photowidget.platform.enumValueOfOrNull
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class PhotoWidgetExport(
     val id: Int,
+    val source: String?,
     val aspectRatio: String,
     val shapeId: String,
     val cornerRadius: Int,
@@ -30,9 +34,12 @@ data class PhotoWidgetExport(
     val textSize: Int?,
     val textVerticalOffset: Int?,
     val textHasShadow: Boolean?,
+    val gifInterval: Long?,
 )
 
 fun PhotoWidgetExport.toPhotoWidget(photos: List<LocalPhoto>): PhotoWidget {
+    val source: PhotoWidgetSource = enumValueOfOrNull<PhotoWidgetSource>(source) ?: PhotoWidgetSource.PHOTOS
+
     val photoWidgetBorder: PhotoWidgetBorder = when (
         val widgetBorder = PhotoWidgetBorder.fromSerializedName(border)
     ) {
@@ -84,7 +91,9 @@ fun PhotoWidgetExport.toPhotoWidget(photos: List<LocalPhoto>): PhotoWidget {
     }
 
     return PhotoWidget(
+        source = source,
         photos = photos,
+        tapActions = PhotoWidgetTapActions().coerceTapActions(source = source),
         aspectRatio = enumValueOfOrNull<PhotoWidgetAspectRatio>(aspectRatio) ?: PhotoWidgetAspectRatio.SQUARE,
         shapeId = shapeId,
         cornerRadius = cornerRadius,
@@ -98,6 +107,7 @@ fun PhotoWidgetExport.toPhotoWidget(photos: List<LocalPhoto>): PhotoWidget {
         verticalOffset = verticalOffset,
         padding = padding,
         text = photoWidgetText,
+        gifInterval = gifInterval ?: 0,
     )
 }
 
@@ -150,6 +160,7 @@ fun PhotoWidget.toPhotoWidgetExport(id: Int): PhotoWidgetExport {
 
     return PhotoWidgetExport(
         id = id,
+        source = source.name,
         aspectRatio = aspectRatio.name,
         shapeId = shapeId,
         cornerRadius = cornerRadius,
@@ -168,5 +179,6 @@ fun PhotoWidget.toPhotoWidgetExport(id: Int): PhotoWidgetExport {
         textSize = textSize,
         textVerticalOffset = textVerticalOffset,
         textHasShadow = textHasShadow,
+        gifInterval = gifInterval,
     )
 }

@@ -2,17 +2,16 @@ package com.fibelatti.photowidget.widget.data
 
 import android.content.ContentResolver
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
-import androidx.core.content.FileProvider
+import com.fibelatti.photowidget.model.GifFrames
 import com.fibelatti.photowidget.model.LocalPhoto
 import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.platform.ImageFormat
 import com.fibelatti.photowidget.platform.ImageFormatDetector
 import com.fibelatti.photowidget.platform.PhotoDecoder
+import com.fibelatti.photowidget.platform.UriPermissionGrantor
+import com.fibelatti.photowidget.platform.runWithFileOutputStream
 import com.fibelatti.photowidget.preferences.UserPreferencesStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
@@ -25,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import pl.droidsonroids.gif.GifDrawable
 import timber.log.Timber
 
 class PhotoWidgetInternalFileStorage @Inject constructor(
@@ -32,6 +32,7 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
     private val userPreferencesStorage: UserPreferencesStorage,
     private val imageFormatDetector: ImageFormatDetector,
     private val decoder: PhotoDecoder,
+    private val uriPermissionGrantor: UriPermissionGrantor,
 ) {
 
     private val contentResolver: ContentResolver = context.contentResolver
@@ -41,12 +42,12 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
         }
     }
 
-    suspend fun newWidgetPhoto(appWidgetId: Int, source: Uri): LocalPhoto? {
+    suspend fun newWidgetPhoto(directoryName: String, source: Uri): LocalPhoto? {
         return withContext(Dispatchers.IO) {
             runCatching {
-                Timber.d("New widget photo: $source (appWidgetId=$appWidgetId)")
+                Timber.d("New widget photo: $source (directoryName=$directoryName)")
 
-                val widgetDir: File = getWidgetDir(appWidgetId = appWidgetId)
+                val widgetDir: File = getWidgetDir(directoryName = directoryName)
                 val originalPhotosDir: File = File("$widgetDir/original").apply { mkdirs() }
 
                 val format: ImageFormat = imageFormatDetector.getImageFormat(context = context, imageUri = source)
@@ -70,7 +71,9 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
                         }
                         newFiles.map { file ->
                             async {
-                                writeToFile(file) { fos -> importedPhoto.compress(compressFormat, 95, fos) }
+                                file.runWithFileOutputStream { fos ->
+                                    importedPhoto.compress(compressFormat, 95, fos)
+                                }
                             }
                         }.awaitAll()
                     }
@@ -78,7 +81,7 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
                     newFiles.map { file ->
                         async {
                             contentResolver.openInputStream(source)?.use { input ->
-                                writeToFile(file, input::copyTo)
+                                file.runWithFileOutputStream(input::copyTo)
                             }
                         }
                     }.awaitAll()
@@ -97,21 +100,66 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
         }
     }
 
-    private fun writeToFile(file: File, operation: (FileOutputStream) -> Unit) {
-        file.createNewFile()
-        runCatching {
-            FileOutputStream(file).use { fos -> operation(fos) }
-            require(file.length() > 0) { "File is empty" }
-        }.onSuccess {
-            Timber.d("Successfully saved to $file")
-        }.onFailure {
-            Timber.d("Failed to save to $file")
-            file.delete()
+    suspend fun newWidgetPhotosFromGif(directoryName: String, source: Uri): GifFrames {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                Timber.d("New widget photos from GIF: $source (directoryName=$directoryName)")
+
+                val widgetDir = getWidgetDir(directoryName = directoryName)
+                val originalPhotosDir: File = File("$widgetDir/original").apply { mkdirs() }
+
+                val gifDrawable: GifDrawable = contentResolver.openAssetFileDescriptor(source, "r")
+                    ?.let(::GifDrawable)
+                    ?: return@withContext GifFrames.EMPTY
+
+                val frameCount: Int = gifDrawable.numberOfFrames
+                val duration: Long = gifDrawable.duration.toLong()
+                Timber.d("GIF has $frameCount frames, over $duration milliseconds")
+
+                val photos = mutableListOf<LocalPhoto>()
+
+                for (i in 0 until frameCount) {
+                    val frameBitmap = gifDrawable.seekToFrameAndGet(i)
+                    val newPhotoName = "${UUID.randomUUID()}.png"
+
+                    val originalPhoto = File("$originalPhotosDir/$newPhotoName")
+                    val croppedPhoto = File("$widgetDir/$newPhotoName")
+
+                    listOf(originalPhoto, croppedPhoto).forEach { file ->
+                        file.runWithFileOutputStream { fos ->
+                            frameBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                        }
+                    }
+
+                    if (originalPhoto.exists() && croppedPhoto.exists()) {
+                        photos.add(
+                            LocalPhoto(
+                                photoId = newPhotoName,
+                                croppedPhotoPath = croppedPhoto.path,
+                                originalPhotoPath = originalPhoto.path,
+                            ),
+                        )
+                    }
+                }
+
+                gifDrawable.recycle()
+
+                return@withContext GifFrames(
+                    frames = photos,
+                    interval = (duration / frameCount).coerceIn(GifFrames.MIN_INTERVAL_MS, GifFrames.MAX_INTERVAL_MS),
+                )
+            }.getOrElse { throwable ->
+                Timber.e(throwable, "Failed to extract GIF frames")
+                GifFrames.EMPTY
+            }
         }
     }
 
-    suspend fun getCropSources(appWidgetId: Int, localPhoto: LocalPhoto): Pair<Uri, Uri> = withContext(Dispatchers.IO) {
-        val widgetDir = getWidgetDir(appWidgetId = appWidgetId)
+    suspend fun getCropSources(
+        directoryName: String,
+        localPhoto: LocalPhoto,
+    ): Pair<Uri, Uri> = withContext(Dispatchers.IO) {
+        val widgetDir = getWidgetDir(directoryName = directoryName)
         val croppedPhoto = File("$widgetDir/${localPhoto.photoId}").apply { createNewFile() }
 
         return@withContext if (localPhoto.externalUri != null) {
@@ -132,9 +180,9 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
         }
     }
 
-    suspend fun deleteWidgetPhoto(appWidgetId: Int, photoId: String) {
+    suspend fun deleteWidgetPhoto(directoryName: String, photoId: String) {
         withContext(Dispatchers.IO) {
-            val widgetDir = getWidgetDir(appWidgetId = appWidgetId)
+            val widgetDir = getWidgetDir(directoryName = directoryName)
             val originalPhotosDir = File("$widgetDir/original")
 
             with(File("$originalPhotosDir/$photoId")) {
@@ -146,143 +194,105 @@ class PhotoWidgetInternalFileStorage @Inject constructor(
         }
     }
 
-    suspend fun deleteWidgetData(appWidgetId: Int) {
+    suspend fun deleteWidgetData(directoryName: String) {
         withContext(Dispatchers.IO) {
-            getWidgetDir(appWidgetId).deleteRecursively()
-            getCurrentPhotoDir(appWidgetId).deleteRecursively()
+            val deleteOp: suspend () -> Boolean = {
+                getWidgetDir(directoryName).deleteRecursively() &&
+                    getCurrentPhotoDir(directoryName).deleteRecursively()
+            }
+            var count = 1
+
+            while (!deleteOp() && count <= 3) {
+                count++
+            }
         }
     }
 
     suspend fun getWidgetPhotos(
-        appWidgetId: Int,
+        directoryName: String,
         source: PhotoWidgetSource,
     ): List<LocalPhoto> {
         return withContext(Dispatchers.IO) {
-            val widgetDir = getWidgetDir(appWidgetId = appWidgetId)
+            val widgetDir = getWidgetDir(directoryName = directoryName)
             val originalPhotosDir = File("$widgetDir/original")
             val originalPhotoNames = originalPhotosDir.list().orEmpty().toSet()
 
             val fileNameFilter = FilenameFilter { _, name ->
-                name != "original" && (name in originalPhotoNames ||
-                    PhotoWidgetSource.DIRECTORY == source ||
-                    PhotoWidgetSource.SMB == source)
+                name != "original" && (
+                    name in originalPhotoNames ||
+                        source == PhotoWidgetSource.DIRECTORY ||
+                        source == PhotoWidgetSource.SMB
+                    )
             }
 
             widgetDir.list(fileNameFilter)
                 .orEmpty()
                 .map { fileName ->
+                    val croppedPhotoPath = "$widgetDir/$fileName"
+
                     LocalPhoto(
                         photoId = fileName,
-                        croppedPhotoPath = "$widgetDir/$fileName",
+                        croppedPhotoPath = croppedPhotoPath,
                         originalPhotoPath = "$originalPhotosDir/$fileName",
+                        launcherUri = if (source == PhotoWidgetSource.GIF) {
+                            uriPermissionGrantor(path = croppedPhotoPath)
+                        } else {
+                            null
+                        },
                     )
                 }
         }
     }
 
     suspend fun prepareCurrentWidgetPhoto(
-        appWidgetId: Int,
+        directoryName: String,
         currentPhoto: Bitmap,
     ): Uri? = withContext(Dispatchers.IO) {
-        val launcherPackages: List<String> = getLauncherPackages()
-        if (launcherPackages.isEmpty()) {
-            Timber.d("No launcher packages found, unable to generate URI.")
-            return@withContext null
-        }
-
-        val dir: File = getCurrentPhotoDir(appWidgetId = appWidgetId).apply {
+        val dir: File = getCurrentPhotoDir(directoryName = directoryName).apply {
             listFiles()?.toList()?.sortedBy { it.name }?.dropLast(1)?.forEach { it.delete() }
         }
         // Using `currentTimeMillis` to generate unique files,
         // otherwise the widget won't update if the same file is overwritten every time
         val file = File("$dir/${System.currentTimeMillis()}.png")
 
-        writeToFile(file) { fos ->
-            currentPhoto.compress(Bitmap.CompressFormat.PNG, 0, fos)
+        file.runWithFileOutputStream { fos ->
+            currentPhoto.compress(Bitmap.CompressFormat.PNG, 100, fos)
         }
 
-        if (!file.exists()) {
-            Timber.d("Failed to create file, unable to generate URI.")
-            return@withContext null
-        }
-
-        val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        Timber.d("New URI for widget with id $appWidgetId: $uri")
-
-        val packages: List<String> = launcherPackages
-            .plus(
-                if (Build.MANUFACTURER.equals("samsung", ignoreCase = true)) {
-                    samsungPackages
-                } else {
-                    emptyList()
-                },
-            )
-
-        for (pkg in packages) {
-            context.grantUriPermission(pkg, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            Timber.d("Granted URI permission for package: $pkg")
-        }
-
-        return@withContext uri
+        return@withContext uriPermissionGrantor(path = file.path)
     }
 
-    private fun getLauncherPackages(): List<String> {
-        val intent = Intent("android.intent.action.MAIN")
-            .addCategory("android.intent.category.HOME")
-
-        return context.packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-            .mapNotNull { resolveInfo -> resolveInfo.activityInfo?.packageName }
-            .distinct()
-    }
-
-    suspend fun renameTemporaryWidgetDir(appWidgetId: Int) {
+    suspend fun duplicateWidgetDir(sourceDirectoryName: String, targetDirectoryName: String) {
         withContext(Dispatchers.IO) {
-            val tempDir = File("$rootDir/0")
-            if (tempDir.exists()) {
-                tempDir.renameTo(File("$rootDir/$appWidgetId"))
-            }
-        }
-    }
-
-    suspend fun duplicateWidgetDir(originalAppWidgetId: Int, newAppWidgetId: Int) {
-        withContext(Dispatchers.IO) {
-            val originalDir = getWidgetDir(appWidgetId = originalAppWidgetId)
-            val newDir = getWidgetDir(appWidgetId = newAppWidgetId)
+            val originalDir = getWidgetDir(directoryName = sourceDirectoryName)
+            val newDir = getWidgetDir(directoryName = targetDirectoryName)
 
             originalDir.copyRecursively(newDir, overwrite = true)
         }
     }
 
-    internal suspend fun getWidgetDir(appWidgetId: Int): File = withContext(Dispatchers.IO) {
-        File("$rootDir/$appWidgetId").apply {
+    internal suspend fun getWidgetDir(directoryName: String): File = withContext(Dispatchers.IO) {
+        File("$rootDir/$directoryName").apply {
             mkdirs()
         }
     }
 
-    private suspend fun getCurrentPhotoDir(appWidgetId: Int): File = withContext(Dispatchers.IO) {
-        File("$rootDir/current_photos/$appWidgetId").apply {
+    private suspend fun getCurrentPhotoDir(directoryName: String): File = withContext(Dispatchers.IO) {
+        File("$rootDir/current_photos/$directoryName").apply {
             mkdirs()
         }
     }
 
-    suspend fun exportWidgetDir(appWidgetId: Int, destinationDir: File) {
+    suspend fun exportWidgetDir(directoryName: String, appWidgetId: Int, destinationDir: File) {
         withContext(Dispatchers.IO) {
-            getWidgetDir(appWidgetId = appWidgetId)
+            getWidgetDir(directoryName = directoryName)
                 .copyRecursively(target = File("$destinationDir/$appWidgetId"))
         }
     }
 
-    suspend fun importWidgetDir(appWidgetId: Int, sourceDir: File) {
+    suspend fun importWidgetDir(directoryName: String, sourceDir: File) {
         withContext(Dispatchers.IO) {
-            sourceDir.copyRecursively(target = getWidgetDir(appWidgetId = appWidgetId))
+            sourceDir.copyRecursively(target = getWidgetDir(directoryName = directoryName))
         }
-    }
-
-    private companion object {
-
-        val samsungPackages: List<String> = listOf(
-            "com.samsung.android.goodlock",
-            "com.samsung.systemui.lockstar",
-        )
     }
 }

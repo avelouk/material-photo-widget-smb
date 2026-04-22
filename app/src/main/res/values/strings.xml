@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Widget Host -->
     <string name="photo_widget_host_description">Add your favorite photos or sync folders. Set actions. Choose the format when customizing and the size after placing it.</string>
     <string name="photo_widget_host_loading">Loading widget…</string>
@@ -45,6 +45,8 @@
     <string name="photo_widget_home_empty_widgets">You haven\'t added any widgets yet.\nWidgets added to your home screen will appear here.</string>
     <string name="photo_widget_home_filter_all">All</string>
 
+    <string name="photo_widget_home_draft_label">Draft</string>
+    <string name="photo_widget_home_draft_action_discard">Discard draft</string>
     <string name="photo_widget_home_locked_label">Locked</string>
     <string name="photo_widget_home_removed_label">Removed</string>
     <string name="photo_widget_home_removed_widgets_hint">Removed widgets are no longer on your home screen. They are permanently deleted from the app after 7 days. You can choose to "Keep" them.</string>
@@ -98,9 +100,11 @@
     <string name="photo_widget_source_photos">Photos</string>
     <string name="photo_widget_source_directory">Folder</string>
     <string name="photo_widget_source_smb">NAS / SMB</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_photos_description">Choose one or more photos using your default gallery picker.</string>
     <string name="photo_widget_source_directory_description">Choose one or more folders to sync. Photos are added automatically and refreshed at regular intervals.</string>
     <string name="photo_widget_source_smb_description">Connect to a NAS or SMB share to show "on this day" memories from past years.</string>
+    <string name="photo_widget_source_gif_description">Choose an animated GIF to play on your home screen. Shorter, simpler GIFs are recommended.</string>
 
     <!-- SMB Config -->
     <string name="photo_widget_smb_host">Server address (IP or hostname)</string>
@@ -144,6 +148,7 @@
     <string name="photo_widget_aspect_ratio_fill_widget_description">Match the widget size</string>
 
     <!-- Configure -->
+    <string name="photo_widget_configure_save_draft_prompt">Save your changes as a draft?</string>
     <string name="photo_widget_configure_navigate_back_warning">Any changes will be lost, go back anyway?</string>
     <string name="photo_widget_configure_navigate_back_warning_restore">To finish restoring the widget you must add it to home screen. Exit without restoring?</string>
 
@@ -164,7 +169,7 @@
     <string name="photo_widget_configure_menu_source">Source</string>
     <string name="photo_widget_configure_source_selection_directory_empty">This widget is not synced with any folder yet.</string>
     <string name="photo_widget_configure_source_selection_directory_non_empty">This widget is synced with these folders:</string>
-    <string name="photo_widget_configure_source_warning">Changing the source will replace the current photos from this widget</string>
+    <string name="photo_widget_configure_source_warning">Changing the source will erase all content data from this widget once you confirm. This change cannot be reversed, and you will have to select photos or folders again.</string>
 
     <string name="photo_widget_configure_menu_crop">Crop</string>
     <string name="photo_widget_configure_menu_remove">Remove</string>
@@ -176,6 +181,8 @@
 
     <string name="photo_widget_configure_pick_photo">Pick photos</string>
     <string name="photo_widget_configure_pick_folder">Pick folder</string>
+    <string name="photo_widget_configure_pick_gif">Pick GIF</string>
+    <string name="photo_widget_configure_pick_gif_replace">Picking another GIF will replace the existing one, continue?</string>
     <string name="photo_widget_configure_change_source">Change source</string>
 
     <string name="photo_widget_configure_select_cycling_mode">Photo timer</string>
@@ -209,9 +216,9 @@
     <string name="photo_widget_configure_interval_hours_label">Hours</string>
     <string name="photo_widget_configure_interval_days_label">Days</string>
 
-    <string name="photo_widget_configure_schedule_placeholder">Schedule up to 4 times to switch your photos automatically.</string>
+    <string name="photo_widget_configure_schedule_placeholder" tools:ignore="PluralsCandidate">Schedule up to %d times to switch your photos automatically.</string>
     <string name="photo_widget_configure_schedule_add_new">Add new</string>
-    <string name="photo_widget_configure_schedule_limit_reached">Maximum of 4 times reached</string>
+    <string name="photo_widget_configure_schedule_limit_reached" tools:ignore="PluralsCandidate">Maximum of %d times reached</string>
     <plurals name="photo_widget_configure_schedule_times">
         <item quantity="one">1 time selected</item>
         <item quantity="other">%d times selected</item>
@@ -267,21 +274,33 @@
     <string name="photo_widget_configure_tap_action_app_folder">App folder</string>
     <string name="photo_widget_configure_tap_action_app_folder_description">Choose up to 12 apps</string>
     <string name="photo_widget_configure_tap_action_url_shortcut">Open a link</string>
+    <string name="photo_widget_configure_tap_action_file_shortcut">Open a file</string>
+    <string name="photo_widget_configure_tap_action_choose_file">Choose file</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling">Enable/disable timer</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling_description">Tap to pause the photo timer. Tap again to resume. This action will be disabled while the widget is locked.</string>
+    <string name="photo_widget_configure_tap_action_toggle_gif_playback">Enable/disable GIF playback</string>
     <string name="photo_widget_configure_tap_action_share_photo">Share photo</string>
+    <string name="photo_widget_configure_tap_action_set_wallpaper">Set as wallpaper</string>
+    <string name="photo_widget_configure_tap_action_remove_photo">Remove photo</string>
+    <string name="photo_widget_configure_tap_action_remove_photo_description">Exclude it from the widget. The original photo is not removed from your phone.</string>
+
+    <string name="photo_widget_remove_action_feedback_positive">Photo removed!</string>
+    <string name="photo_widget_remove_action_feedback_negative">Only one photo left, cannot remove.</string>
 
     <string name="photo_widget_configure_tap_action_increase_brightness">Automatically increase brightness</string>
     <string name="photo_widget_configure_tap_action_view_original_photo">View original photo (no crop or rotation)</string>
     <string name="photo_widget_configure_tap_action_do_not_shuffle">Do not shuffle when switching photos in the viewer</string>
     <string name="photo_widget_configure_tap_action_keep_current_photo">Do not change the current photo when switching photos in the viewer</string>
-    <string name="photo_widget_configure_tap_action_gallery_description_compatibility">Compatible with folder-based widgets, photo-based widgets will use \"View photo in full screen\" instead.</string>
     <string name="photo_widget_configure_tap_action_gallery_description_warning">This action opens the current photo using the gallery app. It won\'t be possible to view or navigate to other photos.</string>
     <string name="photo_widget_configure_tap_action_gallery_description_app_selection">You may also choose which gallery app to use.</string>
     <string name="photo_widget_configure_tap_action_choose_app">Choose app</string>
     <string name="photo_widget_configure_tap_action_disable_tap">Disable other tapping areas while the timer is paused</string>
     <string name="photo_widget_configure_tap_action_shared_preferences">These preferences are used by all areas that use this tap action.</string>
     <string name="photo_widget_configure_tap_action_shared_selected_app">The selected app is used by all areas that use this tap action.</string>
+
+    <string name="photo_widget_configure_gif_frame_interval">Frame interval</string>
+    <string name="photo_widget_configure_gif_frame_interval_description">Control the playing speed of the animated GIF. The smaller the value, the quicker the GIF.</string>
+    <string name="photo_widget_configure_gif_frame_interval_presets">Presets</string>
 
     <string name="photo_widget_configure_add_to_home">Add to home screen</string>
     <string name="photo_widget_configure_save_changes">Save changes</string>
@@ -332,11 +351,11 @@
 
     <string name="restriction_warning_hint">Background activity is restricted. Widgets may not work correctly. Tap to learn more.</string>
     <string name="restriction_warning_dialog_title">Background work restrictions and battery optimization</string>
-    <string name="restriction_warning_dialog_body_1">Material Photo Widget needs to run in the background to update your widgets. If battery usage is set to \"Optimized,\" Android may stop the app, which prevents widgets from updating correctly.</string>
-    <string name="restriction_warning_dialog_body_2">Go to app settings, then \"App battery usage.\" Click \"Allow background usage\" and select \"Unrestricted\" to ensure reliable updates. If this option isn\'t visible, pcheck the phone\'s power settings.</string>
+    <string name="restriction_warning_dialog_body_1">Material Photo Widget needs to run in the background to update your widgets. If battery usage is set to \"Optimized,\" Android may stop the app, preventing widgets from updating correctly.</string>
+    <string name="restriction_warning_dialog_body_2">You can grant the permission using the button below, or open app settings and go to \"App battery usage.\" Tap \"Allow background usage\" and select \"Unrestricted\" to ensure reliable updates.</string>
     <string name="restriction_warning_dialog_body_3">Some devices may also block the app from starting after a restart. Search your settings for \"auto-start\" or visit https://dontkillmyapp.com for instructions specific to your phone brand.</string>
+    <string name="restriction_warning_grant_battery_permission">Grant permission</string>
     <string name="restriction_warning_open_app_settings">Open app settings</string>
-    <string name="restriction_warning_open_power_settings">Open power settings</string>
 
     <!-- Translations -->
     <string name="translations_dialog_title">Help translate to your language!</string>
@@ -360,12 +379,23 @@
     <string name="photo_widget_viewer_all_photos">All photos</string>
 
     <!-- Cycling feedback -->
-    <string name="photo_widget_cycling_feedback_paused">Timer paused</string>
-    <string name="photo_widget_cycling_feedback_resumed">Timer resumed</string>
+    <string name="photo_widget_cycling_feedback_paused">Widget paused</string>
+    <string name="photo_widget_cycling_feedback_resumed">Widget resumed</string>
 
     <!-- Folder -->
     <string name="photo_widget_app_folder_empty">You haven\'t added apps to this folder yet. Tap continue to open the widget editor.</string>
     <string name="photo_widget_app_folder_add_app">Add app</string>
+
+    <!-- Keep-alive service -->
+    <string name="photo_widget_keep_alive_service_dialog_title">Background Service</string>
+    <string name="photo_widget_keep_alive_service_dialog_toggle">Enable Background Service</string>
+    <string name="photo_widget_keep_alive_service_dialog_body">You can enable the background service to let Android know the app is important and that it shouldn\'t be stopped. Don\'t worry, the app only does what\'s needed to keep your widgets showing photos on schedule, without extra battery drain.&lt;br/>&lt;br/>Widgets on your home screen are managed by your app launcher, not directly by the app. Since the app rarely runs in the foreground, &lt;b>the system may assume it\'s not important and stop it&lt;/b>. When that happens, &lt;b>widgets are stopped too, causing photos not to appear&lt;/b>. This is especially common on &lt;b>Samsung devices&lt;/b>.</string>
+    <string name="photo_widget_keep_alive_service_required_for_gif">GIF widgets require the background service to play animations. You can find more about it in the settings tab. Would you like to enable it?</string>
+    <string name="photo_widget_keep_alive_service_gif_widgets_warning">There are active GIF widgets that depend on the background service. Disabling it may cause them to stop playing animations.</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name_keep_alive">Background Service</string>
+    <string name="notification_channel_description_keep_alive">Keeps the app alive, even if backgrounded for a long time. Ensures that widgets can be updated as expected.</string>
 
     <!-- Common Actions -->
     <string name="photo_widget_action_yes">Yes</string>
@@ -397,6 +427,9 @@
     <string name="setup_battery_denied">Battery optimization is still enabled — you can change this later in Settings.</string>
     <string name="setup_skip">Skip</string>
     <string name="setup_done">Done</string>
+
+    <string name="warning_experimental">Experimental</string>
+    <string name="warning_gif_widget_battery_usage">GIF widgets may use more battery! The app must do constant work in order to play the animation. Work is paused when the screen is off to save resources, but the app cannot detect when your home screen is not visible while using other apps.</string>
 
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Material Photo home screen widget</string>

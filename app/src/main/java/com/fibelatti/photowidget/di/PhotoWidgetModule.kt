@@ -18,6 +18,7 @@ import com.fibelatti.photowidget.widget.data.PendingDeletionWidgetPhotoDao
 import com.fibelatti.photowidget.widget.data.PhotoWidgetDatabase
 import com.fibelatti.photowidget.widget.data.PhotoWidgetOrderDao
 import com.fibelatti.photowidget.widget.data.SmbPhotoIndexDao
+import com.fibelatti.photowidget.widget.data.WidgetDirectoryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,7 +47,10 @@ object PhotoWidgetModule {
         context = application,
         klass = PhotoWidgetDatabase::class.java,
         name = "com.fibelatti.photowidget.db",
-    ).addMigrations(PhotoWidgetDatabase.MIGRATION_4_5).build()
+    ).addMigrations(
+        PhotoWidgetDatabase.MIGRATION_4_5,
+        PhotoWidgetDatabase.MIGRATION_5_6,
+    ).build()
 
     @Provides
     fun localPhotoDao(
@@ -77,6 +81,11 @@ object PhotoWidgetModule {
     fun smbPhotoIndexDao(
         photoWidgetDatabase: PhotoWidgetDatabase,
     ): SmbPhotoIndexDao = photoWidgetDatabase.smbPhotoIndexDao()
+
+    @Provides
+    fun widgetDirectoryDao(
+        photoWidgetDatabase: PhotoWidgetDatabase,
+    ): WidgetDirectoryDao = photoWidgetDatabase.widgetDirectoryDao()
 
     @Provides
     @Singleton

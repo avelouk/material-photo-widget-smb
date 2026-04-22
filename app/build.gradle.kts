@@ -2,16 +2,15 @@
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.room)
     alias(libs.plugins.about.libraries)
     alias(libs.plugins.licensee)
 
+    alias(libs.plugins.fibelatti.android.common)
     alias(libs.plugins.fibelatti.manifest.permission.validation)
 }
 
@@ -21,8 +20,8 @@ object AppInfo {
     const val APPLICATION_ID = "com.fibelatti.photowidget"
 
     private const val VERSION_MAJOR = 1
-    private const val VERSION_MINOR = 38
-    private const val VERSION_PATCH = 3
+    private const val VERSION_MINOR = 41
+    private const val VERSION_PATCH = 0
     private const val VERSION_BUILD = 0
 
     val versionCode: Int = (VERSION_MAJOR * 1_000_000)
@@ -39,16 +38,13 @@ object AppInfo {
 }
 
 android {
-    val compileSdkVersion: Int by project
     val targetSdkVersion: Int by project
-    val minSdkVersion: Int by project
 
     namespace = "com.fibelatti.photowidget"
-    compileSdk = compileSdkVersion
 
     buildFeatures {
         buildConfig = true
-        compose = true
+        resValues = true
         viewBinding = true
     }
 
@@ -61,7 +57,6 @@ android {
         versionCode = AppInfo.versionCode
         versionName = AppInfo.versionName
         targetSdk = targetSdkVersion
-        minSdk = minSdkVersion
 
         base.archivesName = "$applicationId-v$versionName-$versionCode"
 
@@ -108,25 +103,8 @@ android {
         }
     }
 
-    androidComponents {
-        onVariants { variant ->
-            val appName = StringBuilder().apply {
-                append(AppInfo.APP_NAME)
-                if (variant.name.contains("debug", ignoreCase = true)) append(" Dev")
-            }.toString()
-
-            variant.resValues.put(
-                variant.makeResValueKey("string", "app_name"),
-                com.android.build.api.variant.ResValue(appName, null),
-            )
-
-            variant.androidResources.localeFilters
-                .addAll("en", "de", "es", "fr", "it", "iw", "ja", "pt", "ro", "ru", "fil", "tr")
-        }
-    }
-
     sourceSets {
-        forEach { sourceSet -> getByName(sourceSet.name).java.srcDirs("src/${sourceSet.name}/kotlin") }
+        forEach { sourceSet -> sourceSet.java.directories += "src/${sourceSet.name}/kotlin" }
     }
 
     packaging {
@@ -146,6 +124,24 @@ android {
 
     lint {
         warningsAsErrors = true
+        baseline = file("lint-baseline.xml")
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val appName = StringBuilder().apply {
+            append(AppInfo.APP_NAME)
+            if (variant.name.contains("debug", ignoreCase = true)) append(" Dev")
+        }.toString()
+
+        variant.resValues.put(
+            variant.makeResValueKey("string", "app_name"),
+            com.android.build.api.variant.ResValue(appName, null),
+        )
+
+        variant.androidResources.localeFilters
+            .addAll("en", "de", "es", "fr", "it", "iw", "ja", "pt", "ro", "ru", "fil", "tr")
     }
 }
 
@@ -184,10 +180,8 @@ dependencies {
     implementation(projects.ui)
 
     // Kotlin
-    implementation(libs.kotlin)
     implementation(libs.kotlin.serialization)
     implementation(libs.kotlin.datetime)
-    implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
 
     // Android Platform
@@ -198,20 +192,13 @@ dependencies {
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.exifinterface)
     implementation(libs.palette)
-    implementation(libs.work.runtime.ktx)
+    implementation(libs.work.runtime)
 
     implementation(libs.navigation3.runtime)
     implementation(libs.navigation3.ui)
 
     // Compose
-    implementation(platform(libs.compose.bom))
-    implementation(libs.compose.runtime)
     implementation(libs.compose.material)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    debugImplementation(libs.compose.ui.tooling)
-
     implementation(libs.adaptive.android)
 
     // Misc
@@ -226,6 +213,7 @@ dependencies {
 
     implementation(libs.image.cropper)
     implementation(libs.coil)
+    implementation(libs.gif.drawable)
     implementation(libs.reorderable)
     implementation(libs.colorpicker.compose)
     implementation(libs.zoomable)
@@ -244,8 +232,6 @@ dependencies {
 
     implementation(libs.timber)
     debugImplementation(libs.leakcanary)
-
-    lintChecks(libs.compose.lint.checks)
 }
 
 /**

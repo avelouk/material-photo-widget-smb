@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Widget Host -->
     <string name="photo_widget_host_description">お気に入りの写真を追加するかフォルダを同期。アクションを設定し、カスタマイズ時に形式、配置後にサイズを選択できます。</string>
     <string name="photo_widget_host_loading">ウィジェットを読み込み中…</string>
@@ -38,6 +38,8 @@
     <!-- My Widgets -->
     <string name="photo_widget_home_empty_widgets">ウィジェットはまだ追加されていません。\nホーム画面に追加されたウィジェットがここに表示されます。</string>
     <string name="photo_widget_home_filter_all">すべて</string>
+    <string name="photo_widget_home_draft_label">下書き</string>
+    <string name="photo_widget_home_draft_action_discard">下書きを削除</string>
     <string name="photo_widget_home_locked_label">ロック済み</string>
     <string name="photo_widget_home_removed_label">削除済み</string>
     <string name="photo_widget_home_removed_widgets_hint">削除されたウィジェットはホーム画面には表示されなくなります。7日後にアプリから完全に削除されます。「保持」を選択することもできます。</string>
@@ -82,7 +84,9 @@
     <string name="photo_widget_source_photos">写真</string>
     <string name="photo_widget_source_directory">フォルダー</string>
     <string name="photo_widget_source_photos_description">デフォルトのギャラリーピッカーを使用して、1枚以上の写真を選択します。</string>
+    <string name="photo_widget_source_gif">GIF</string>
     <string name="photo_widget_source_directory_description">同期するフォルダを1つ以上選択します。写真は自動的に追加され、定期的に更新されます。</string>
+    <string name="photo_widget_source_gif_description">ホーム画面で再生するアニメーションGIFを選択します。短くシンプルなGIFを推奨します。</string>
     <!-- Aspect Ratio -->
     <string name="photo_widget_aspect_ratio_title">フォーマット</string>
     <string name="photo_widget_aspect_ratio_shape">シェイプ</string>
@@ -95,6 +99,7 @@
     <string name="photo_widget_aspect_ratio_fill_widget">全体に合わせる</string>
     <string name="photo_widget_aspect_ratio_fill_widget_description">ウィジェットサイズに合わせる</string>
     <!-- Configure -->
+    <string name="photo_widget_configure_save_draft_prompt">変更を下書きとして保存しますか？</string>
     <string name="photo_widget_configure_navigate_back_warning">変更は失われます。戻ってもよろしいですか？</string>
     <string name="photo_widget_configure_navigate_back_warning_restore">ウィジェットの復元を完了するには、ホーム画面に追加する必要があります。復元せずに終了しますか？</string>
     <string name="photo_widget_configure_tab_content">コンテンツ</string>
@@ -111,7 +116,7 @@
     <string name="photo_widget_configure_menu_source">ソース</string>
     <string name="photo_widget_configure_source_selection_directory_empty">このウィジェットはまだどのフォルダーとも同期されていません。</string>
     <string name="photo_widget_configure_source_selection_directory_non_empty">このウィジェットはこれらのフォルダーと同期されています:</string>
-    <string name="photo_widget_configure_source_warning">ソースを変更すると、このウィジェットの現在の写真が置き換えられます</string>
+    <string name="photo_widget_configure_source_warning">ソースを変更すると、確認後にこのウィジェットのすべてのコンテンツデータが消去されます。この変更は元に戻せません。写真やフォルダーを再度選択する必要があります。</string>
     <string name="photo_widget_configure_menu_crop">切り抜き</string>
     <string name="photo_widget_configure_menu_remove">削除</string>
     <string name="photo_widget_configure_menu_move_left">左へ移動</string>
@@ -120,6 +125,8 @@
     <string name="photo_widget_configure_photos_excluded">ウィジェットから除外</string>
     <string name="photo_widget_configure_pick_photo">写真を選択</string>
     <string name="photo_widget_configure_pick_folder">フォルダーを選択</string>
+    <string name="photo_widget_configure_pick_gif">GIFを選択</string>
+    <string name="photo_widget_configure_pick_gif_replace">別のGIFを選択すると既存のものが置き換えられます。続行しますか？</string>
     <string name="photo_widget_configure_change_source">ソースを変更</string>
     <string name="photo_widget_configure_select_cycling_mode">写真タイマー</string>
     <string name="photo_widget_configure_cycling_mode_interval">間隔</string>
@@ -145,9 +152,9 @@
     <string name="photo_widget_configure_interval_minutes_label">分</string>
     <string name="photo_widget_configure_interval_hours_label">時間</string>
     <string name="photo_widget_configure_interval_days_label">日</string>
-    <string name="photo_widget_configure_schedule_placeholder">写真を自動的に切り替える時間を最大4つまでスケジュールします。</string>
+    <string name="photo_widget_configure_schedule_placeholder" tools:ignore="PluralsCandidate">写真を自動的に切り替える時間を最大%dつまでスケジュールします。</string>
     <string name="photo_widget_configure_schedule_add_new">新規追加</string>
-    <string name="photo_widget_configure_schedule_limit_reached">最大4つの時間に達しました</string>
+    <string name="photo_widget_configure_schedule_limit_reached" tools:ignore="PluralsCandidate">最大%dつの時間に達しました</string>
     <plurals name="photo_widget_configure_schedule_times">
         <item quantity="other">%dつの時間が選択されました</item>
     </plurals>
@@ -194,20 +201,30 @@
     <string name="photo_widget_configure_tap_action_app_folder">アプリフォルダ</string>
     <string name="photo_widget_configure_tap_action_app_folder_description">最大12個のアプリを選択</string>
     <string name="photo_widget_configure_tap_action_url_shortcut">リンクを開く</string>
+    <string name="photo_widget_configure_tap_action_file_shortcut">ファイルを開く</string>
+    <string name="photo_widget_configure_tap_action_choose_file">ファイルを選択</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling">タイマーの有効化/無効化</string>
     <string name="photo_widget_configure_tap_action_toggle_cycling_description">タップして写真タイマーを一時停止します。再度タップすると再開します。ウィジェットがロックされている間は、この操作は無効になります。</string>
+    <string name="photo_widget_configure_tap_action_toggle_gif_playback">GIF再生を有効/無効にする</string>
     <string name="photo_widget_configure_tap_action_share_photo">写真を共有</string>
+    <string name="photo_widget_configure_tap_action_set_wallpaper">壁紙として設定</string>
+    <string name="photo_widget_configure_tap_action_remove_photo">写真を削除</string>
+    <string name="photo_widget_configure_tap_action_remove_photo_description">ウィジェットから除外します。元の写真はスマートフォンから削除されません。</string>
+    <string name="photo_widget_remove_action_feedback_positive">写真を削除しました！</string>
+    <string name="photo_widget_remove_action_feedback_negative">写真が1枚しかないため、削除できません。</string>
     <string name="photo_widget_configure_tap_action_increase_brightness">明るさを自動的に上げる</string>
     <string name="photo_widget_configure_tap_action_view_original_photo">元の写真を表示（切り抜きや回転なし）</string>
     <string name="photo_widget_configure_tap_action_do_not_shuffle">ビューアで写真を切り替えるときにシャッフルしない</string>
     <string name="photo_widget_configure_tap_action_keep_current_photo">ビューアで写真を切り替えるときに現在の写真を変更しない</string>
-    <string name="photo_widget_configure_tap_action_gallery_description_compatibility">フォルダーベースのウィジェットと互換性があります。写真ベースのウィジェットでは代わりに「写真をフルスクリーンで表示」が使用されます。</string>
     <string name="photo_widget_configure_tap_action_gallery_description_warning">このアクションは、ギャラリーアプリを使用して現在の写真を開きます。他の写真を表示したり移動したりすることはできません。</string>
     <string name="photo_widget_configure_tap_action_gallery_description_app_selection">使用するギャラリーアプリを選択することもできます。</string>
     <string name="photo_widget_configure_tap_action_choose_app">アプリを選択</string>
     <string name="photo_widget_configure_tap_action_disable_tap">タイマーが一時停止中は他のタップエリアを無効にする</string>
     <string name="photo_widget_configure_tap_action_shared_preferences">これらの設定は、このタップアクションを使用するすべてのエリアで使用されます。</string>
     <string name="photo_widget_configure_tap_action_shared_selected_app">選択されたアプリは、このタップアクションを使用するすべてのエリアで使用されます。</string>
+    <string name="photo_widget_configure_gif_frame_interval">フレーム間隔</string>
+    <string name="photo_widget_configure_gif_frame_interval_description">アニメーションGIFの再生速度を制御します。値が小さいほど、GIFが速くなります。</string>
+    <string name="photo_widget_configure_gif_frame_interval_presets">プリセット</string>
     <string name="photo_widget_configure_add_to_home">ホーム画面に追加</string>
     <string name="photo_widget_configure_save_changes">変更を保存</string>
     <string name="photo_widget_configure_widget_pinned">ウィジェットが追加されました！ホーム画面を確認してください…</string>
@@ -241,10 +258,10 @@
     <string name="restriction_warning_hint">バックグラウンドアクティビティが制限されています。ウィジェットが正しく機能しない場合があります。詳細についてはタップしてください。</string>
     <string name="restriction_warning_dialog_title">バックグラウンド作業の制限とバッテリー最適化</string>
     <string name="restriction_warning_dialog_body_1">Material Photo Widgetは、ウィジェットを更新するためにバックグラウンドで実行される必要があります。バッテリーの使用状況が「最適化済み」に設定されていると、Androidがアプリを停止させ、ウィジェットが正しく更新されなくなる場合があります。</string>
-    <string name="restriction_warning_dialog_body_2">アプリの設定から「アプリのバッテリー使用状況」に進みます。「バックグラウンド使用を許可」をクリックし、「制限なし」を選択して、確実な更新を可能にします。このオプションが表示されない場合は、スマートフォンの電源設定を確認してください。</string>
+    <string name="restriction_warning_dialog_body_2">下のボタンから権限を許可するか、アプリの設定から「アプリのバッテリー使用状況」に進んでください。「バックグラウンド使用を許可」をタップし、「制限なし」を選択して、確実な更新を可能にします。</string>
     <string name="restriction_warning_dialog_body_3">一部のデバイスでは、再起動後にアプリが自動的に開始されるのをブロックする場合があります。設定で「自動起動」を検索するか、https://dontkillmyapp.com でお使いのメーカー別の手順を確認してください。</string>
+    <string name="restriction_warning_grant_battery_permission">権限を許可</string>
     <string name="restriction_warning_open_app_settings">アプリ設定を開く</string>
-    <string name="restriction_warning_open_power_settings">電源設定を開く</string>
     <!-- Translations -->
     <string name="translations_dialog_title">あなたの言語への翻訳にご協力ください！</string>
     <string name="translations_dialog_body">このアプリはコミュニティ主導の翻訳アプローチを採用しており、皆様のご協力によりさらに改善されます。新しい言語の追加をご希望の場合や、誤りを見つけた場合はご貢献いただけます。</string>
@@ -264,11 +281,20 @@
     <!-- Viewer -->
     <string name="photo_widget_viewer_all_photos">すべての写真</string>
     <!-- Cycling feedback -->
-    <string name="photo_widget_cycling_feedback_paused">タイマーを一時停止しました</string>
-    <string name="photo_widget_cycling_feedback_resumed">タイマーを再開しました</string>
+    <string name="photo_widget_cycling_feedback_paused">ウィジェットを一時停止しました</string>
+    <string name="photo_widget_cycling_feedback_resumed">ウィジェットを再開しました</string>
     <!-- Folder -->
     <string name="photo_widget_app_folder_empty">このフォルダにはまだアプリが追加されていません。「続行」をタップしてウィジェットエディタを開いてください。</string>
     <string name="photo_widget_app_folder_add_app">アプリを追加</string>
+    <!-- Keep-alive service -->
+    <string name="photo_widget_keep_alive_service_dialog_title">バックグラウンドサービス</string>
+    <string name="photo_widget_keep_alive_service_dialog_toggle">バックグラウンドサービスを有効にする</string>
+    <string name="photo_widget_keep_alive_service_dialog_body">バックグラウンドサービスを有効にすると、Androidにアプリが重要であり停止しないよう伝えることができます。ご安心ください。アプリはウィジェットが予定通りに写真を表示し続けるために必要なことだけを行い、余分なバッテリー消耗はありません。&lt;br/&gt;&lt;br/&gt;ホーム画面のウィジェットはアプリランチャーによって管理されており、アプリが直接管理しているわけではありません。アプリがフォアグラウンドで実行されることはほとんどないため、&lt;b&gt;システムはアプリが重要ではないと判断して停止する場合があります&lt;/b&gt;。そうなると、&lt;b&gt;ウィジェットも停止し、写真が表示されなくなります&lt;/b&gt;。これは特に&lt;b&gt;Samsungデバイス&lt;/b&gt;でよく起こります。</string>
+    <string name="photo_widget_keep_alive_service_required_for_gif">GIFウィジェットはアニメーションを再生するためにバックグラウンドサービスが必要です。詳細については設定タブで確認できます。有効にしますか？</string>
+    <string name="photo_widget_keep_alive_service_gif_widgets_warning">バックグラウンドサービスに依存しているアクティブなGIFウィジェットがあります。無効にするとアニメーションが再生されなくなる場合があります。</string>
+    <!-- Notifications -->
+    <string name="notification_channel_name_keep_alive">バックグラウンドサービス</string>
+    <string name="notification_channel_description_keep_alive">アプリを長時間バックグラウンドでも維持します。ウィジェットが期待通りに更新できることを保証します。</string>
     <!-- Common Actions -->
     <string name="photo_widget_action_yes">はい</string>
     <string name="photo_widget_action_no">いいえ</string>
@@ -286,6 +312,8 @@
     <string name="photo_widget_action_reset">リセット</string>
     <!-- Hints -->
     <string name="hint_scroll_to_view_more">スクロールしてもっと表示</string>
+    <string name="warning_experimental">試験的</string>
+    <string name="warning_gif_widget_battery_usage">GIFウィジェットはバッテリーをより多く消費する場合があります！アニメーションを再生するために、アプリは常に動作する必要があります。リソースを節約するために画面がオフのときは作業を一時停止しますが、他のアプリを使用中にホーム画面が表示されていない場合は検出できません。</string>
     <!-- Content Description -->
     <string name="photo_widget_cd_host">Material Photoホーム画面ウィジェット</string>
 </resources>

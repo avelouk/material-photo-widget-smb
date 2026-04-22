@@ -1,6 +1,7 @@
 package com.fibelatti.photowidget.home
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -173,6 +174,7 @@ private fun BatteryOptimizationStep(
     if (!requested) {
         Button(
             onClick = {
+                @SuppressLint("BatteryLife")
                 val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                     data = Uri.parse("package:${context.packageName}")
                 }

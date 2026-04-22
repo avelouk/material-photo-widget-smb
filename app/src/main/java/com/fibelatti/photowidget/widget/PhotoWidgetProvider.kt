@@ -7,36 +7,28 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.RemoteViews
-import androidx.core.net.toUri
 import com.fibelatti.photowidget.R
-import com.fibelatti.photowidget.chooser.PhotoWidgetChooserActivity
 import com.fibelatti.photowidget.configure.PhotoWidgetConfigureActivity
 import com.fibelatti.photowidget.configure.PhotoWidgetPinningCache
 import com.fibelatti.photowidget.configure.appWidgetId
 import com.fibelatti.photowidget.di.PhotoWidgetEntryPoint
 import com.fibelatti.photowidget.di.entryPoint
-import com.fibelatti.photowidget.folder.PhotoWidgetAppFolderActivity
 import com.fibelatti.photowidget.model.PhotoWidget
 import com.fibelatti.photowidget.model.PhotoWidgetAspectRatio
+import com.fibelatti.photowidget.model.PhotoWidgetSource
 import com.fibelatti.photowidget.model.PhotoWidgetTapAction
 import com.fibelatti.photowidget.model.PhotoWidgetText
 import com.fibelatti.photowidget.model.tapActionDisableTap
 import com.fibelatti.photowidget.model.textToBitmap
 import com.fibelatti.photowidget.model.yearPeelToBitmap
+import com.fibelatti.photowidget.platform.KeepAliveService
 import com.fibelatti.photowidget.platform.getDynamicAttributeColor
-import com.fibelatti.photowidget.platform.getInstalledApp
-import com.fibelatti.photowidget.platform.getLaunchIntent
-import com.fibelatti.photowidget.platform.setIdentifierCompat
-import com.fibelatti.photowidget.platform.sharePhotoChooserIntent
-import com.fibelatti.photowidget.viewer.PhotoWidgetViewerActivity
 import com.fibelatti.photowidget.widget.data.PhotoWidgetStorage
-import java.lang.ref.WeakReference
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +36,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 
 class PhotoWidgetProvider : AppWidgetProvider() {
@@ -53,34 +46,34 @@ class PhotoWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
 
-        Timber.d("Broadcast received (action=${intent.action}, appWidgetId=${intent.appWidgetId})")
+        Timber.i("Broadcast received (action=${intent.action}, appWidgetId=${intent.appWidgetId})")
 
         val action: Action = Action.fromValue(intent.action) ?: return
 
         handler.post {
-            val entryPoint: PhotoWidgetEntryPoint = entryPoint(context)
-
-            entryPoint.coroutineScope().launch {
-                entryPoint.cyclePhotoUseCase().invoke(
-                    appWidgetId = intent.appWidgetId,
-                    direction = when (action) {
-                        Action.VIEW_NEXT_PHOTO -> CyclePhotoUseCase.Direction.NEXT
-                        Action.VIEW_PREVIOUS_PHOTO -> CyclePhotoUseCase.Direction.PREVIOUS
-                    },
-                )
-                entryPoint.photoWidgetStorage().saveWidgetNextCycleTime(
-                    appWidgetId = intent.appWidgetId,
-                    nextCycleTime = null,
-                )
-                entryPoint.photoWidgetAlarmManager().setup(
-                    appWidgetId = intent.appWidgetId,
-                )
-            }
+            entryPoint<PhotoWidgetEntryPoint>(context).photoWidgetProviderActionHandler().invoke(
+                action = action,
+                appWidgetId = intent.appWidgetId,
+                onRemoveActionHandled = { didRemove: Boolean ->
+                    context.startActivity(
+                        HeadlessFeedbackActivity.newIntent(
+                            context = context,
+                            message = context.getString(
+                                if (didRemove) {
+                                    R.string.photo_widget_remove_action_feedback_positive
+                                } else {
+                                    R.string.photo_widget_remove_action_feedback_negative
+                                },
+                            ),
+                        ),
+                    )
+                },
+            )
         }
     }
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        Timber.d("Update requested by the system (appWidgetIds=${appWidgetIds.toList()})")
+        Timber.i("Update requested by the system (appWidgetIds=${appWidgetIds.toList()})")
 
         handler.post {
             for (appWidgetId in appWidgetIds) {
@@ -95,7 +88,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
         appWidgetId: Int,
         newOptions: Bundle?,
     ) {
-        Timber.d("Options changed by the system (appWidgetId=$appWidgetId)")
+        Timber.i("Options changed by the system (appWidgetId=$appWidgetId)")
 
         handler.post {
             update(context = context, appWidgetId = appWidgetId)
@@ -103,7 +96,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
-        Timber.d("Delete requested by the system (appWidgetIds=${appWidgetIds.toList()})")
+        Timber.i("Delete requested by the system (appWidgetIds=${appWidgetIds.toList()})")
 
         handler.post {
             val entryPoint: PhotoWidgetEntryPoint = entryPoint(context)
@@ -113,6 +106,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
             for (appWidgetId in appWidgetIds) {
                 storage.saveWidgetDeletionTimestamp(appWidgetId = appWidgetId, timestamp = System.currentTimeMillis())
                 alarmManager.cancel(appWidgetId = appWidgetId)
+                KeepAliveService.sendTearDownGifBroadcast(context = context, appWidgetId = appWidgetId)
             }
         }
     }
@@ -121,6 +115,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
 
         VIEW_NEXT_PHOTO(value = "ACTION_VIEW_NEXT_PHOTO"),
         VIEW_PREVIOUS_PHOTO(value = "ACTION_VIEW_PREVIOUS_PHOTO"),
+        REMOVE_PHOTO(value = "ACTION_REMOVE_PHOTO"),
         ;
 
         companion object {
@@ -131,7 +126,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
 
     companion object {
 
-        private val updateJobMap: MutableMap<Int, WeakReference<Job>> = mutableMapOf()
+        private val updateJobMap: MutableMap<Int, Job> = mutableMapOf()
 
         fun ids(context: Context): List<Int> = AppWidgetManager.getInstance(context)
             .getAppWidgetIds(ComponentName(context, PhotoWidgetProvider::class.java))
@@ -143,7 +138,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
             appWidgetId: Int,
             recoveryMode: Boolean = false,
         ) {
-            Timber.d("Updating widget (appWidgetId=$appWidgetId)")
+            Timber.i("Updating widget (appWidgetId=$appWidgetId)")
 
             val appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(context)
             val entryPoint: PhotoWidgetEntryPoint = entryPoint(context)
@@ -152,14 +147,15 @@ class PhotoWidgetProvider : AppWidgetProvider() {
             val pinningCache: PhotoWidgetPinningCache = entryPoint.photoWidgetPinningCache()
             val loadPhotoWidgetUseCase: LoadPhotoWidgetUseCase = entryPoint.loadPhotoWidgetUseCase()
 
-            val currentJob: Job? = updateJobMap[appWidgetId]?.get()
+            val currentJob: Job? = updateJobMap[appWidgetId]
             Timber.d("Current update job (isActive=${currentJob?.isActive})")
 
             val newJob: Job = coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
-                currentJob?.join()
+                // Timeout to avoid hanging waiting more than what's acceptable
+                currentJob?.let { job -> withTimeoutOrNull(5_000L) { job.join() } }
 
                 val photoWidget: PhotoWidget = pinningCache.pendingWidget
-                    ?.takeIf { appWidgetId !in photoWidgetStorage.getKnownWidgetIds() }
+                    ?.takeIf { appWidgetId !in photoWidgetStorage.getKnownWidgetIds().first() }
                     ?.also { Timber.d("Updating using the pending widget data") }
                     ?: loadPhotoWidgetUseCase(appWidgetId = appWidgetId).first { !it.isLoading }
 
@@ -183,6 +179,10 @@ class PhotoWidgetProvider : AppWidgetProvider() {
 
                 try {
                     appWidgetManager.updateAppWidget(appWidgetId, views)
+
+                    if (photoWidget.source == PhotoWidgetSource.GIF) {
+                        KeepAliveService.sendSetupGifBroadcast(context = context, appWidgetId = appWidgetId)
+                    }
                 } catch (ex: IllegalArgumentException) {
                     if (!recoveryMode) {
                         update(context = context, appWidgetId = appWidgetId, recoveryMode = true)
@@ -192,7 +192,11 @@ class PhotoWidgetProvider : AppWidgetProvider() {
                 }
             }
 
-            updateJobMap[appWidgetId] = WeakReference(newJob)
+            updateJobMap[appWidgetId] = newJob
+            newJob.invokeOnCompletion {
+                // Only remove if we're still the current job (avoid racing with a newer update)
+                if (updateJobMap[appWidgetId] === newJob) updateJobMap.remove(appWidgetId)
+            }
         }
 
         // region RemoteViews
@@ -215,7 +219,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
             val remoteViews = RemoteViews(context.packageName, R.layout.photo_widget)
 
             if (result == null) {
-                Timber.d("Failed to prepare current photo")
+                Timber.e("Failed to prepare current photo")
                 return setErrorState(
                     remoteViews = remoteViews,
                     context = context,
@@ -228,7 +232,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
                 val visibleImageViewId: Int
                 val hiddenImageViewId: Int
 
-                if (PhotoWidgetAspectRatio.FILL_WIDGET == photoWidget.aspectRatio) {
+                if (photoWidget.aspectRatio == PhotoWidgetAspectRatio.FILL_WIDGET) {
                     visibleImageViewId = R.id.iv_widget_fill
                     hiddenImageViewId = R.id.iv_widget
                 } else {
@@ -371,28 +375,21 @@ class PhotoWidgetProvider : AppWidgetProvider() {
 
             val shouldDisableTap: Boolean = photoWidget.tapActionDisableTap && isCyclePaused
 
-            val centerClickPendingIntent: PendingIntent? = getTapActionPendingIntent(
-                context = context,
-                appWidgetId = appWidgetId,
-                tapAction = photoWidget.tapActions.center,
-                isLocked = isLocked,
-                shouldDisableTap = shouldDisableTap,
-                originalPhotoPath = photoWidget.currentPhoto?.originalPhotoPath,
-                externalUri = photoWidget.currentPhoto?.externalUri,
-            )
+            val pendingIntentArgs: (PhotoWidgetTapAction) -> PendingIntent? = { tapAction ->
+                TapActionPendingIntentFactory.create(
+                    context = context,
+                    appWidgetId = appWidgetId,
+                    tapAction = tapAction,
+                    isLocked = isLocked,
+                    shouldDisableTap = shouldDisableTap,
+                    originalPhotoPath = photoWidget.currentPhoto?.originalPhotoPath,
+                    externalUri = photoWidget.currentPhoto?.externalUri,
+                )
+            }
 
-            remoteViews.setOnClickPendingIntent(R.id.view_tap_center, centerClickPendingIntent)
+            remoteViews.setOnClickPendingIntent(R.id.view_tap_center, pendingIntentArgs(photoWidget.tapActions.center))
 
-            val tapLeftPendingIntent: PendingIntent? = getTapActionPendingIntent(
-                context = context,
-                appWidgetId = appWidgetId,
-                tapAction = photoWidget.tapActions.left,
-                isLocked = isLocked,
-                shouldDisableTap = shouldDisableTap,
-                originalPhotoPath = photoWidget.currentPhoto?.originalPhotoPath,
-                externalUri = photoWidget.currentPhoto?.externalUri,
-            )
-
+            val tapLeftPendingIntent: PendingIntent? = pendingIntentArgs(photoWidget.tapActions.left)
             if (tapLeftPendingIntent != null) {
                 remoteViews.setViewVisibility(R.id.view_tap_left, View.VISIBLE)
                 remoteViews.setOnClickPendingIntent(R.id.view_tap_left, tapLeftPendingIntent)
@@ -400,16 +397,7 @@ class PhotoWidgetProvider : AppWidgetProvider() {
                 remoteViews.setViewVisibility(R.id.view_tap_left, View.INVISIBLE)
             }
 
-            val tapRightPendingIntent: PendingIntent? = getTapActionPendingIntent(
-                context = context,
-                appWidgetId = appWidgetId,
-                tapAction = photoWidget.tapActions.right,
-                isLocked = isLocked,
-                shouldDisableTap = shouldDisableTap,
-                originalPhotoPath = photoWidget.currentPhoto?.originalPhotoPath,
-                externalUri = photoWidget.currentPhoto?.externalUri,
-            )
-
+            val tapRightPendingIntent: PendingIntent? = pendingIntentArgs(photoWidget.tapActions.right)
             if (tapRightPendingIntent != null) {
                 remoteViews.setViewVisibility(R.id.view_tap_right, View.VISIBLE)
                 remoteViews.setOnClickPendingIntent(R.id.view_tap_right, tapRightPendingIntent)
@@ -418,201 +406,6 @@ class PhotoWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        private fun getTapActionPendingIntent(
-            context: Context,
-            appWidgetId: Int,
-            tapAction: PhotoWidgetTapAction,
-            isLocked: Boolean,
-            shouldDisableTap: Boolean,
-            originalPhotoPath: String?,
-            externalUri: Uri?,
-        ): PendingIntent? {
-            Timber.d(
-                "Determining click intent (" +
-                    "appWidgetId=$appWidgetId," +
-                    "tapAction=$tapAction," +
-                    "isLocked=$isLocked," +
-                    "shouldDisableTap=$shouldDisableTap," +
-                    "originalPhotoPath=$originalPhotoPath," +
-                    "externalUri=$externalUri" +
-                    ")",
-            )
-
-            val photoChangingAction: Boolean = tapAction is PhotoWidgetTapAction.ViewNextPhoto ||
-                tapAction is PhotoWidgetTapAction.ViewPreviousPhoto ||
-                tapAction is PhotoWidgetTapAction.ChooseNextPhoto ||
-                tapAction is PhotoWidgetTapAction.ToggleCycling
-
-            val shouldIgnoreAction: Boolean = when {
-                shouldDisableTap && tapAction !is PhotoWidgetTapAction.ToggleCycling -> true
-                photoChangingAction -> isLocked
-                else -> false
-            }
-
-            if (shouldIgnoreAction) {
-                Timber.d("Ignoring action")
-                return null
-            }
-
-            when (tapAction) {
-                is PhotoWidgetTapAction.None -> return null
-
-                is PhotoWidgetTapAction.ViewFullScreen -> {
-                    val clickIntent = Intent(context, PhotoWidgetViewerActivity::class.java).apply {
-                        setIdentifierCompat("$appWidgetId")
-                        this.appWidgetId = appWidgetId
-                    }
-                    return PendingIntent.getActivity(
-                        /* context = */ context,
-                        /* requestCode = */ appWidgetId,
-                        /* intent = */ clickIntent,
-                        /* flags = */ PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                }
-
-                is PhotoWidgetTapAction.ViewInGallery -> {
-                    if (externalUri == null) return null
-
-                    val intent = Intent(Intent.ACTION_VIEW)
-                        .setDataAndType(externalUri, "image/*")
-                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        .setIdentifierCompat("$appWidgetId")
-
-                    if (context.getInstalledApp(packageName = tapAction.galleryApp) != null) {
-                        intent.setPackage(tapAction.galleryApp)
-                    }
-
-                    return PendingIntent.getActivity(
-                        /* context = */ context,
-                        /* requestCode = */ appWidgetId,
-                        /* intent = */ intent,
-                        /* flags = */ PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                }
-
-                is PhotoWidgetTapAction.ViewNextPhoto -> {
-                    return getChangePhotoPendingIntent(
-                        context = context,
-                        appWidgetId = appWidgetId,
-                        action = Action.VIEW_NEXT_PHOTO,
-                    )
-                }
-
-                is PhotoWidgetTapAction.ViewPreviousPhoto -> {
-                    return getChangePhotoPendingIntent(
-                        context = context,
-                        appWidgetId = appWidgetId,
-                        action = Action.VIEW_PREVIOUS_PHOTO,
-                    )
-                }
-
-                is PhotoWidgetTapAction.ChooseNextPhoto -> {
-                    val clickIntent = Intent(context, PhotoWidgetChooserActivity::class.java).apply {
-                        setIdentifierCompat("$appWidgetId")
-                        this.appWidgetId = appWidgetId
-                    }
-                    return PendingIntent.getActivity(
-                        /* context = */ context,
-                        /* requestCode = */ appWidgetId,
-                        /* intent = */ clickIntent,
-                        /* flags = */ PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                }
-
-                is PhotoWidgetTapAction.ToggleCycling -> {
-                    val intent = Intent(context, ToggleCyclingFeedbackActivity::class.java).apply {
-                        setIdentifierCompat("$appWidgetId")
-                        this.appWidgetId = appWidgetId
-                    }
-                    return PendingIntent.getActivity(
-                        /* context = */ context,
-                        /* requestCode = */ appWidgetId,
-                        /* intent = */ intent,
-                        /* flags = */ PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                }
-
-                is PhotoWidgetTapAction.AppShortcut -> {
-                    if (tapAction.appShortcut == null) return null
-
-                    val launchIntent: Intent = context.getLaunchIntent(packageName = tapAction.appShortcut)
-                        ?: return null
-
-                    launchIntent.setIdentifierCompat("$appWidgetId")
-
-                    return PendingIntent.getActivity(
-                        /* context = */ context,
-                        /* requestCode = */ appWidgetId,
-                        /* intent = */ launchIntent,
-                        /* flags = */ PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                }
-
-                is PhotoWidgetTapAction.AppFolder -> {
-                    val intent: Intent = PhotoWidgetAppFolderActivity.newIntent(
-                        context = context,
-                        appWidgetId = appWidgetId,
-                        appFolderTapAction = tapAction,
-                    )
-                    return PendingIntent.getActivity(
-                        /* context = */ context,
-                        /* requestCode = */ appWidgetId + tapAction.hashCode(),
-                        /* intent = */ intent,
-                        /* flags = */ PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                }
-
-                is PhotoWidgetTapAction.UrlShortcut -> {
-                    if (tapAction.url.isNullOrBlank()) return null
-
-                    val intent = Intent(Intent.ACTION_VIEW, tapAction.url.toUri())
-                        .setIdentifierCompat("$appWidgetId")
-
-                    return PendingIntent.getActivity(
-                        /* context = */ context,
-                        /* requestCode = */ appWidgetId,
-                        /* intent = */ intent,
-                        /* flags = */ PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                }
-
-                is PhotoWidgetTapAction.SharePhoto -> {
-                    val intent: Intent? = sharePhotoChooserIntent(
-                        context = context,
-                        originalPhotoPath = originalPhotoPath,
-                        externalUri = externalUri,
-                    )
-
-                    if (intent == null) return null
-
-                    return PendingIntent.getActivity(
-                        /* context = */ context,
-                        /* requestCode = */ appWidgetId,
-                        /* intent = */ intent,
-                        /* flags = */ PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                }
-            }
-        }
-
-        fun getChangePhotoPendingIntent(
-            context: Context,
-            appWidgetId: Int,
-            action: Action = Action.VIEW_NEXT_PHOTO,
-        ): PendingIntent {
-            val intent = Intent(context, PhotoWidgetProvider::class.java).apply {
-                setIdentifierCompat("$appWidgetId")
-                this.appWidgetId = appWidgetId
-                this.action = action.value
-            }
-            return PendingIntent.getBroadcast(
-                /* context = */ context,
-                /* requestCode = */ appWidgetId,
-                /* intent = */ intent,
-                /* flags = */ PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-            )
-        }
         // endregion Tap Actions
 
         private fun setErrorState(
